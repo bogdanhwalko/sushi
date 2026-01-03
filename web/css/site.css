@@ -424,4 +424,22 @@ footer a:hover {
   .city-select {
     min-width: 100%;
   }
+
+  .navbar-toggler,
+  .navbar .cart-button {
+    border-color: transparent;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
+
+  .navbar-toggler:focus,
+  .navbar .cart-button:focus {
+    box-shadow: none;
+  }
+
+  .navbar-toggler:hover,
+  .navbar .cart-button:hover {
+    border-color: transparent;
+    background: rgba(255, 255, 255, 0.14);
+  }
 }
