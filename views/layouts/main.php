@@ -17,6 +17,17 @@ $categories = $this->params['categories'] ?? [];
 
 $products = $this->params['products'] ?? [];
 
+$featuredProduct = $this->params['featuredProduct'] ?? null;
+if (!is_array($featuredProduct)) {
+    $featuredProduct = null;
+    foreach ($products as $candidate) {
+        if (is_array($candidate) && !empty($candidate['id'])) {
+            $featuredProduct = $candidate;
+            break;
+        }
+    }
+}
+
 $cityMap = $this->params['cityMap'] ?? [];
 if (empty($cityMap)) {
     $cityMap = [
@@ -37,14 +48,13 @@ if (!isset($cityMap[$defaultCity])) {
 $defaultCityLabel = $cityMap[$defaultCity]['label'] ?? '';
 $defaultCityAddress = $cityMap[$defaultCity]['address'] ?? '';
 
-$productsForJs = [];
-foreach ($products as $product) {
+$normalizeProductForJs = static function ($product) {
     if (!is_array($product)) {
-        continue;
+        return null;
     }
     $id = $product['id'] ?? null;
     if ($id === null || $id === '') {
-        continue;
+        return null;
     }
     $cities = $product['cities'] ?? ['all'];
     if (is_string($cities)) {
@@ -60,20 +70,87 @@ foreach ($products as $product) {
         $priceValue = (float) preg_replace('/[^\d.]/', '', (string) $priceValueRaw);
     }
     $priceText = $product['price_text'] ?? $product['priceText'] ?? $product['price'] ?? '';
-    $productsForJs[(string) $id] = [
-        'name' => (string) ($product['name'] ?? ''),
-        'price' => (string) $priceText,
-        'priceValue' => $priceValue,
-        'description' => (string) ($product['description'] ?? ''),
-        'weight' => (string) ($product['weight'] ?? ''),
-        'pieces' => (string) ($product['pieces'] ?? ''),
-        'cities' => $cities,
-        'image' => (string) ($product['image'] ?? ''),
+
+    return [
+        'id' => (string) $id,
+        'data' => [
+            'name' => (string) ($product['name'] ?? ''),
+            'price' => (string) $priceText,
+            'priceValue' => $priceValue,
+            'description' => (string) ($product['description'] ?? ''),
+            'weight' => (string) ($product['weight'] ?? ''),
+            'pieces' => (string) ($product['pieces'] ?? ''),
+            'cities' => $cities,
+            'image' => (string) ($product['image'] ?? ''),
+        ],
     ];
+};
+
+$productsForJs = [];
+foreach ($products as $product) {
+    $normalized = $normalizeProductForJs($product);
+    if (!$normalized) {
+        continue;
+    }
+    $productsForJs[$normalized['id']] = $normalized['data'];
+}
+$featuredNormalized = $normalizeProductForJs($featuredProduct);
+if ($featuredNormalized && !isset($productsForJs[$featuredNormalized['id']])) {
+    $productsForJs[$featuredNormalized['id']] = $featuredNormalized['data'];
 }
 if (!empty($productsForJs)) {
     $this->registerJs('window.productData = ' . Json::encode($productsForJs) . ';', View::POS_HEAD);
 }
+
+$featuredProductId = '';
+$featuredProductName = '';
+$featuredProductMeta = '';
+$featuredProductPriceText = '';
+$featuredProductImage = 'assets/sushi-signature.svg';
+$featuredCityLabel = '';
+
+if (is_array($featuredProduct)) {
+    $featuredProductId = (string) ($featuredProduct['id'] ?? '');
+    $featuredProductName = (string) ($featuredProduct['name'] ?? '');
+    $featuredProductMeta = (string) ($featuredProduct['meta'] ?? '');
+    if ($featuredProductMeta === '') {
+        $featuredProductMeta = (string) ($featuredProduct['description'] ?? '');
+    }
+    $featuredProductPriceText = (string) ($featuredProduct['price_text'] ?? $featuredProduct['priceText'] ?? $featuredProduct['price'] ?? '');
+    if ($featuredProductPriceText === '') {
+        $fallbackPrice = $featuredProduct['price_value'] ?? $featuredProduct['priceValue'] ?? '';
+        if ($fallbackPrice !== '') {
+            $featuredProductPriceText = (string) $fallbackPrice;
+        }
+    }
+    $featuredProductImage = (string) ($featuredProduct['image'] ?? $featuredProductImage);
+
+    $featuredCities = $featuredProduct['cities'] ?? ['all'];
+    if (is_string($featuredCities)) {
+        $featuredCities = array_filter(array_map('trim', explode(',', $featuredCities)));
+    }
+    if (empty($featuredCities)) {
+        $featuredCities = ['all'];
+    }
+    $featuredCityLabel = (string) ($featuredProduct['city_label'] ?? $featuredProduct['cityLabel'] ?? '');
+    if ($featuredCityLabel === '') {
+        if (in_array('all', $featuredCities, true)) {
+            $featuredCityLabel = (string) ($cityMap['all']['label'] ?? 'Всі міста');
+        } else {
+            $labels = [];
+            foreach ($featuredCities as $cityKey) {
+                $labels[] = $cityMap[$cityKey]['label'] ?? $cityKey;
+            }
+            $featuredCityLabel = implode(', ', $labels);
+        }
+    }
+}
+
+$heroTitle = $featuredProductName !== '' ? $featuredProductName : 'UMI Signature Set';
+$heroMeta = $featuredProductMeta !== '' ? $featuredProductMeta : '24 шт • Лосось / тунець / вугор • Фірмовий соус';
+$heroPriceText = $featuredProductPriceText !== '' ? $featuredProductPriceText : '649 ₴';
+$heroImage = $featuredProductImage !== '' ? $featuredProductImage : 'assets/sushi-signature.svg';
+$heroAvailability = $featuredCityLabel !== '' ? $featuredCityLabel : ($cityMap['all']['label'] ?? 'Всі міста');
 
 $categoriesForJs = [];
 foreach ($categories as $category) {
@@ -249,20 +326,26 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     </div>
                 </div>
                 <div class="col-lg-5 ms-auto">
+                                        <?php
+                    $heroProductIdAttr = $featuredProductId !== '' ? ' data-product="' . Html::encode($featuredProductId) . '"' : '';
+                    $heroDisabledAttr = $featuredProductId !== '' ? '' : ' disabled';
+                    ?>
                     <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
                         <div class="d-flex align-items-center mb-3">
-                            <div class="hero-badge me-3">Шеф рекомендує</div>
-                            <span class="text-muted small">Доступно у: Київ, Львів</span>
+                            <div class="hero-badge me-3">??? ??????????</div>
+                            <?php if ($heroAvailability !== ''): ?>
+                                <span class="text-muted small">???????? ?: <?= Html::encode($heroAvailability) ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="d-flex align-items-center">
-                            <img src="assets/sushi-signature.svg" class="rounded-3 me-3 hero-img" alt="Sushi set">
+                            <img src="<?= Html::encode($heroImage) ?>" class="rounded-3 me-3 hero-img" alt="<?= Html::encode($heroTitle) ?>">
                             <div>
-                                <h4 class="fw-semibold mb-1">UMI Signature Set</h4>
-                                <p class="text-muted small mb-2">24 шт • Лосось / тунець / вугор • Фірмовий соус</p>
+                                <h4 class="fw-semibold mb-1"><?= Html::encode($heroTitle) ?></h4>
+                                <p class="text-muted small mb-2"><?= Html::encode($heroMeta) ?></p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="fs-5 fw-bold">649 ₴</span>
-                                    <button class="btn btn-sm btn-dark view-details" data-product="signature-set">Детальніше</button>
-                                    <button class="btn btn-sm btn-outline-dark add-to-cart" data-product="signature-set">До кошика</button>
+                                    <span class="fs-5 fw-bold"><?= Html::encode($heroPriceText) ?></span>
+                                    <button class="btn btn-sm btn-dark view-details"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>??????????</button>
+                                    <button class="btn btn-sm btn-outline-dark add-to-cart"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>?? ??????</button>
                                 </div>
                             </div>
                         </div>
