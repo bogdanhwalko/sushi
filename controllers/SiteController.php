@@ -32,6 +32,12 @@ class SiteController extends Controller
             ['slug' => 'sets', 'name' => 'Sets'],
             ['slug' => 'veggie', 'name' => 'Veggie'],
             ['slug' => 'test', 'name' => 'Test'],
+            ['slug' => 'test2', 'name' => 'Test2'],
+            ['slug' => 'test3', 'name' => 'Test3'],
+            ['slug' => 'test4', 'name' => 'Test4'],
+//            ['slug' => 'test5', 'name' => 'Test5'],
+//            ['slug' => 'test6', 'name' => 'Test6'],
+//            ['slug' => 'test7', 'name' => 'Test7'],
         ];
 
         $products = [

@@ -280,8 +280,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <h2 class="fw-bold">Роли та сети</h2>
                     <p class="text-muted mb-0">Фільтруємо доступність за містом: <span id="cityLabel" class="fw-semibold"><?= Html::encode($defaultCityLabel) ?></span></p>
                 </div>
-                <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
-                    <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
+                                <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center menu-filters">
+                    <div class="category-nav" aria-label="Category navigation">
+                        <button class="category-nav-btn category-prev" type="button" aria-label="Previous categories">
+                            &#8249;
+                        </button>
+                        <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
                         <?php if (!empty($categories)): ?>
                             <?php foreach ($categories as $index => $category): ?>
                                 <?php
@@ -294,6 +298,10 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                 </button>
                             <?php endforeach; ?>
                         <?php endif; ?>
+                        </div>
+                        <button class="category-nav-btn category-next" type="button" aria-label="Next categories">
+                            &#8250;
+                        </button>
                     </div>
                 </div>
             </div>

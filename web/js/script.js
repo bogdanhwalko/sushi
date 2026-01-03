@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const addToCartBtn = document.getElementById('addToCartBtn');
   const cartFeedback = document.getElementById('cartFeedback');
   const categoryFilters = document.getElementById('categoryFilters');
+  const categoryPrevBtn = document.querySelector('.category-prev');
+  const categoryNextBtn = document.querySelector('.category-next');
   const cartItemsContainer = document.getElementById('cartItems');
   const cartTotalEl = document.getElementById('cartTotal');
   const clearCartBtn = document.getElementById('clearCartBtn');
@@ -751,9 +753,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const initCategoryNav = () => {
+    if (!categoryFilters || !categoryPrevBtn || !categoryNextBtn) return;
+
+    const getScrollStep = () => Math.max(160, Math.round(categoryFilters.clientWidth * 0.6));
+
+    const updateNavState = () => {
+      const maxScroll = categoryFilters.scrollWidth - categoryFilters.clientWidth;
+      const current = Math.round(categoryFilters.scrollLeft);
+      categoryPrevBtn.disabled = current <= 0;
+      categoryNextBtn.disabled = current >= maxScroll - 1;
+    };
+
+    categoryPrevBtn.addEventListener('click', () => {
+      categoryFilters.scrollBy({ left: -getScrollStep(), behavior: 'smooth' });
+    });
+
+    categoryNextBtn.addEventListener('click', () => {
+      categoryFilters.scrollBy({ left: getScrollStep(), behavior: 'smooth' });
+    });
+
+    categoryFilters.addEventListener('scroll', () => {
+      window.requestAnimationFrame(updateNavState);
+    });
+    window.addEventListener('resize', updateNavState);
+    updateNavState();
+  };
+
   const storedCity = getStoredCity();
   const initialCity = storedCity && cityMap[storedCity] ? storedCity : (citySelector?.value || 'all');
   renderCategoryFilters();
+  initCategoryNav();
   setCity(initialCity, !!storedCity);
   if (!storedCity) {
     showCityWelcomeModal();
