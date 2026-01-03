@@ -636,7 +636,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <h3 class="fw-bold mb-2">Замовляйте в один клік</h3>
                         <p class="text-muted mb-4">Обирайте місто, рол або сет — ми покажемо актуальну наявність і доставимо без запізнень.</p>
                         <div class="d-flex flex-wrap gap-3">
-                            <button class="btn btn-dark px-4">Відкрити меню</button>
+                            <a class="btn btn-dark px-4" href="#menu">Відкрити меню</a>
                             <button class="btn btn-outline-dark px-4" type="button" id="consultBtn">Консультація</button>
                         </div>
                     </div>
