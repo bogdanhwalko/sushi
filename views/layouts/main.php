@@ -6,9 +6,111 @@
 use app\assets\AppAsset;
 use app\widgets\Alert;
 use yii\bootstrap5\Breadcrumbs;
-use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
+use yii\bootstrap5\Html;
+use yii\helpers\Json;
+use yii\web\View;
+
+
+$categories = $this->params['categories'] ?? [];
+
+$products = $this->params['products'] ?? [];
+
+$cityMap = $this->params['cityMap'] ?? [];
+if (empty($cityMap)) {
+    $cityMap = [
+        'all' => ['label' => '??? ?????', 'address' => '????, ?????, ?????'],
+        'kyiv' => ['label' => '????', 'address' => '????, ???. ??????????, 90'],
+        'lviv' => ['label' => '?????', 'address' => '?????, ???. ??????????????, 65'],
+        'odesa' => ['label' => '?????', 'address' => '?????, ??????????? ???????, 15'],
+    ];
+}
+$defaultCity = $this->params['defaultCity'] ?? 'kyiv';
+if (!isset($cityMap[$defaultCity])) {
+    $defaultCity = 'all';
+    if (!empty($cityMap)) {
+        $keys = array_keys($cityMap);
+        $defaultCity = (string) $keys[0];
+    }
+}
+$defaultCityLabel = $cityMap[$defaultCity]['label'] ?? '';
+$defaultCityAddress = $cityMap[$defaultCity]['address'] ?? '';
+
+$productsForJs = [];
+foreach ($products as $product) {
+    if (!is_array($product)) {
+        continue;
+    }
+    $id = $product['id'] ?? null;
+    if ($id === null || $id === '') {
+        continue;
+    }
+    $cities = $product['cities'] ?? ['all'];
+    if (is_string($cities)) {
+        $cities = array_filter(array_map('trim', explode(',', $cities)));
+    }
+    if (empty($cities)) {
+        $cities = ['all'];
+    }
+    $priceValueRaw = $product['price_value'] ?? $product['priceValue'] ?? $product['price'] ?? 0;
+    if (is_numeric($priceValueRaw)) {
+        $priceValue = (float) $priceValueRaw;
+    } else {
+        $priceValue = (float) preg_replace('/[^\d.]/', '', (string) $priceValueRaw);
+    }
+    $priceText = $product['price_text'] ?? $product['priceText'] ?? $product['price'] ?? '';
+    $productsForJs[(string) $id] = [
+        'name' => (string) ($product['name'] ?? ''),
+        'price' => (string) $priceText,
+        'priceValue' => $priceValue,
+        'description' => (string) ($product['description'] ?? ''),
+        'weight' => (string) ($product['weight'] ?? ''),
+        'pieces' => (string) ($product['pieces'] ?? ''),
+        'cities' => $cities,
+        'image' => (string) ($product['image'] ?? ''),
+    ];
+}
+if (!empty($productsForJs)) {
+    $this->registerJs('window.productData = ' . Json::encode($productsForJs) . ';', View::POS_HEAD);
+}
+
+$categoriesForJs = [];
+foreach ($categories as $category) {
+    if (is_array($category)) {
+        $slug = $category['slug'] ?? '';
+        $name = $category['name'] ?? $slug;
+    } else {
+        $slug = (string) $category;
+        $name = $slug;
+    }
+    if ($slug === '') {
+        continue;
+    }
+    $categoriesForJs[] = [
+        'slug' => (string) $slug,
+        'name' => (string) $name,
+    ];
+}
+if (!empty($categoriesForJs)) {
+    $this->registerJs('window.categoryData = ' . Json::encode($categoriesForJs) . ';', View::POS_HEAD);
+}
+
+$cityMapForJs = [];
+foreach ($cityMap as $cityKey => $city) {
+    if (!is_array($city)) {
+        continue;
+    }
+    $label = $city['label'] ?? $cityKey;
+    $address = $city['address'] ?? '';
+    $cityMapForJs[(string) $cityKey] = [
+        'label' => (string) $label,
+        'address' => (string) $address,
+    ];
+}
+if (!empty($cityMapForJs)) {
+    $this->registerJs('window.cityMap = ' . Json::encode($cityMapForJs) . ';', View::POS_HEAD);
+}
 
 AppAsset::register($this);
 
@@ -70,11 +172,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <a class="nav-link fw-semibold px-2" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2" href="#contact">Контакти</a>
                 <select id="citySelector" class="form-select form-select-sm shadow-none border-0 city-select">
-                    <option value="all">Всі міста</option>
-                    <option value="kyiv" selected>Київ</option>
-                    <option value="lviv">Львів</option>
-                    <option value="odesa">Одеса</option>
-                </select>
+                        <?php foreach ($cityMap as $cityKey => $city): ?>
+                            <?php if (!is_array($city)) { continue; } ?>
+                            <?php $label = $city['label'] ?? $cityKey; ?>
+                            <option value="<?= Html::encode($cityKey) ?>"<?= $cityKey === $defaultCity ? ' selected' : '' ?>><?= Html::encode($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 <button class="btn btn-outline-light position-relative d-flex align-items-center gap-2 cart-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer">
                     <span class="icon-cart" aria-hidden="true"></span>
                     <span class="d-none d-xl-inline">Кошик</span>
@@ -96,10 +199,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <div class="border-top pt-3">
                     <div class="city-select-label">Місто</div>
                     <select id="sideCitySelector" class="form-select form-select-sm side-city-select">
-                        <option value="all">Всі міста</option>
-                        <option value="kyiv" selected>Київ</option>
-                        <option value="lviv">Львів</option>
-                        <option value="odesa">Одеса</option>
+                        <?php foreach ($cityMap as $cityKey => $city): ?>
+                            <?php if (!is_array($city)) { continue; } ?>
+                            <?php $label = $city['label'] ?? $cityKey; ?>
+                            <option value="<?= Html::encode($cityKey) ?>"<?= $cityKey === $defaultCity ? ' selected' : '' ?>><?= Html::encode($label) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="border-top pt-3 text-white-50 small">
@@ -174,15 +278,85 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <div>
                     <p class="eyebrow text-muted mb-1">Меню</p>
                     <h2 class="fw-bold">Роли та сети</h2>
-                    <p class="text-muted mb-0">Фільтруємо доступність за містом: <span id="cityLabel" class="fw-semibold">Київ</span></p>
+                    <p class="text-muted mb-0">Фільтруємо доступність за містом: <span id="cityLabel" class="fw-semibold"><?= Html::encode($defaultCityLabel) ?></span></p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
-                    <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями"></div>
-                    <span class="badge bg-dark-soft">Чисті інгредієнти</span>
+                    <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
+                        <?php if (!empty($categories)): ?>
+                            <?php foreach ($categories as $index => $category): ?>
+                                <?php
+                                $slug = is_array($category) ? ($category['slug'] ?? '') : (string) $category;
+                                $name = is_array($category) ? ($category['name'] ?? $slug) : (string) $category;
+                                $isActive = $index === 0;
+                                ?>
+                                <button class="btn btn-outline-dark btn-sm<?= $isActive ? ' active' : '' ?>" type="button" data-category="<?= Html::encode($slug) ?>">
+                                    <?= Html::encode($name) ?>
+                                </button>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
             <div class="row g-4" id="productGrid">
+                <?php foreach ($products as $product): ?>
+                    <?php
+                    if (!is_array($product)) {
+                        continue;
+                    }
+                    $id = $product['id'] ?? '';
+                    if ($id === '') {
+                        continue;
+                    }
+                    $name = $product['name'] ?? '';
+                    $meta = $product['meta'] ?? '';
+                    $description = $product['description'] ?? '';
+                    $image = $product['image'] ?? '';
+                    $price = $product['price'] ?? '';
+                    $priceText = $product['price_text'] ?? $product['priceText'] ?? $price;
+                    $category = $product['category'] ?? 'all';
+                    $cities = $product['cities'] ?? ['all'];
+                    if (is_string($cities)) {
+                        $cities = array_filter(array_map('trim', explode(',', $cities)));
+                    }
+                    if (empty($cities)) {
+                        $cities = ['all'];
+                    }
+                    $citiesAttr = implode(',', $cities);
+                    $cityLabel = $product['city_label'] ?? $product['cityLabel'] ?? implode(' / ', $cities);
+                    ?>
+                    <div class="col-md-6 col-lg-4 product-card" data-cities="<?= Html::encode($citiesAttr) ?>" data-category="<?= Html::encode($category) ?>">
+                        <div class="card h-100 shadow-sm border-0 rounded-4">
+                            <img src="<?= Html::encode($image) ?>" class="card-img-top" alt="<?= Html::encode($name) ?>">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title fw-bold mb-1"><?= Html::encode($name) ?></h5>
+                                        <?php if ($meta !== ''): ?>
+                                            <p class="text-muted small mb-0"><?= Html::encode($meta) ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php if ($priceText !== ''): ?>
+                                        <span class="badge bg-primary-soft text-primary"><?= Html::encode($priceText) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if ($description !== ''): ?>
+                                    <p class="card-text text-muted small flex-grow-1"><?= Html::encode($description) ?></p>
+                                <?php endif; ?>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-outline-dark btn-sm view-details" data-product="<?= Html::encode($id) ?>">Детальніше</button>
+                                        <button class="btn btn-dark btn-sm add-to-cart" data-product="<?= Html::encode($id) ?>">До кошика</button>
+                                    </div>
+                                    <span class="city-tag"><?= Html::encode($cityLabel) ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php if (empty($products)): ?>
+
                 <div class="col-md-6 col-lg-4 product-card" data-cities="kyiv,lviv" data-category="rolls">
                     <div class="card h-100 shadow-sm border-0 rounded-4">
                         <img src="assets/sushi-philadelphia.svg" class="card-img-top" alt="Філадельфія">
@@ -320,6 +494,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </section>
 
@@ -392,7 +567,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                 </div>
                                 <div>
                                     <div class="text-muted small">Адреса</div>
-                                    <div class="fw-semibold" id="addressLabel">Київ, вул. Антоновича, 90</div>
+                                    <div class="fw-semibold" id="addressLabel"><?= Html::encode($defaultCityAddress) ?></div>
                                 </div>
                             </div>
                         </div>
@@ -507,12 +682,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <div class="mb-3">
                             <label for="cityWelcomeSelect" class="form-label">Місто доставки</label>
                             <select id="cityWelcomeSelect" class="form-select" required>
-                                <option value="" disabled selected>Оберіть місто</option>
-                                <option value="kyiv">Київ</option>
-                                <option value="lviv">Львів</option>
-                                <option value="odesa">Одеса</option>
-                                <option value="all">Всі міста</option>
-                            </select>
+                        <option value="" disabled selected>???????? ?????</option>
+                        <?php foreach ($cityMap as $cityKey => $city): ?>
+                            <?php if (!is_array($city)) { continue; } ?>
+                            <?php $label = $city['label'] ?? $cityKey; ?>
+                            <option value="<?= Html::encode($cityKey) ?>"><?= Html::encode($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                             <div class="invalid-feedback">Оберіть місто для продовження.</div>
                         </div>
                         <button class="btn btn-dark w-100" type="submit" id="cityWelcomeBtn">Продовжити</button>

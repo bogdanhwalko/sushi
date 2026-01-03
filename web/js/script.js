@@ -1,82 +1,6 @@
-const productData = {
-  'signature-set': {
-    name: 'UMI Signature Set',
-    price: '649 ₴',
-    priceValue: 649,
-    description: '24 шт. Лосось, тунець, вугор, сніжний краб та фірмовий цитрусовий соус.',
-    weight: '820 г',
-    pieces: '24 шт',
-    cities: ['kyiv', 'lviv'],
-    image: 'assets/sushi-signature.svg'
-  },
-  philadelphia: {
-    name: 'Філадельфія',
-    price: '389 ₴',
-    priceValue: 389,
-    description: 'Класичний рол з лососем, вершковим сиром та кунжутом.',
-    weight: '260 г',
-    pieces: '8 шт',
-    cities: ['kyiv', 'lviv'],
-    image: 'assets/sushi-philadelphia.svg'
-  },
-  dragon: {
-    name: 'Дракон',
-    price: '429 ₴',
-    priceValue: 429,
-    description: 'Вугор, авокадо, соус теріякі та хрусткий кунжут у карамелізованій глазурі.',
-    weight: '280 г',
-    pieces: '8 шт',
-    cities: ['kyiv', 'odesa'],
-    image: 'assets/sushi-dragon.svg'
-  },
-  veggie: {
-    name: 'Веггі сет',
-    price: '329 ₴',
-    priceValue: 329,
-    description: 'Авокадо, тофу, огірок та горіховий соус для легкого зеленого профілю.',
-    weight: '540 г',
-    pieces: '16 шт',
-    cities: ['lviv', 'odesa'],
-    image: 'assets/sushi-veggie.svg'
-  },
-  haru: {
-    name: 'Сет Хару',
-    price: '749 ₴',
-    priceValue: 749,
-    description: 'Лосось, сніжний краб, сир, 32 шт для компаній та свят.',
-    weight: '980 г',
-    pieces: '32 шт',
-    cities: ['kyiv'],
-    image: 'assets/sushi-haru.svg'
-  },
-  spring: {
-    name: 'Спрінг роли',
-    price: '279 ₴',
-    priceValue: 279,
-    description: 'Креветка, манго, чилі та соус спайсі-майо для балансу свіжості й пікантності.',
-    weight: '190 г',
-    pieces: '6 шт',
-    cities: ['all'],
-    image: 'assets/sushi-spring.svg'
-  },
-  'sake-maki': {
-    name: 'Саке маві',
-    price: '309 ₴',
-    priceValue: 309,
-    description: 'Лосось, огірок, такуан та легкий цитрусовий акцент з юдзу.',
-    weight: '240 г',
-    pieces: '8 шт',
-    cities: ['lviv'],
-    image: 'assets/sushi-sake.svg'
-  }
-};
+const productData = window.productData && typeof window.productData === 'object' ? window.productData : {};
 
-const cityMap = {
-  all: { label: 'Всі міста', address: 'Київ, Львів, Одеса' },
-  kyiv: { label: 'Київ', address: 'Київ, вул. Антоновича, 90' },
-  lviv: { label: 'Львів', address: 'Львів, вул. Кульпарківська, 65' },
-  odesa: { label: 'Одеса', address: 'Одеса, Французький бульвар, 15' }
-};
+const cityMap = window.cityMap && typeof window.cityMap === 'object' ? window.cityMap : {};
 
 document.addEventListener('DOMContentLoaded', () => {
   const modalElement = document.getElementById('productModal');
@@ -458,18 +382,26 @@ document.addEventListener('DOMContentLoaded', () => {
     activeProductId = productId;
 
     const city = citySelector?.value || 'all';
-    const available = product.cities.includes('all') || product.cities.includes(city);
+    const cities = Array.isArray(product.cities) && product.cities.length ? product.cities : ['all'];
+    const available = cities.includes('all') || cities.includes(city);
     const availabilityText = available
-      ? `Доступно у: ${product.cities.includes('all') ? 'всі міста' : product.cities.map((c) => cityMap[c]?.label).join(', ')}`
+      ? `Доступно у: ${cities.includes('all') ? 'всі міста' : cities.map((c) => cityMap[c]?.label).join(', ')}`
       : 'Немає у вибраному місті, спробуйте інший філіал.';
 
-    modalTitle.textContent = product.name;
-    modalDescription.textContent = product.description;
-    modalPrice.textContent = product.price;
-    modalWeight.textContent = product.weight;
-    modalPieces.textContent = product.pieces;
-    modalImage.setAttribute('src', product.image);
-    modalImage.setAttribute('alt', product.name);
+    modalTitle.textContent = product.name || '';
+    modalDescription.textContent = product.description || '';
+    const priceText = product.price || (product.priceValue ? String(product.priceValue) : '');
+    modalPrice.textContent = priceText;
+    if (modalWeight) {
+      modalWeight.textContent = product.weight || '';
+      modalWeight.style.display = product.weight ? '' : 'none';
+    }
+    if (modalPieces) {
+      modalPieces.textContent = product.pieces || '';
+      modalPieces.style.display = product.pieces ? '' : 'none';
+    }
+    modalImage.setAttribute('src', product.image || '');
+    modalImage.setAttribute('alt', product.name || '');
     modalAvailability.textContent = availabilityText;
     if (cartFeedback) cartFeedback.style.display = 'none';
 
@@ -507,18 +439,24 @@ document.addEventListener('DOMContentLoaded', () => {
     items.forEach(([id, qty]) => {
       const product = productData[id];
       if (!product) return;
-      const lineTotal = (product.priceValue || 0) * qty;
+      const priceValue = Number(product.priceValue) || 0;
+      const lineTotal = priceValue * qty;
+      const priceLabel = product.price || (priceValue ? String(priceValue) : '');
+      const metaParts = [];
+      if (priceLabel) metaParts.push(priceLabel);
+      if (product.weight) metaParts.push(product.weight);
+      const metaLine = metaParts.join(' x ');
       const line = document.createElement('div');
       line.className = 'cart-line d-flex gap-3 align-items-center';
       line.dataset.product = id;
       line.innerHTML = `
-        <img class="cart-thumb" src="${product.image}" alt="${product.name}">
+        <img class="cart-thumb" src="${product.image || ''}" alt="${product.name || ''}">
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between align-items-start gap-2">
-            <h6 class="fw-semibold mb-1">${product.name}</h6>
+            <h6 class="fw-semibold mb-1">${product.name || ''}</h6>
             <div class="price">${lineTotal.toFixed(0)} ₴</div>
           </div>
-          <div class="text-muted small">${product.price} • ${product.weight}</div>
+          <div class="text-muted small">${metaLine}</div>
           <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
             <div class="qty-control" aria-label="Кількість">
               <button class="qty-btn" type="button" data-action="dec" aria-label="Зменшити">-</button>
@@ -751,32 +689,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const renderCategoryFilters = () => {
     if (!categoryFilters) return;
-    const cards = Array.from(document.querySelectorAll('.product-card'));
-    const categorySet = new Set(['all']);
-    cards.forEach((card) => {
-      const cat = card.dataset.category;
-      if (cat) categorySet.add(cat);
-    });
-    categoryFilters.innerHTML = '';
-    categorySet.forEach((cat) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn btn-outline-dark btn-sm';
-      btn.dataset.category = cat;
-      btn.textContent = cat === 'all' ? 'Усе' : cat.charAt(0).toUpperCase() + cat.slice(1);
-      if (cat === currentCategory) btn.classList.add('active');
-      categoryFilters.appendChild(btn);
-    });
 
-    categoryFilters.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-category]');
-      if (!btn) return;
-      currentCategory = btn.dataset.category || 'all';
-      categoryFilters.querySelectorAll('button').forEach((b) => {
-        b.classList.toggle('active', b === btn);
+    const existingButtons = Array.from(categoryFilters.querySelectorAll('button[data-category]'));
+    if (existingButtons.length === 0) {
+      const cards = Array.from(document.querySelectorAll('.product-card'));
+      const categorySet = new Set(['all']);
+      cards.forEach((card) => {
+        const cat = card.dataset.category;
+        if (cat) categorySet.add(cat);
       });
-      filterProducts();
-    });
+
+      const rawCategoryData = window.categoryData;
+      const categoryList = Array.isArray(rawCategoryData) ? rawCategoryData : null;
+
+      categoryFilters.innerHTML = '';
+      if (categoryList && categoryList.length) {
+        categoryList.forEach((item, index) => {
+          const slug = item.slug || item.id || item.value || '';
+          if (!slug) return;
+          const label = item.name || item.label || slug;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-outline-dark btn-sm';
+          btn.dataset.category = slug;
+          btn.textContent = label;
+          if (index === 0) btn.classList.add('active');
+          categoryFilters.appendChild(btn);
+        });
+      } else {
+        categorySet.forEach((cat) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-outline-dark btn-sm';
+          btn.dataset.category = cat;
+          btn.textContent = cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1);
+          if (cat === currentCategory) btn.classList.add('active');
+          categoryFilters.appendChild(btn);
+        });
+      }
+    }
+
+    const buttons = Array.from(categoryFilters.querySelectorAll('button[data-category]'));
+    const activeBtn = buttons.find((btn) => btn.classList.contains('active'));
+    const initialBtn = activeBtn || buttons[0];
+    if (initialBtn) {
+      currentCategory = initialBtn.dataset.category || 'all';
+      if (!activeBtn) initialBtn.classList.add('active');
+    }
+
+    if (categoryFilters.dataset.bound !== 'true') {
+      categoryFilters.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-category]');
+        if (!btn) return;
+        currentCategory = btn.dataset.category || 'all';
+        categoryFilters.querySelectorAll('button').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+        });
+        filterProducts();
+      });
+      categoryFilters.dataset.bound = 'true';
+    }
   };
 
   const storedCity = getStoredCity();
