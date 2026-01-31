@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilters = document.getElementById('categoryFilters');
     const categoryPrevBtn = document.querySelector('.category-prev');
     const initCategoryNav = () => {
-        if (!categoryPrevBtn || !categoryNextBtn) return;
+        if (!categoryFilters || !categoryPrevBtn || !categoryNextBtn) return;
 
         const getScrollStep = () => Math.max(160, Math.round(categoryFilters.clientWidth * 0.6));
 
