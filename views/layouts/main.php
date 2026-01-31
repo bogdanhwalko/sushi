@@ -2,49 +2,20 @@
 
 /** @var yii\web\View $this */
 /** @var string $content */
+/** @var array $categories */
+/** @var array $products */
 
 use app\assets\AppAsset;
-use app\widgets\Alert;
-use yii\bootstrap5\Breadcrumbs;
-use yii\bootstrap5\Nav;
-use yii\bootstrap5\NavBar;
 use yii\bootstrap5\Html;
 use yii\helpers\Json;
 use yii\web\View;
 
+$products = $this->params['products'];
+$categories = $this->params['categories'];
+$featuredProduct = $products['0'];
+$cityMap = $this->params['cityMap'];
+$defaultCity = $this->params['defaultCity'] ?? 'all';
 
-$categories = $this->params['categories'] ?? [];
-
-$products = $this->params['products'] ?? [];
-
-$featuredProduct = $this->params['featuredProduct'] ?? null;
-if (!is_array($featuredProduct)) {
-    $featuredProduct = null;
-    foreach ($products as $candidate) {
-        if (is_array($candidate) && !empty($candidate['id'])) {
-            $featuredProduct = $candidate;
-            break;
-        }
-    }
-}
-
-$cityMap = $this->params['cityMap'] ?? [];
-if (empty($cityMap)) {
-    $cityMap = [
-        'all' => ['label' => '??? ?????', 'address' => '????, ?????, ?????'],
-        'kyiv' => ['label' => '????', 'address' => '????, ???. ??????????, 90'],
-        'lviv' => ['label' => '?????', 'address' => '?????, ???. ??????????????, 65'],
-        'odesa' => ['label' => '?????', 'address' => '?????, ??????????? ???????, 15'],
-    ];
-}
-$defaultCity = $this->params['defaultCity'] ?? 'kyiv';
-if (!isset($cityMap[$defaultCity])) {
-    $defaultCity = 'all';
-    if (!empty($cityMap)) {
-        $keys = array_keys($cityMap);
-        $defaultCity = (string) $keys[0];
-    }
-}
 $defaultCityLabel = $cityMap[$defaultCity]['label'] ?? '';
 $defaultCityAddress = $cityMap[$defaultCity]['address'] ?? '';
 
@@ -248,16 +219,20 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <a class="nav-link fw-semibold px-2" href="#menu">Меню</a>
                 <a class="nav-link fw-semibold px-2" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2" href="#contact">Контакти</a>
-                <select id="citySelector" class="form-select form-select-sm shadow-none border-0 city-select">
-                        <?php foreach ($cityMap as $cityKey => $city): ?>
-                            <?php if (!is_array($city)) { continue; } ?>
-                            <?php $label = $city['label'] ?? $cityKey; ?>
-                            <option value="<?= Html::encode($cityKey) ?>"<?= $cityKey === $defaultCity ? ' selected' : '' ?>><?= Html::encode($label) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+
+                <?= Html::dropDownList(
+                'cities_in_menu',
+                    'all',
+                    \app\models\Cities::getCitiesInSelect(),
+                    [
+                        'class' => 'form-select form-select-sm shadow-none border-0 city-select',
+                        'id' => 'citySelector'
+                    ]
+                )?>
+
                 <button class="btn btn-outline-light position-relative d-flex align-items-center gap-2 cart-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer">
                     <span class="icon-cart" aria-hidden="true"></span>
-                    <span class="d-none d-xl-inline">Кошик</span>
+                    <span class="d-none d-xl-inline"><span class="icon-cart" aria-hidden="true"></span></span>
                     <span class="badge bg-accent cart-badge" id="cartCount">0</span>
                 </button>
                 <a class="btn btn-light text-dark fw-semibold px-3" href="#contact">Замовити</a>
@@ -275,13 +250,15 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <a class="text-white text-decoration-none fw-semibold" href="#contact" data-bs-dismiss="offcanvas">Контакти</a>
                 <div class="border-top pt-3">
                     <div class="city-select-label">Місто</div>
-                    <select id="sideCitySelector" class="form-select form-select-sm side-city-select">
-                        <?php foreach ($cityMap as $cityKey => $city): ?>
-                            <?php if (!is_array($city)) { continue; } ?>
-                            <?php $label = $city['label'] ?? $cityKey; ?>
-                            <option value="<?= Html::encode($cityKey) ?>"<?= $cityKey === $defaultCity ? ' selected' : '' ?>><?= Html::encode($label) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <?= Html::dropDownList(
+                        'cities_in_menu',
+                        'all',
+                        \app\models\Cities::getCitiesInSelect(),
+                        [
+                            'class' => 'form-select form-select-sm side-city-select',
+                            'id' => 'sideCitySelector'
+                        ]
+                    )?>
                 </div>
                 <div class="border-top pt-3 text-white-50 small">
                     <div>Графік: 10:00 — 23:00</div>
@@ -344,8 +321,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                 <p class="text-muted small mb-2"><?= Html::encode($heroMeta) ?></p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fs-5 fw-bold"><?= Html::encode($heroPriceText) ?></span>
-                                    <button class="btn btn-sm btn-dark view-details"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>??????????</button>
-                                    <button class="btn btn-sm btn-outline-dark add-to-cart"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>?? ??????</button>
+                                    <button class="btn btn-sm btn-dark view-details"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>Детальніше</button>
+                                    <button class="btn btn-sm btn-outline-dark add-to-cart"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>До кошика</button>
                                 </div>
                             </div>
                         </div>
@@ -446,146 +423,6 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     </div>
                 <?php endforeach; ?>
 
-                <?php if (empty($products)): ?>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="kyiv,lviv" data-category="rolls">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-philadelphia.svg" class="card-img-top" alt="Філадельфія">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Філадельфія</h5>
-                                    <p class="text-muted small mb-0">8 шт • Лосось • Сир креметта</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">389 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Класика на вершковій ноті, балансована рисом кіме та ніжним лососем.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="philadelphia">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="philadelphia">До кошика</button>
-                                </div>
-                                <span class="city-tag">Київ / Львів</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="kyiv,odesa" data-category="rolls">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-dragon.svg" class="card-img-top" alt="Дракон">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Дракон</h5>
-                                    <p class="text-muted small mb-0">8 шт • Вугор • Авокадо • Теріякі</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">429 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Солонувато-солодкий профіль з карамелізованим соусом та хрустким кунжутом.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="dragon">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="dragon">До кошика</button>
-                                </div>
-                                <span class="city-tag">Київ / Одеса</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="lviv,odesa" data-category="veggie">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-veggie.svg" class="card-img-top" alt="Веггі сет">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Веггі сет</h5>
-                                    <p class="text-muted small mb-0">16 шт • Авокадо • Тофу • Огірок</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">329 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Легкий зелений сет з лаймовою нотою та горіховим соусом.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="veggie">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="veggie">До кошика</button>
-                                </div>
-                                <span class="city-tag">Львів / Одеса</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="kyiv" data-category="sets">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-haru.svg" class="card-img-top" alt="Сет Хару">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Сет Хару</h5>
-                                    <p class="text-muted small mb-0">32 шт • Лосось • Сніжний краб • Сир</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">749 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Для компанії: хітові роли у збалансованих пропорціях.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="haru">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="haru">До кошика</button>
-                                </div>
-                                <span class="city-tag">Київ</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="all" data-category="special">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-spring.svg" class="card-img-top" alt="Спрінг роли">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Спрінг роли</h5>
-                                    <p class="text-muted small mb-0">6 шт • Креветка • Манго • Чилі</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">279 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Свіжість та легка пікантність, подаємо зі спайсі-майо.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="spring">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="spring">До кошика</button>
-                                </div>
-                                <span class="city-tag">Усі міста</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 product-card" data-cities="lviv" data-category="rolls">
-                    <div class="card h-100 shadow-sm border-0 rounded-4">
-                        <img src="assets/sushi-sake.svg" class="card-img-top" alt="Саке маві">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title fw-bold mb-1">Саке маві</h5>
-                                    <p class="text-muted small mb-0">8 шт • Лосось • Огірок • Такуан</p>
-                                </div>
-                                <span class="badge bg-primary-soft text-primary">309 ₴</span>
-                            </div>
-                            <p class="card-text text-muted small flex-grow-1">Ясний, чистий смак з легким цитрусом та маринованим дайконом.</p>
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button class="btn btn-outline-dark btn-sm view-details" data-product="sake-maki">Детальніше</button>
-                                    <button class="btn btn-dark btn-sm add-to-cart" data-product="sake-maki">До кошика</button>
-                                </div>
-                                <span class="city-tag">Львів</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
             </div>
         </section>
 
