@@ -84,11 +84,14 @@ class Category extends ActiveRecord
             ->orderBy(['sort_order' => SORT_ASC, 'id' => SORT_ASC]);
     }
 
-    /**
-     * Скоуп: лише активні категорії.
-     */
-    public static function findActive()
+
+    public static function getActive()
     {
-        return static::find()->andWhere(['status' => 1]);
+        return static::find()
+            ->select(['slug', 'name'])
+            ->andWhere(['status' => 1])
+            ->asArray()
+            ->orderBy(['sort_order' => SORT_ASC])
+            ->all();
     }
 }

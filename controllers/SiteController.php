@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Category;
 use Yii;
 use yii\web\Controller;
 
@@ -26,21 +27,11 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $categories = [
-            ['slug' => 'all', 'name' => 'Все меню'],
-            ['slug' => 'fila', 'name' => 'Філадельфія'],
-            ['slug' => 'dragon', 'name' => 'Дракони'],
-            ['slug' => 'maki', 'name' => 'Макі'],
-            ['slug' => 'sets', 'name' => 'Sets'],
-            ['slug' => 'veggie', 'name' => 'Veggie'],
-
-
-            ['slug' => 'test3', 'name' => 'Test3'],
-            ['slug' => 'test4', 'name' => 'Test4'],
-//            ['slug' => 'test5', 'name' => 'Test5'],
-//            ['slug' => 'test6', 'name' => 'Test6'],
-//            ['slug' => 'test7', 'name' => 'Test7'],
-        ];
+        $categories = Category::find()
+            ->select(['slug', 'name'])
+            ->where(['status' => 1])
+            ->asArray()
+            ->all();
 
         $products = [
             [
@@ -48,7 +39,7 @@ class SiteController extends Controller
                 'name' => 'Філадельфія з тунцем Maxi(вдвічі більше риби)',
                 'meta' => '8 pcs - salmon - cream cheese',
                 'description' => 'Склад: рис, норі, сир філадельфія, огірок, авокадо, тунець, унагі.',
-                'price_value' => 309,
+                'price' => 309,
                 'price_text' => '309 UAH',
                 'weight' => 'Вага: 350 г',
                 'pieces' => '8 pcs',
@@ -62,7 +53,7 @@ class SiteController extends Controller
                 'name' => 'Філадельфія з вугрем MAXi (вдвічі більше риби)',
                 'meta' => '8 pcs - salmon - cream cheese',
                 'description' => 'Склад: рис, норі, сир філадельфія, огірок, авокадо, вугор, унагі, кунжут білий, кунжут чорний',
-                'price_value' => 366,
+                'price' => 366,
                 'price_text' => '366 UAH',
                 'weight' => 'Вага: 355 г',
                 'pieces' => '8 pcs',
@@ -76,7 +67,7 @@ class SiteController extends Controller
                 'name' => 'Червоний дракон',
                 'meta' => '8 pcs - eel - avocado',
                 'description' => 'Склад: норі, рис, огірок, тигрова креветка, сир філа, авокадо, тунець, унагі соус, ікра тобіко',
-                'price_value' => 184,
+                'price' => 184,
                 'price_text' => '184 UAH',
                 'weight' => 'Вага: 270 г ',
                 'pieces' => '8 pcs',
@@ -90,7 +81,7 @@ class SiteController extends Controller
                 'name' => 'Дракон зелений',
                 'meta' => '32 pcs - salmon - tuna',
                 'description' => 'Склад: норі, рис, сир філа, вугор, ікра тобіко, авокадо, унагі соус, кунжут, огірок',
-                'price_value' => 177,
+                'price' => 177,
                 'price_text' => '177 UAH',
                 'weight' => 'Вага: 275 г',
                 'pieces' => '32 pcs',
@@ -104,7 +95,7 @@ class SiteController extends Controller
                 'name' => 'Макі з копченим лососем',
                 'meta' => 'test - test2 - test3',
                 'description' => 'Склад: норі, рис, х/к',
-                'price_value' => 74,
+                'price' => 74,
                 'price_text' => '74 UAH',
                 'weight' => 'Вага: 120 г',
                 'pieces' => '10 test',
@@ -118,7 +109,7 @@ class SiteController extends Controller
                 'name' => 'Макі Філа',
                 'meta' => 'test - test2 - test3',
                 'description' => 'Склад: норі, рис, сир філа',
-                'price_value' => 54,
+                'price' => 54,
                 'price_text' => '54 UAH',
                 'weight' => 'Вага: 115 г',
                 'pieces' => '10 test',

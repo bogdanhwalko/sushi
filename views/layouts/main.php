@@ -9,9 +9,15 @@ use app\assets\AppAsset;
 use yii\bootstrap5\Html;
 use yii\helpers\Json;
 use yii\web\View;
+use app\models\Category;
+
+
+$categories = Category::getActive();
+$this->registerJs('window.categoryData = ' . Json::encode($categories) . ';', View::POS_HEAD);
+
 
 $products = $this->params['products'];
-$categories = $this->params['categories'];
+
 $featuredProduct = $products['0'];
 $cityMap = $this->params['cityMap'];
 $defaultCity = $this->params['defaultCity'] ?? 'all';
@@ -122,27 +128,6 @@ $heroMeta = $featuredProductMeta !== '' ? $featuredProductMeta : '24 шт • Л
 $heroPriceText = $featuredProductPriceText !== '' ? $featuredProductPriceText : '649 ₴';
 $heroImage = $featuredProductImage !== '' ? $featuredProductImage : 'assets/sushi-signature.svg';
 $heroAvailability = $featuredCityLabel !== '' ? $featuredCityLabel : ($cityMap['all']['label'] ?? 'Всі міста');
-
-$categoriesForJs = [];
-foreach ($categories as $category) {
-    if (is_array($category)) {
-        $slug = $category['slug'] ?? '';
-        $name = $category['name'] ?? $slug;
-    } else {
-        $slug = (string) $category;
-        $name = $slug;
-    }
-    if ($slug === '') {
-        continue;
-    }
-    $categoriesForJs[] = [
-        'slug' => (string) $slug,
-        'name' => (string) $name,
-    ];
-}
-if (!empty($categoriesForJs)) {
-    $this->registerJs('window.categoryData = ' . Json::encode($categoriesForJs) . ';', View::POS_HEAD);
-}
 
 $cityMapForJs = [];
 foreach ($cityMap as $cityKey => $city) {
@@ -338,9 +323,15 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <div>
                     <p class="eyebrow text-muted mb-1">Меню</p>
                     <h2 class="fw-bold">Роли та сети</h2>
-                    <p class="text-muted mb-0">Фільтруємо доступність за містом: <span id="cityLabel" class="fw-semibold"><?= Html::encode($defaultCityLabel) ?></span></p>
+                    <p class="text-muted mb-0">
+                        Фільтруємо доступність за містом:
+                        <span id="cityLabel" class="fw-semibold">
+                            <?= Html::encode($defaultCityLabel) ?>
+                        </span>
+                    </p>
                 </div>
-                                <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center menu-filters">
+
+                <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center menu-filters">
                     <div class="category-nav" aria-label="Category navigation">
                         <button class="category-nav-btn category-prev" type="button" aria-label="Previous categories">
                             &#8249;
