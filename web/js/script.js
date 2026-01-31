@@ -2,6 +2,9 @@ const productData = window.productData && typeof window.productData === 'object'
 
 const cityMap = window.cityMap && typeof window.cityMap === 'object' ? window.cityMap : {};
 
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('productModal');
     const citySelector = document.getElementById('citySelector');
@@ -21,9 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartCountMobileEl = document.getElementById('cartCountMobile');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const cartFeedback = document.getElementById('cartFeedback');
-    const categoryFilters = document.getElementById('categoryFilters');
-    const categoryPrevBtn = document.querySelector('.category-prev');
-    const categoryNextBtn = document.querySelector('.category-next');
+
+
     const cartItemsContainer = document.getElementById('cartItems');
     const cartTotalEl = document.getElementById('cartTotal');
     const clearCartBtn = document.getElementById('clearCartBtn');
@@ -46,6 +48,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const snowToggle = document.getElementById('snowToggle');
     const happyDot = document.getElementById('happyDot');
     const happyStatus = document.getElementById('happyStatus');
+
+
+
+    /* прокрутка категорій */
+
+    const categoryNextBtn = document.querySelector('.category-next');
+    const categoryFilters = document.getElementById('categoryFilters');
+    const categoryPrevBtn = document.querySelector('.category-prev');
+    const initCategoryNav = () => {
+        if (!categoryPrevBtn || !categoryNextBtn) return;
+
+        const getScrollStep = () => Math.max(160, Math.round(categoryFilters.clientWidth * 0.6));
+
+        const updateNavState = () => {
+            const maxScroll = categoryFilters.scrollWidth - categoryFilters.clientWidth;
+            const current = Math.round(categoryFilters.scrollLeft);
+            categoryPrevBtn.disabled = current <= 0;
+            categoryNextBtn.disabled = current >= maxScroll - 1;
+        };
+
+        categoryPrevBtn.addEventListener('click', () => {
+            categoryFilters.scrollBy({left: -getScrollStep(), behavior: 'smooth'});
+        });
+
+        categoryNextBtn.addEventListener('click', () => {
+            categoryFilters.scrollBy({left: getScrollStep(), behavior: 'smooth'});
+        });
+
+        categoryFilters.addEventListener('scroll', () => {
+            window.requestAnimationFrame(updateNavState);
+        });
+        window.addEventListener('resize', updateNavState);
+        updateNavState();
+    };
+
+
+
 
     let activeProductId = null;
     let currentCategory = 'all';
@@ -753,9 +792,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+
+
     const storedCity = getStoredCity();
     const initialCity = storedCity && cityMap[storedCity] ? storedCity : (citySelector?.value || 'all');
     renderCategoryFilters();
+
+    initCategoryNav();   //прокрутка категорій
+
     setCity(initialCity, !!storedCity);
     if (!storedCity) {
         showCityWelcomeModal();

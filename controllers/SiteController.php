@@ -27,12 +27,6 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $categories = Category::find()
-            ->select(['slug', 'name'])
-            ->where(['status' => 1])
-            ->asArray()
-            ->all();
-
         $products = [
             [
                 'id' => 'philadelphia',
@@ -127,7 +121,6 @@ class SiteController extends Controller
             'kyiv30' => ['label' => 'Київ', 'address' => 'Київ, Київська 30'],
         ];
 
-        $this->view->params['categories'] = $categories;
         $this->view->params['products'] = $products;
         $this->view->params['cityMap'] = $cityMap;
         $this->view->params['defaultCity'] = 'kyiv';
