@@ -9,125 +9,24 @@ use app\assets\AppAsset;
 use yii\bootstrap5\Html;
 use yii\helpers\Json;
 use yii\web\View;
-use app\models\Category;
+use app\models\Categorys;
 
 
-$categories = Category::getActive();
+$categories = Categorys::getActive();
 $this->registerJs('window.categoryData = ' . Json::encode($categories) . ';', View::POS_HEAD);
 
 
-$products = $this->params['products'];
-
-$featuredProduct = $products['0'];
 $cityMap = $this->params['cityMap'];
 $defaultCity = $this->params['defaultCity'] ?? 'all';
 
 $defaultCityLabel = $cityMap[$defaultCity]['label'] ?? '';
 $defaultCityAddress = $cityMap[$defaultCity]['address'] ?? '';
 
-$normalizeProductForJs = static function ($product) {
-    if (!is_array($product)) {
-        return null;
-    }
-    $id = $product['id'] ?? null;
-    if ($id === null || $id === '') {
-        return null;
-    }
-    $cities = $product['cities'] ?? ['all'];
-    if (is_string($cities)) {
-        $cities = array_filter(array_map('trim', explode(',', $cities)));
-    }
-    if (empty($cities)) {
-        $cities = ['all'];
-    }
-    $priceValueRaw = $product['price_value'] ?? $product['priceValue'] ?? $product['price'] ?? 0;
-    if (is_numeric($priceValueRaw)) {
-        $priceValue = (float) $priceValueRaw;
-    } else {
-        $priceValue = (float) preg_replace('/[^\d.]/', '', (string) $priceValueRaw);
-    }
-    $priceText = $product['price_text'] ?? $product['priceText'] ?? $product['price'] ?? '';
-
-    return [
-        'id' => (string) $id,
-        'data' => [
-            'name' => (string) ($product['name'] ?? ''),
-            'price' => (string) $priceText,
-            'priceValue' => $priceValue,
-            'description' => (string) ($product['description'] ?? ''),
-            'weight' => (string) ($product['weight'] ?? ''),
-            'pieces' => (string) ($product['pieces'] ?? ''),
-            'cities' => $cities,
-            'image' => (string) ($product['image'] ?? ''),
-        ],
-    ];
-};
-
-$productsForJs = [];
-foreach ($products as $product) {
-    $normalized = $normalizeProductForJs($product);
-    if (!$normalized) {
-        continue;
-    }
-    $productsForJs[$normalized['id']] = $normalized['data'];
-}
-$featuredNormalized = $normalizeProductForJs($featuredProduct);
-if ($featuredNormalized && !isset($productsForJs[$featuredNormalized['id']])) {
-    $productsForJs[$featuredNormalized['id']] = $featuredNormalized['data'];
-}
-if (!empty($productsForJs)) {
-    $this->registerJs('window.productData = ' . Json::encode($productsForJs) . ';', View::POS_HEAD);
-}
-
-$featuredProductId = '';
-$featuredProductName = '';
-$featuredProductMeta = '';
-$featuredProductPriceText = '';
-$featuredProductImage = 'assets/sushi-signature.svg';
-$featuredCityLabel = '';
-
-if (is_array($featuredProduct)) {
-    $featuredProductId = (string) ($featuredProduct['id'] ?? '');
-    $featuredProductName = (string) ($featuredProduct['name'] ?? '');
-    $featuredProductMeta = (string) ($featuredProduct['meta'] ?? '');
-    if ($featuredProductMeta === '') {
-        $featuredProductMeta = (string) ($featuredProduct['description'] ?? '');
-    }
-    $featuredProductPriceText = (string) ($featuredProduct['price_text'] ?? $featuredProduct['priceText'] ?? $featuredProduct['price'] ?? '');
-    if ($featuredProductPriceText === '') {
-        $fallbackPrice = $featuredProduct['price_value'] ?? $featuredProduct['priceValue'] ?? '';
-        if ($fallbackPrice !== '') {
-            $featuredProductPriceText = (string) $fallbackPrice;
-        }
-    }
-    $featuredProductImage = (string) ($featuredProduct['image'] ?? $featuredProductImage);
-
-    $featuredCities = $featuredProduct['cities'] ?? ['all'];
-    if (is_string($featuredCities)) {
-        $featuredCities = array_filter(array_map('trim', explode(',', $featuredCities)));
-    }
-    if (empty($featuredCities)) {
-        $featuredCities = ['all'];
-    }
-    $featuredCityLabel = (string) ($featuredProduct['city_label'] ?? $featuredProduct['cityLabel'] ?? '');
-    if ($featuredCityLabel === '') {
-        if (in_array('all', $featuredCities, true)) {
-            $featuredCityLabel = (string) ($cityMap['all']['label'] ?? 'Всі міста');
-        } else {
-            $labels = [];
-            foreach ($featuredCities as $cityKey) {
-                $labels[] = $cityMap[$cityKey]['label'] ?? $cityKey;
-            }
-            $featuredCityLabel = implode(', ', $labels);
-        }
-    }
-}
-
-$heroTitle = $featuredProductName !== '' ? $featuredProductName : 'UMI Signature Set';
-$heroMeta = $featuredProductMeta !== '' ? $featuredProductMeta : '24 шт • Лосось / тунець / вугор • Фірмовий соус';
-$heroPriceText = $featuredProductPriceText !== '' ? $featuredProductPriceText : '649 ₴';
-$heroImage = $featuredProductImage !== '' ? $featuredProductImage : 'assets/sushi-signature.svg';
-$heroAvailability = $featuredCityLabel !== '' ? $featuredCityLabel : ($cityMap['all']['label'] ?? 'Всі міста');
+$heroTitle =  'UMI Signature Set';
+$heroMeta = '24 шт • Лосось / тунець / вугор • Фірмовий соус';
+$heroPriceText =  '649 ₴';
+$heroImage = 'assets/sushi-signature.svg';
+$heroAvailability =  'Всі міста';
 
 $cityMapForJs = [];
 foreach ($cityMap as $cityKey => $city) {
@@ -258,7 +157,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body d-flex flex-column gap-3">
-                <div id="cartItems" class="cart-items"></div>
+                <div id="cartItems" class="cart-items">
+
+                </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-semibold">Разом</span>
                     <span class="fw-bold fs-5" id="cartTotal">0 ₴</span>
@@ -289,8 +190,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 </div>
                 <div class="col-lg-5 ms-auto">
                                         <?php
-                    $heroProductIdAttr = $featuredProductId !== '' ? ' data-product="' . Html::encode($featuredProductId) . '"' : '';
-                    $heroDisabledAttr = $featuredProductId !== '' ? '' : ' disabled';
+                    $heroProductIdAttr = ' data-product="' . Html::encode(2) . '"';
+                    $heroDisabledAttr =  'disabled';
                     ?>
                     <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
                         <div class="d-flex align-items-center mb-3">
@@ -355,65 +256,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="row g-4" id="productGrid">
-                <?php foreach ($products as $product): ?>
-                    <?php
-                    if (!is_array($product)) {
-                        continue;
-                    }
-                    $id = $product['id'] ?? '';
-                    if ($id === '') {
-                        continue;
-                    }
-                    $name = $product['name'] ?? '';
-                    $meta = $product['meta'] ?? '';
-                    $description = $product['description'] ?? '';
-                    $image = $product['image'] ?? '';
-                    $price = $product['price'] ?? '';
-                    $priceText = $product['price_text'] ?? $product['priceText'] ?? $price;
-                    $category = $product['category'] ?? 'all';
-                    $cities = $product['cities'] ?? ['all'];
-                    if (is_string($cities)) {
-                        $cities = array_filter(array_map('trim', explode(',', $cities)));
-                    }
-                    if (empty($cities)) {
-                        $cities = ['all'];
-                    }
-                    $citiesAttr = implode(',', $cities);
-                    $cityLabel = $product['city_label'] ?? $product['cityLabel'] ?? implode(' / ', $cities);
-                    ?>
-                    <div class="col-md-6 col-lg-4 product-card" data-cities="<?= Html::encode($citiesAttr) ?>" data-category="<?= Html::encode($category) ?>">
-                        <div class="card h-100 shadow-sm border-0 rounded-4">
-                            <img src="<?= Html::encode($image) ?>" class="card-img-top" alt="<?= Html::encode($name) ?>">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h5 class="card-title fw-bold mb-1"><?= Html::encode($name) ?></h5>
-                                        <?php if ($meta !== ''): ?>
-                                            <p class="text-muted small mb-0"><?= Html::encode($meta) ?></p>
-                                        <?php endif; ?>
-                                    </div>
-                                    <?php if ($priceText !== ''): ?>
-                                        <span class="badge bg-primary-soft text-primary"><?= Html::encode($priceText) ?></span>
-                                    <?php endif; ?>
-                                </div>
-                                <?php if ($description !== ''): ?>
-                                    <p class="card-text text-muted small flex-grow-1"><?= Html::encode($description) ?></p>
-                                <?php endif; ?>
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-outline-dark btn-sm view-details" data-product="<?= Html::encode($id) ?>">Детальніше</button>
-                                        <button class="btn btn-dark btn-sm add-to-cart" data-product="<?= Html::encode($id) ?>">До кошика</button>
-                                    </div>
-                                    <span class="city-tag"><?= Html::encode($cityLabel) ?></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-
+                <!--Продукти-->
+                <div class="row g-4" id="productGrid"></div>
             </div>
         </section>
 
@@ -515,24 +360,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-4">
-                        <div class="col-md-5">
-                            <img id="modalImage" src="" class="img-fluid rounded-3" alt="Зображення ролу">
-                        </div>
-                        <div class="col-md-7">
-                            <p class="text-muted small mb-2" id="modalAvailability"></p>
-                            <p class="mb-3" id="modalDescription"></p>
-                            <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
-                                <span class="badge bg-dark-soft text-dark" id="modalWeight"></span>
-                                <span class="badge bg-dark-soft text-dark" id="modalPieces"></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-3 flex-wrap">
-                                <span class="fs-4 fw-bold" id="modalPrice"></span>
-                                <button class="btn btn-dark px-4" id="addToCartBtn" type="button">Додати до кошика</button>
-                                <span class="text-success small" id="cartFeedback" style="display:none;">Додано!</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
                 <div class="modal-footer border-0">
                     <div class="small text-muted">Соєвий соус, імбир та васабі входять у комплект. Ми не використовуємо підсилювачі смаку.</div>

@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
     productGridContainer.on('click', '.add-to-cart', (e) => {
         let parentBlock = $(e.target).closest('.product-card');
-
         $.ajax({
             url: 'ajax/ajax-cart/add-product',
             method: 'GET',
@@ -129,28 +128,61 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     /* ---END [Додавання товарів до кошика] END--- */
 
-
-    const productDetailModal = $('#productModal');
     productGridContainer.on('click', '.view-details', (e) => {
-        let parentBlock = $(e.target).closest('.product-card');
-
-        $.ajax({
-            url: 'ajax/ajax-product/detail',
-            method: 'GET',
-            dataType: 'html',
-            data: {productId: parentBlock.data('product')},
-            success: function(res) {
-                if (res.length > 0) {
-                    productDetailModal.find('.modal-body').html(res)
-                }
-            },
-            error: function(xhr) {
-                console.log('Трапилась помилка при завантаженні детальної інформації про товар.')
-            }
-        });
-
-        productDetailModal.modal('show');
+        $('#productModal').show();
     })
+
+    const addToCart = (productId, showFeedback = false) => {
+        cart[productId] = (cart[productId] || 0) + 1;
+        renderCart();
+        if (showFeedback && cartFeedback) {
+            cartFeedback.style.display = 'inline';
+            setTimeout(() => {
+                cartFeedback.style.display = 'none';
+            }, 1500);
+        }
+        showToast(`${productData[productId].name} додано у кошик.`);
+    };
+
+
+    document.addEventListener('click', (e) => {
+        const detailBtn = e.target.closest('.view-details');
+        if (detailBtn && detailBtn.dataset.product) {
+            openModal(detailBtn.dataset.product);
+        }
+        const addBtn = e.target.closest('.add-to-cart');
+        if (addBtn && addBtn.dataset.product) {
+            addToCart(addBtn.dataset.product);
+        }
+        if (!window.bootstrap) {
+            const isClose = e.target.matches('[data-bs-dismiss="modal"]') || e.target.classList.contains('btn-close');
+            if (isClose && e.target.closest('#productModal')) {
+                hideFallbackModal();
+            }
+            if (isClose && e.target.closest('#checkoutModal')) {
+                hideCheckoutModal();
+            }
+            if (isClose && e.target.closest('#consultModal')) {
+                hideConsultModal();
+            }
+        }
+        const qtyBtn = e.target.closest('.qty-btn');
+        if (qtyBtn) {
+            const line = qtyBtn.closest('.cart-line');
+            const productId = line?.dataset.product;
+            if (productId) {
+                adjustQuantity(productId, qtyBtn.dataset.action === 'inc' ? 1 : -1);
+            }
+        }
+        const removeBtn = e.target.closest('.remove-item');
+        if (removeBtn && removeBtn.dataset.product) {
+            removeFromCart(removeBtn.dataset.product);
+        }
+    });
+
+
+
+
 
 
 

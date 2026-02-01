@@ -23,7 +23,7 @@ class Cities extends ActiveRecord
 {
     public static function tableName(): string
     {
-        return 'cities';
+        return 'city';
     }
 
     public function behaviors(): array

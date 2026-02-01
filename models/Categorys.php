@@ -18,10 +18,10 @@ use yii\db\ActiveRecord;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Category|null $parent
- * @property Category[] $children
+ * @property Categorys|null $parent
+ * @property Categorys[] $children
  */
-class Category extends ActiveRecord
+class Categorys extends ActiveRecord
 {
 
     public static function tableName(): string
