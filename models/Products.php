@@ -25,6 +25,8 @@ use yii\db\Expression;
  * @property int $sort_order
  * @property string $created_at
  * @property string $updated_at
+ *
+ * @property Categorys $category
  */
 class Products extends ActiveRecord
 {
@@ -91,25 +93,21 @@ class Products extends ActiveRecord
         ];
     }
 
-    /**
-     * Зв’язок з категорією
-     */
+
     public function getCategory()
     {
         return $this->hasOne(Categorys::class, ['id' => 'category_id']);
     }
 
-    /**
-     * Scope: тільки активні товари
-     */
-    public static function findActive(bool $asArray = false)
+
+    public static function findActive(?int $categoryId = null)
     {
         $query = static::find()
             ->where(['status' => 1])
             ->orderBy(['sort_order' => SORT_ASC]);
 
-        if ($asArray) {
-            $query->asArray();
+        if ($categoryId) {
+            $query->andWhere(['category_id' => $categoryId]);
         }
 
         return $query->all();

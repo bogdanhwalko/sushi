@@ -90,7 +90,6 @@ class Categorys extends ActiveRecord
         return static::find()
             ->select(['slug', 'name'])
             ->andWhere(['status' => 1])
-            ->asArray()
             ->orderBy(['sort_order' => SORT_ASC])
             ->all();
     }

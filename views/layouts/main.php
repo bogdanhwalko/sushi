@@ -2,7 +2,6 @@
 
 /** @var yii\web\View $this */
 /** @var string $content */
-/** @var array $categories */
 /** @var array $products */
 
 use app\assets\AppAsset;
@@ -10,11 +9,6 @@ use yii\bootstrap5\Html;
 use yii\helpers\Json;
 use yii\web\View;
 use app\models\Categorys;
-
-
-$categories = Categorys::getActive();
-$this->registerJs('window.categoryData = ' . Json::encode($categories) . ';', View::POS_HEAD);
-
 
 $cityMap = $this->params['cityMap'];
 $defaultCity = $this->params['defaultCity'] ?? 'all';
@@ -238,18 +232,15 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                             &#8249;
                         </button>
                         <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
-                        <?php if (!empty($categories)): ?>
-                            <?php foreach ($categories as $index => $category): ?>
-                                <?php
-                                $slug = is_array($category) ? ($category['slug'] ?? '') : (string) $category;
-                                $name = is_array($category) ? ($category['name'] ?? $slug) : (string) $category;
-                                $isActive = $index === 0;
-                                ?>
-                                <button class="btn btn-outline-dark btn-sm<?= $isActive ? ' active' : '' ?>" type="button" data-category="<?= Html::encode($slug) ?>">
-                                    <?= Html::encode($name) ?>
+                            <?php foreach (Categorys::getActive() as $index => $category): ?>
+                                <button
+                                    class="btn btn-outline-dark btn-sm<?= $index == 0 ? ' active' : '' ?>"
+                                    type="button"
+                                    data-category="<?= Html::encode($category->slug) ?>">
+
+                                    <?= Html::encode($category->name) ?>
                                 </button>
                             <?php endforeach; ?>
-                        <?php endif; ?>
                         </div>
                         <button class="category-nav-btn category-next" type="button" aria-label="Next categories">
                             &#8250;

@@ -48,11 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const happyStatus = document.getElementById('happyStatus');
 
 
-    /* ---BEGIN [прокрутка категорій] BEGIN--- */
+    const productGridContainer = $('#productGrid');
+    const productDetailModal = $('#productModal');
+    const productDetailModalContent = productDetailModal.find('.modal-body');
+
     const categoryNextBtn = document.querySelector('.category-next');
     const categoryFilters = document.getElementById('categoryFilters');
     const categoryPrevBtn = document.querySelector('.category-prev');
 
+
+    /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
         if (!categoryFilters || !categoryPrevBtn || !categoryNextBtn) return;
 
@@ -84,9 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [завантаження товарів] BEGIN--- */
-    const productGridContainer = $('#productGrid');
-    function loadProducts() {
 
+    function loadProducts()
+    {
         $.ajax({
             url: 'ajax/ajax-product/get-by-filters',
             method: 'GET',
@@ -109,8 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
-    productGridContainer.on('click', '.add-to-cart', (e) => {
-        let parentBlock = $(e.target).closest('.product-card');
+    productGridContainer.on('click', '.add-to-cart', addToCart);
+    productDetailModal.on('click', '.add-to-cart', addToCart);
+    function addToCart()
+    {
+        let parentBlock = $(this).closest('.product-card');
 
         $.ajax({
             url: 'ajax/ajax-cart/add-product',
@@ -126,13 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Трапилась помилка при додаванні товару в корзину.')
             }
         });
-    });
+    }
+
     /* ---END [Додавання товарів до кошика] END--- */
 
-
-    const productDetailModal = $('#productModal');
+    /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
     productGridContainer.on('click', '.view-details', (e) => {
         let parentBlock = $(e.target).closest('.product-card');
+        productDetailModalContent.empty();
 
         $.ajax({
             url: 'ajax/ajax-product/detail',
@@ -141,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {productId: parentBlock.data('product')},
             success: function(res) {
                 if (res.length > 0) {
-                    productDetailModal.find('.modal-body').html(res)
+                    productDetailModalContent.html(res)
                 }
             },
             error: function(xhr) {
@@ -151,42 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         productDetailModal.modal('show');
     })
+    /* ---END [Детальна інформація про товар] END--- */
 
-
-
-
-    let activeProductId = null;
-    let currentCategory = 'all';
-    const cart = {};
 
     // Bootstrap modal if available; otherwise fallback to manual toggling.
-    let bsModal = null;
-    try {
-        bsModal = window.bootstrap && modalElement ? new bootstrap.Modal(modalElement) : null;
-    } catch (e) {
-        bsModal = null;
-    }
-
-    let checkoutModal = null;
-    try {
-        checkoutModal = window.bootstrap && checkoutModalEl ? new bootstrap.Modal(checkoutModalEl) : null;
-    } catch (e) {
-        checkoutModal = null;
-    }
-
-    let consultModal = null;
-    try {
-        consultModal = window.bootstrap && consultModalEl ? new bootstrap.Modal(consultModalEl) : null;
-    } catch (e) {
-        consultModal = null;
-    }
-
-    let cityWelcomeModal = null;
-    try {
-        cityWelcomeModal = window.bootstrap && cityWelcomeModalEl ? new bootstrap.Modal(cityWelcomeModalEl) : null;
-    } catch (e) {
-        cityWelcomeModal = null;
-    }
 
     let backdropEl = null;
     const showFallbackModal = () => {
@@ -749,71 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    const renderCategoryFilters = () => {
-        if (!categoryFilters) return;
-
-        const existingButtons = Array.from(categoryFilters.querySelectorAll('button[data-category]'));
-        if (existingButtons.length === 0) {
-            const cards = Array.from(document.querySelectorAll('.product-card'));
-            const categorySet = new Set(['all']);
-            cards.forEach((card) => {
-                const cat = card.dataset.category;
-                if (cat) categorySet.add(cat);
-            });
-
-            const rawCategoryData = window.categoryData;
-            const categoryList = Array.isArray(rawCategoryData) ? rawCategoryData : null;
-
-            categoryFilters.innerHTML = '';
-            if (categoryList && categoryList.length) {
-                categoryList.forEach((item, index) => {
-                    const slug = item.slug || item.id || item.value || '';
-                    if (!slug) return;
-                    const label = item.name || item.label || slug;
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-outline-dark btn-sm';
-                    btn.dataset.category = slug;
-                    btn.textContent = label;
-                    if (index === 0) btn.classList.add('active');
-                    categoryFilters.appendChild(btn);
-                });
-            } else {
-                categorySet.forEach((cat) => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-outline-dark btn-sm';
-                    btn.dataset.category = cat;
-                    btn.textContent = cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1);
-                    if (cat === currentCategory) btn.classList.add('active');
-                    categoryFilters.appendChild(btn);
-                });
-            }
-        }
-
-        const buttons = Array.from(categoryFilters.querySelectorAll('button[data-category]'));
-        const activeBtn = buttons.find((btn) => btn.classList.contains('active'));
-        const initialBtn = activeBtn || buttons[0];
-        if (initialBtn) {
-            currentCategory = initialBtn.dataset.category || 'all';
-            if (!activeBtn) initialBtn.classList.add('active');
-        }
-
-        if (categoryFilters.dataset.bound !== 'true') {
-            categoryFilters.addEventListener('click', (e) => {
-                const btn = e.target.closest('button[data-category]');
-                if (!btn) return;
-                currentCategory = btn.dataset.category || 'all';
-                categoryFilters.querySelectorAll('button').forEach((b) => {
-                    b.classList.toggle('active', b === btn);
-                });
-                filterProducts();
-            });
-            categoryFilters.dataset.bound = 'true';
-        }
-    };
-
 
 
     const storedCity = getStoredCity();
