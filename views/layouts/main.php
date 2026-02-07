@@ -234,7 +234,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
                             <?php foreach (Categorys::getActive() as $index => $category): ?>
                                 <button
-                                    class="btn btn-outline-dark btn-sm<?= $index == 0 ? ' active' : '' ?>"
+                                    class="btn btn-outline-dark btn-sm<?= ($index == 0) ? ' active' : '' ?>"
                                     type="button"
                                     data-category="<?= Html::encode($category->slug) ?>">
 

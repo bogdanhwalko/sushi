@@ -52,38 +52,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const productDetailModal = $('#productModal');
     const productDetailModalContent = productDetailModal.find('.modal-body');
 
-    const categoryNextBtn = document.querySelector('.category-next');
-    const categoryFilters = document.getElementById('categoryFilters');
-    const categoryPrevBtn = document.querySelector('.category-prev');
+    const categoryNextBtn = $('.category-next');
+    const categoryFilters = $('#categoryFilters');
+    const categoryPrevBtn = $('.category-prev');
 
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
-        if (!categoryFilters || !categoryPrevBtn || !categoryNextBtn) return;
+        $('.category-nav').each(function () {
 
-        const getScrollStep = () => Math.max(160, Math.round(categoryFilters.clientWidth * 0.6));
+            if (!categoryFilters.length || !categoryPrevBtn.length || !categoryNextBtn.length) return;
 
-        const updateNavState = () => {
-            const maxScroll = categoryFilters.scrollWidth - categoryFilters.clientWidth;
-            const current = Math.round(categoryFilters.scrollLeft);
-            categoryPrevBtn.disabled = current <= 0;
-            categoryNextBtn.disabled = current >= maxScroll - 1;
-        };
+            const el = categoryFilters[0];
 
-        categoryPrevBtn.addEventListener('click', () => {
-            categoryFilters.scrollBy({left: -getScrollStep(), behavior: 'smooth'});
+            const getScrollStep = () => Math.max(160, Math.round(el.clientWidth * 0.6));
+
+            const updateNavState = () => {
+                const maxScroll = el.scrollWidth - el.clientWidth;
+                const current = Math.round(el.scrollLeft);
+
+                // якщо скролу нема — вимикаємо обидві кнопки
+                const hasScroll = maxScroll > 1;
+
+                categoryPrevBtn.prop('disabled', !hasScroll || current <= 0);
+                categoryNextBtn.prop('disabled', !hasScroll || current >= maxScroll - 1);
+            };
+
+            const scrollToX = (x) => {
+                const maxScroll = el.scrollWidth - el.clientWidth;
+                const target = Math.max(0, Math.min(x, maxScroll));
+
+                categoryFilters.stop(true).animate(
+                    { scrollLeft: target },
+                    250,
+                    updateNavState
+                );
+            };
+
+            // чистимо старі хендлери, щоб init можна було викликати повторно
+            categoryPrevBtn.off('click.categoryNav').on('click.categoryNav', function () {
+                scrollToX(el.scrollLeft - getScrollStep());
+            });
+
+            categoryNextBtn.off('click.categoryNav').on('click.categoryNav', function () {
+                scrollToX(el.scrollLeft + getScrollStep());
+            });
+
+            let rafPending = false;
+            categoryFilters.off('scroll.categoryNav').on('scroll.categoryNav', function () {
+                if (rafPending) return;
+                rafPending = true;
+                requestAnimationFrame(() => {
+                    rafPending = false;
+                    updateNavState();
+                });
+            });
+
+            $(window).off('resize.categoryNav').on('resize.categoryNav', updateNavState);
+
+            updateNavState();
         });
-
-        categoryNextBtn.addEventListener('click', () => {
-            categoryFilters.scrollBy({left: getScrollStep(), behavior: 'smooth'});
-        });
-
-        categoryFilters.addEventListener('scroll', () => {
-            window.requestAnimationFrame(updateNavState);
-        });
-        window.addEventListener('resize', updateNavState);
-        updateNavState();
     };
+
 
     /* ---END [прокрутка категорій] END--- */
 
@@ -108,8 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    loadProducts();
     /* ---END [завантаження товарів] END--- */
 
 
@@ -496,68 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateCartBadgeAndTotal = () => {
-        const totalQty = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-        const totalPrice = Object.entries(cart).reduce((sum, [id, qty]) => {
-            const product = productData[id];
-            if (!product) return sum;
-            return sum + (product.priceValue || 0) * qty;
-        }, 0);
-
-        if (cartCountEl) cartCountEl.textContent = totalQty;
-        if (cartCountSideEl) cartCountSideEl.textContent = totalQty;
-        if (cartCountMobileEl) cartCountMobileEl.textContent = totalQty;
-        if (cartTotalEl) cartTotalEl.textContent = `${totalPrice.toFixed(0)} ₴`;
-    };
-
-    const renderCart = () => {
-        if (!cartItemsContainer) return;
-        cartItemsContainer.innerHTML = '';
-        const items = Object.entries(cart);
-        if (items.length === 0) {
-            cartItemsContainer.innerHTML = '<p class="text-muted small mb-0">Кошик порожній. Додайте роли з меню.</p>';
-            updateCartBadgeAndTotal();
-            return;
-        }
-
-        items.forEach(([id, qty]) => {
-            const product = productData[id];
-            if (!product) return;
-            const priceValue = Number(product.priceValue) || 0;
-            const lineTotal = priceValue * qty;
-            const priceLabel = product.price || (priceValue ? String(priceValue) : '');
-            const metaParts = [];
-            if (priceLabel) metaParts.push(priceLabel);
-            if (product.weight) metaParts.push(product.weight);
-            const metaLine = metaParts.join(' x ');
-            const line = document.createElement('div');
-            line.className = 'cart-line d-flex gap-3 align-items-center';
-            line.dataset.product = id;
-            line.innerHTML = `
-        <img class="cart-thumb" src="${product.image || ''}" alt="${product.name || ''}">
-        <div class="flex-grow-1">
-          <div class="d-flex justify-content-between align-items-start gap-2">
-            <h6 class="fw-semibold mb-1">${product.name || ''}</h6>
-            <div class="price">${lineTotal.toFixed(0)} ₴</div>
-          </div>
-          <div class="text-muted small">${metaLine}</div>
-          <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
-            <div class="qty-control" aria-label="Кількість">
-              <button class="qty-btn" type="button" data-action="dec" aria-label="Зменшити">-</button>
-              <span class="qty-value">${qty}</span>
-              <button class="qty-btn" type="button" data-action="inc" aria-label="Збільшити">+</button>
-            </div>
-            <button class="btn btn-link text-danger text-decoration-none p-0 small remove-item" type="button" data-product="${id}">Прибрати</button>
-          </div>
-        </div>
-      `;
-            cartItemsContainer.appendChild(line);
-        });
-        updateCartBadgeAndTotal();
-    };
-
-
-
     const adjustQuantity = (productId, delta) => {
         if (!cart[productId]) return;
         const nextQty = cart[productId] + delta;
@@ -591,10 +557,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-
-    if (closeBtn && !bsModal) {
-        closeBtn.addEventListener('click', hideFallbackModal);
-    }
 
     addToCartBtn?.addEventListener('click', () => {
         if (!activeProductId) return;
@@ -678,11 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setSnowEnabled(!enabled, true);
     });
 
-    const cartDrawer = document.getElementById('cartDrawer');
-    if (cartDrawer) {
-        cartDrawer.addEventListener('show.bs.offcanvas', renderCart);
-    }
-
     const sideMenu = document.getElementById('sideMenu');
     if (sideMenu) {
         let pendingScrollTarget = null;
@@ -728,21 +685,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    const storedCity = getStoredCity();
-    const initialCity = storedCity && cityMap[storedCity] ? storedCity : (citySelector?.value || 'all');
-    renderCategoryFilters();
+    initCategoryNav();
+    loadProducts();
 
-    initCategoryNav();   //прокрутка категорій
 
-    setCity(initialCity, !!storedCity);
-    if (!storedCity) {
+    if (false) {
         showCityWelcomeModal();
     }
     initSnow();
     updateHappyHours();
     setInterval(updateHappyHours, 60000);
-    renderCart();
-    updateCartBadgeAndTotal();
 });
 
 function showToast(message) {
