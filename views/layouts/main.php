@@ -249,7 +249,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 </div>
 
                 <!--Продукти-->
-                <div class="row g-4" id="productGrid"></div>
+                <div class="row g-4 mt-0" id="productGrid"></div>
             </div>
         </section>
 

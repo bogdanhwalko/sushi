@@ -1,9 +1,4 @@
-const productData = window.productData && typeof window.productData === 'object' ? window.productData : {};
-
 const cityMap = window.cityMap && typeof window.cityMap === 'object' ? window.cityMap : {};
-
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('productModal');
@@ -113,13 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNavState();
         });
     };
-
-
     /* ---END [прокрутка категорій] END--- */
 
 
     /* ---BEGIN [завантаження товарів] BEGIN--- */
-
     function loadProducts()
     {
         $.ajax({
@@ -155,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {product_id: parentBlock.data('product'), session_id: "asdasdasd1d1z"},
             success: function(res) {
                 res.status ?
-                    showToast(res.product_name + ' додано у кошик.') :
+                    showToast(res.product_name + ' додано у кошик. (' + res.qty + 'шт.)') :
                     showToast('Трапилась помилка при додаванні товару в корзину.');
             },
             error: function(xhr) {
@@ -189,6 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
         productDetailModal.modal('show');
     })
     /* ---END [Детальна інформація про товар] END--- */
+
+
+    /* ---BEGIN [Зміна категорії] BEGIN--- */
+    categoryFilters.on('click', 'button', function (e) {
+        
+    });
+    /* ---END [Зміна категорії] END--- */
+
 
 
     // Bootstrap modal if available; otherwise fallback to manual toggling.
