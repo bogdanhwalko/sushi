@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const categoryNextBtn = $('.category-next');
     const categoryFilters = $('#categoryFilters');
+    const categoryButtons = categoryFilters.find('button');
     const categoryPrevBtn = $('.category-prev');
 
 
@@ -112,18 +113,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [завантаження товарів] BEGIN--- */
-    function loadProducts()
+    function loadProducts(category = 0)
     {
         $.ajax({
             url: 'ajax/ajax-product/get-by-filters',
             method: 'GET',
             dataType: 'html',
             data: {
-                category_id: 1
+                categoryId: category
             },
             success: function(resp) {
                 productGridContainer.html(resp)
-                //renderProducts(resp);
             },
             error: function(xhr) {
                 console.log('Помилка завантаження продуктів')
@@ -185,7 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---BEGIN [Зміна категорії] BEGIN--- */
     categoryFilters.on('click', 'button', function (e) {
-        
+        let clicked = $(this);
+
+        categoryButtons.removeClass('active');
+        clicked.addClass('active');
+
+        loadProducts(clicked.data('id'));
     });
     /* ---END [Зміна категорії] END--- */
 

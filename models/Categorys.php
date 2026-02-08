@@ -88,7 +88,7 @@ class Categorys extends ActiveRecord
     public static function getActive()
     {
         return static::find()
-            ->select(['slug', 'name'])
+            ->select(['slug', 'name', 'id'])
             ->andWhere(['status' => 1])
             ->orderBy(['sort_order' => SORT_ASC])
             ->all();

@@ -1,12 +1,13 @@
 <?php
 
+use yii\helpers\Html;
 /** @var \app\models\Products $product */
 
 ?>
 
-<div class="row g-4 product-card" data-product="<?= $product->id; ?>">
+<div class="row g-4 product-card" data-product="<?= $product->id ?>">
     <div class="col-md-5">
-        <img src="<?= $product->image; ?>" class="img-fluid rounded-3" alt="Зображення ролу">
+        <?= Html::img('@web/images/products/' . $product->image, ['alt' => $product->name, 'class' => 'img-fluid rounded-3']) ?>
     </div>
     <div class="col-md-7 mt-0">
         <h3><?= $product->name; ?></h3>

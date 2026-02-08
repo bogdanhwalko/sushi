@@ -34,7 +34,7 @@ class AjaxProductController extends Controller
     public function actionGetByFilters(string $categoryId = null)
     {
         return $this->renderPartial('get-by-filters', [
-            'products' => Products::findActive(),
+            'products' => Products::findActive($categoryId),
         ]);
     }
 

@@ -236,7 +236,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                 <button
                                     class="btn btn-outline-dark btn-sm<?= ($index == 0) ? ' active' : '' ?>"
                                     type="button"
-                                    data-category="<?= Html::encode($category->slug) ?>">
+                                    data-category="<?= Html::encode($category->slug) ?>"
+                                    data-id="<?= $category->id ?>">
 
                                     <?= Html::encode($category->name) ?>
                                 </button>
