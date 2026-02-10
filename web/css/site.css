@@ -28,6 +28,8 @@ body {
   font-family: 'Playfair Display', serif;
   letter-spacing: 1px;
   font-size: 1.35rem;
+  min-height: 40px;
+  height: 40px;
 }
 
 .topbar {
@@ -276,9 +278,10 @@ body.snow-hidden .snow-layer {
 }
 
 .cart-button {
+  min-height: 40px;
+  height: 40px;
   position: relative;
   min-width: 72px;
-  height: 40px;
   padding: 4px 10px;
   display: inline-flex;
   align-items: center;
@@ -310,7 +313,6 @@ body.snow-hidden .snow-layer {
 }
 
 .cart-badge {
-  position: static;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -321,9 +323,17 @@ body.snow-hidden .snow-layer {
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-  border-radius: 999px;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 8px 16px rgba(13, 15, 16, 0.28);
+  vertical-align: baseline;
+  border-radius: var(--bs-badge-border-radius);
+  text-align: center;
+  --bs-badge-padding-x: 0.65em;
+  --bs-badge-padding-y: 0.35em;
+  --bs-badge-font-size: 0.75em;
+  --bs-badge-font-weight: 700;
+  --bs-badge-color: #fff;
+  --bs-badge-border-radius: var(--bs-border-radius);
 }
 
 .city-select-label {
@@ -431,6 +441,10 @@ footer a {
 
 footer a:hover {
   color: var(--accent);
+}
+
+.order-button {
+  padding: 7px 0;
 }
 
 @media (max-width: 768px) {

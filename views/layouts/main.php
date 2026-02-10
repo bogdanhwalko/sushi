@@ -88,9 +88,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <a class="navbar-brand fw-bold brand-mark" href="#">UMI</a>
             </div>
             <div class="d-flex d-lg-none ms-auto align-items-center gap-2">
-                <button class="btn btn-outline-light position-relative d-flex align-items-center gap-2 cart-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer" aria-label="Відкрити кошик">
+                <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer" aria-label="Відкрити кошик">
                     <span class="icon-cart" aria-hidden="true"></span>
-                    <span class="badge bg-accent cart-badge" id="cartCountMobile">0</span>
+                    <span class="bg-accent cart-badge" id="cartCountMobile">1000</span>
                 </button>
             </div>
             <div class="d-none d-lg-flex ms-auto align-items-center gap-3">
@@ -113,7 +113,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <span class="d-none d-xl-inline"><span class="icon-cart" aria-hidden="true"></span></span>
                     <span class="badge bg-accent cart-badge" id="cartCount">0</span>
                 </button>
-                <a class="btn btn-light text-dark fw-semibold px-3" href="#contact">Замовити</a>
+                <a class="order-button btn btn-light text-dark fw-semibold px-3" href="#contact">Замовити</a>
             </div>
         </nav>
 
