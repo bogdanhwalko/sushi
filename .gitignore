@@ -37,3 +37,4 @@ tests/_support/_generated
 /tests
 
 composer.lock
+/web/images/products/original
