@@ -67,7 +67,7 @@ class AjaxCartController extends Controller
 
         $cartItem->price = $product->price;
 
-        $result['qty'] = $cartItem->qty;
+        $result['qty'] = max(1, $cartItem->qty);
         $result['status'] = $cartItem->save();
 
         return $result;
