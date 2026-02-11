@@ -75,7 +75,6 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <span>@umi.sushi</span>
                     <button class="btn btn-outline-light btn-sm snow-toggle" type="button" id="snowToggle" aria-pressed="true" title="Сніг увімкнено">
                         <span class="snow-icon" aria-hidden="true"></span>
-                        <span class="snow-label">Сніг</span>
                     </button>
                 </div>
             </div>
@@ -85,35 +84,22 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <a class="navbar-brand fw-bold brand-mark" href="#">UMI</a>
+                <a class="navbar-brand fw-bold brand-mark" href="/">
+                    <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi', 'id' => 'logo']) ?>
+                </a>
             </div>
-            <div class="d-flex d-lg-none ms-auto align-items-center gap-2">
-                <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer" aria-label="Відкрити кошик">
-                    <span class="icon-cart" aria-hidden="true"></span>
-                    <span class="bg-accent cart-badge" id="cartCountMobile">1000</span>
-                </button>
-            </div>
-            <div class="d-none d-lg-flex ms-auto align-items-center gap-3">
-                <a class="nav-link fw-semibold px-2" href="#menu">Меню</a>
-                <a class="nav-link fw-semibold px-2" href="#about">Про нас</a>
-                <a class="nav-link fw-semibold px-2" href="#contact">Контакти</a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#menu">Меню</a>
+                <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#about">Про нас</a>
+                <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#contact">Контакти</a>
 
-                <?= Html::dropDownList(
-                'cities_in_menu',
-                    'all',
-                    \app\models\Cities::getCitiesInSelect(),
-                    [
-                        'class' => 'form-select form-select-sm shadow-none border-0 city-select',
-                        'id' => 'citySelector'
-                    ]
-                )?>
 
-                <button class="btn btn-outline-light position-relative d-flex align-items-center gap-2 cart-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer">
+
+                <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer" aria-label="Open cart">
                     <span class="icon-cart" aria-hidden="true"></span>
-                    <span class="d-none d-xl-inline"><span class="icon-cart" aria-hidden="true"></span></span>
-                    <span class="badge bg-accent cart-badge" id="cartCount">0</span>
+                    <span class="bg-accent cart-badge" id="cartCount">1000 ₴</span>
                 </button>
-                <a class="order-button btn btn-light text-dark fw-semibold px-3" href="#contact">Замовити</a>
+                <a class="order-button btn btn-light text-dark fw-semibold px-3 d-none d-lg-inline-flex" href="#menu">Замовити</a>
             </div>
         </nav>
 
@@ -172,7 +158,6 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <h1 class="display-4 fw-bold lh-1 mb-3">Суші, що створені <span class="highlight">для моментів</span></h1>
                     <p class="lead mb-4">Авторські роли, ретельно відібрана риба та соуси, які збалансовані до останньої краплі. Оберіть місто та замовляйте без очікування.</p>
                     <div class="d-flex gap-3 flex-wrap">
-                        <a class="btn btn-outline-light btn-lg px-4" href="#menu">Переглянути меню</a>
                         <div class="d-flex align-items-center gap-2 flex-wrap" id="happyHours">
                             <div class="pill-pill d-inline-flex align-items-center gap-2">
                                 <span class="happy-dot" id="happyDot" aria-hidden="true"></span>
@@ -183,26 +168,22 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     </div>
                 </div>
                 <div class="col-lg-5 ms-auto">
-                                        <?php
-                    $heroProductIdAttr = ' data-product="' . Html::encode(2) . '"';
-                    $heroDisabledAttr =  'disabled';
-                    ?>
                     <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
                         <div class="d-flex align-items-center mb-3">
-                            <div class="hero-badge me-3">??? ??????????</div>
+                            <div class="hero-badge me-3">Шеф рекомендує</div>
                             <?php if ($heroAvailability !== ''): ?>
                                 <span class="text-muted small">???????? ?: <?= Html::encode($heroAvailability) ?></span>
                             <?php endif; ?>
                         </div>
                         <div class="d-flex align-items-center">
                             <img src="<?= Html::encode($heroImage) ?>" class="rounded-3 me-3 hero-img" alt="<?= Html::encode($heroTitle) ?>">
-                            <div>
+                            <div class="">
                                 <h4 class="fw-semibold mb-1"><?= Html::encode($heroTitle) ?></h4>
                                 <p class="text-muted small mb-2"><?= Html::encode($heroMeta) ?></p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fs-5 fw-bold"><?= Html::encode($heroPriceText) ?></span>
-                                    <button class="btn btn-sm btn-dark view-details"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>Детальніше</button>
-                                    <button class="btn btn-sm btn-outline-dark add-to-cart"<?= $heroProductIdAttr ?><?= $heroDisabledAttr ?>>До кошика</button>
+                                    <button class="btn btn-sm btn-dark">Детальніше</button>
+                                    <button class="btn btn-sm btn-outline-dark">До кошика</button>
                                 </div>
                             </div>
                         </div>
@@ -219,10 +200,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <p class="eyebrow text-muted mb-1">Меню</p>
                     <h2 class="fw-bold">Роли та сети</h2>
                     <p class="text-muted mb-0">
-                        Фільтруємо доступність за містом:
-                        <span id="cityLabel" class="fw-semibold">
-                            <?= Html::encode($defaultCityLabel) ?>
-                        </span>
+                        Товари по категоріях:
                     </p>
                 </div>
 

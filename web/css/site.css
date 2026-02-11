@@ -25,11 +25,9 @@ body {
 }
 
 .brand-mark {
-  font-family: 'Playfair Display', serif;
-  letter-spacing: 1px;
-  font-size: 1.35rem;
   min-height: 40px;
   height: 40px;
+  padding: 0 10px;
 }
 
 .topbar {
@@ -75,7 +73,7 @@ body {
   width: 16px;
   height: 16px;
   display: inline-block;
-  background-color: #9ca3af;
+  background-color: #38bdf8;
   mask: url('../images/icons/snow.png') center / contain;
 }
 
@@ -98,20 +96,6 @@ body {
   pointer-events: none;
   overflow: hidden;
   z-index: 1030;
-}
-
-.snowflake {
-  position: absolute;
-  top: -10vh;
-  left: var(--x);
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  opacity: var(--opacity);
-  filter: blur(0.2px);
-  animation: snow-fall var(--speed) linear infinite;
-  animation-delay: var(--delay);
 }
 
 @keyframes snow-fall {
@@ -270,10 +254,10 @@ body.snow-hidden .snow-layer {
 
 .icon-cart {
   width: 20px;
-  height: 20px;
+  height: 100%;
   display: inline-block;
   background: no-repeat center / contain;
-  mask: url('../images/icons/shopping-basket2.png') center / contain;
+  mask: url('../images/icons/shopping-basket2.png') center / contain no-repeat;
   background-color: #fff;
 }
 
@@ -312,13 +296,22 @@ body.snow-hidden .snow-layer {
   box-shadow: 0 0 0 0.2rem rgba(240, 93, 35, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
+.navbar .cart-button {
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  padding: 0 10px;
+  line-height: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .cart-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
   height: 20px;
-  padding: 0 7px;
+  padding: 0 4px;
   font-size: 0.65rem;
   font-weight: 700;
   line-height: 1;
@@ -433,6 +426,7 @@ body.snow-hidden .snow-layer {
 .about-card,
 .contact-card {
   border: 1px solid rgba(13, 15, 16, 0.06);
+  border-top: 2px solid rgb(240 93 35);
 }
 
 footer a {
@@ -445,7 +439,15 @@ footer a:hover {
 
 .order-button {
   padding: 7px 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
+
+
+#logo {
+  width: 100px;
+}
+
 
 @media (max-width: 768px) {
   .menu-filters {
@@ -459,16 +461,7 @@ footer a:hover {
   }
 }
 
-@media (max-width: 576px) {
-  .hero-img {
-    width: 120px;
-    height: 120px;
-  }
-
-  .city-select {
-    min-width: 100%;
-  }
-
+@media (max-width: 992px) {
   .navbar-toggler {
     width: 44px;
     height: 40px;
@@ -500,12 +493,15 @@ footer a:hover {
                 linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 16px 28px rgba(13, 15, 16, 0.3);
   }
+}
 
-  .navbar .cart-button {
-    height: 40px;
-    min-height: 40px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    line-height: 1;
+@media (max-width: 576px) {
+  .hero-img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .city-select {
+    min-width: 100%;
   }
 }

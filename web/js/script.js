@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = modalElement?.querySelector('.btn-close');
     const cartCountEl = document.getElementById('cartCount');
     const cartCountSideEl = document.getElementById('cartCountSide');
-    const cartCountMobileEl = document.getElementById('cartCountMobile');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const cartFeedback = document.getElementById('cartFeedback');
     const cartItemsContainer = document.getElementById('cartItems');
