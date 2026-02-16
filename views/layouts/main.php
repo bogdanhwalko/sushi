@@ -155,8 +155,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <div class="row align-items-center gy-4">
                 <div class="col-lg-6">
                     <p class="eyebrow mb-2">Доставка за 45 хвилин</p>
-                    <h1 class="display-4 fw-bold lh-1 mb-3">Суші, що створені <span class="highlight">для моментів</span></h1>
-                    <p class="lead mb-4">Авторські роли, ретельно відібрана риба та соуси, які збалансовані до останньої краплі. Оберіть місто та замовляйте без очікування.</p>
+                    <h1 class="display-4 fw-bold lh-1 mb-3">
+                        Доставка японської кухні у твоєму місті
+                        <span class="highlight text-sushi">"SUSHI 107"</span>
+                    </h1>
+                    <p class="lead mb-4 fs-6 fw-medium">Обирайте страви. Про все інше подбає наша команда.</p>
                     <div class="d-flex gap-3 flex-wrap">
                         <div class="d-flex align-items-center gap-2 flex-wrap" id="happyHours">
                             <div class="pill-pill d-inline-flex align-items-center gap-2">
@@ -234,39 +237,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
         <section id="about" class="py-5 bg-light">
             <div class="container">
-                <div class="row gy-4 align-items-center">
-                    <div class="col-lg-6">
-                        <p class="eyebrow text-muted mb-1">Чому UMI</p>
-                        <h3 class="fw-bold">Чиста риба, відкриті кухні, прозорі рецепти</h3>
-                        <p class="text-muted">Ми готуємо в оупен-кітченах, працюємо лише з охолодженою рибою з сертифікатами, а рис промиваємо до ідеальної прозорості. Немає прихованих соусів чи цукру там, де його не повинно бути.</p>
-                        <div class="d-flex gap-3 flex-wrap">
-                            <div class="pill-pill">Власне навчання майстрів</div>
-                            <div class="pill-pill">Нічні поставки риби</div>
-                            <div class="pill-pill">Сертифікат ISO22000</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-5 ms-auto">
-                        <div class="about-card rounded-4 p-4 bg-white shadow-sm">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-semibold">Середній рейтинг</span>
-                                <span class="badge bg-success-subtle text-success">4.9 ★</span>
-                            </div>
-                            <p class="text-muted small mb-4">Понад 12 000 відгуків у всіх містах присутності.</p>
-                            <div class="progress mb-3" style="height: 8px;">
-                                <div class="progress-bar bg-dark" role="progressbar" style="width: 92%;" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div class="d-flex justify-content-between text-muted small">
-                                <span>Свіжість продуктів</span>
-                                <span>92%</span>
-                            </div>
-                            <div class="progress my-3" style="height: 8px;">
-                                <div class="progress-bar bg-dark" role="progressbar" style="width: 88%;" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div class="d-flex justify-content-between text-muted small">
-                                <span>Доставка вчасно</span>
-                                <span>88%</span>
-                            </div>
-                        </div>
+                <div class="row gy-4 align-items-center justify-content-center">
+                    <div class="col-lg-10 px-4 px-md-3 advertising-text ms-center">
+                        <h1 class="fw-bold text-sushi">107 Суші</h1>
+                        <p class="fw-medium">107 Суші це більше, ніж просто доставка у твоєму місті. Це команда людей, для яких суші — не тренд і не бізнес «на потоці». Це справа, яку ми будуємо з характером і системою.</p>
+                        <p class="fw-medium">Ми створили 107 Суші з однією чіткою метою — підняти рівень доставки до стандартів ресторанної якості. Без компромісів. Без випадковостей. Без «і так зійде».</p>
+                        <p class="fw-medium">Кожного дня ми вдосконалюємо рецептури, відточуємо технології, тестуємо нові поєднання смаків та контролюємо кожен процес — від вибору інгредієнтів до моменту, коли замовлення потрапляє до вас.</p>
                     </div>
                 </div>
             </div>
@@ -284,7 +260,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         </div>
                     </div>
                     <div class="col-lg-5 ms-auto">
-                        <div class="contact-card bg-white rounded-4 p-4 shadow-sm">
+                        <div class="contact-card bg-white rounded-4 p-4 shadow-lg">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Графік</span>
                                 <span class="text-muted small">10:00 — 23:00</span>
@@ -313,11 +289,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
     <footer class="py-4 border-top">
         <div class="container d-flex flex-wrap justify-content-between align-items-center">
-            <div class="text-muted small">© 2025 UMI Sushi. Чиста риба, чесні роли.</div>
+            <div class="small text-white">© <?= date('Y')?> <span class="text-sushi">Sushi 107</span> Обирайте страви. Про все інше подбає наша команда.</div>
             <div class="d-flex gap-3 small">
-                <a href="#" class="text-decoration-none text-muted">Політика</a>
-                <a href="#" class="text-decoration-none text-muted">Публічна оферта</a>
-                <a href="#" class="text-decoration-none text-muted">Контакти</a>
+                <a href="#" class="footer-link">Політика</a>
+                <a href="#" class="footer-link">Публічна оферта</a>
+                <a href="#" class="footer-link">Контакти</a>
             </div>
         </div>
     </footer>
