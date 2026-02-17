@@ -13,7 +13,7 @@ nbproject
 Thumbs.db
 
 # composer vendor dir
-/vendor
+/app/vendor
 
 # composer itself is not needed
 composer.phar
@@ -30,11 +30,11 @@ tests/_output/*
 tests/_support/_generated
 
 #vagrant folder
-/.vagrant
+/app/.vagrant
 
 /docker/mysql
-/vagrant
-/tests
+/app/vagrant
+/app/tests
 
-composer.lock
-/web/images/products/original
+/app/composer.lock
+/public_html/images/products/original
