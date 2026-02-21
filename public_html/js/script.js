@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartContent = $('#cart-content');
     const drawer = $('#cartDrawer');
 
+    var cartUpdateStatus = true;
+
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
         $('.category-nav').each(function () {
@@ -113,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---BEGIN [завантаження товарів] BEGIN--- */
     function loadProducts(category = 0)
     {
+        showPreloader(productGridContainer);
+
         $.ajax({
             url: 'ajax/ajax-product/get-by-filters',
             method: 'GET',
@@ -149,9 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
             dataType: 'json',
             data: {product_id: product_id, qtyStatus: qtyStatus},
             success: function(res) {
-                res.errors.length < 1 ?
-                    showToast('Товар додано до кошика') :
-                    showToast('Трапилась помилка при додаванні товару в корзину.');
+                if (res.errors.length < 1) {
+                    showToast('Товар додано до кошика');
+                    cartUpdateStatus = true;
+                    return true;
+                }
+
+                showToast('Трапилась помилка при додаванні товару в корзину.');
             },
             error: function(xhr) {
                 console.log('Трапилась помилка при додаванні товару в корзину.')
@@ -177,7 +185,15 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {item_id: parentBlock.data('item_id')},
             success: function(res) {
                 if (res.status) {
-                    parentBlock.remove();
+                    let totalBlock = cartContent.find('#cartTotal');
+                    totalBlock.text(totalBlock.text() - parentBlock.find('.total-item-price').text());
+
+                    parentBlock.animate(
+                        { opacity: 0, height: 0, marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 },
+                        250,
+                        function () { $(this).remove(); }
+                    );
+
                     showToast('Товар успішно видалено.');
                     return true;
                 }
@@ -195,9 +211,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Інкремент, декремент товару] BEGIN--- */
-    cartItemsBlock.on('click', '.qty-btn', function (e) {
+    cartContent.on('click', '.qty-btn', function (e) {
         let el = $(this);
         let parentBlock = el.closest('.cart-item');
+
+        let qtyBlock = parentBlock.find('.qty-value');
+        let prefix = el.data('type') === 'inc' ? 1 : -1;
+        let qty = Number(qtyBlock.text()) + prefix;
+
+        if (qty > 0 && qty <= 20) {
+            el.prop('disabled', true);
+
+            $.ajax({
+                url: 'ajax/ajax-cart/change-qty',
+                method: 'GET',
+                dataType: 'html',
+                data: {item_id: parentBlock.data('item_id'), qty: qty},
+                success: function(res) {
+                    qtyBlock.text(qty);
+
+                    let totalPriceItemBlock = parentBlock.find('.total-item-price')
+                    let itemPrice = parentBlock.find('.item-price').text();
+                    totalPriceItemBlock.text(itemPrice * qty);
+
+                    let totalBlock = cartContent.find('#cartTotal');
+                    totalBlock.text(Number(totalBlock.text()) + itemPrice * prefix);
+                    el.prop('disabled', false);
+                },
+                error: function(xhr) {
+                    console.log('Трапилась помилка при завантаженні детальної інформації про товар.')
+                },
+            });
+        }
     });
     /* ---BEGIN [Інкремент, декремент товару] BEGIN--- */
 
@@ -205,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
     productGridContainer.on('click', '.view-details', (e) => {
         let parentBlock = $(e.target).closest('.product-card');
-        productDetailModalContent.empty();
+        showPreloader(productDetailModalContent)
 
         $.ajax({
             url: 'ajax/ajax-product/detail',
@@ -241,18 +286,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---BEGIN [Відкриття корзини] BEGIN--- */
     cartButton.on('click', function (e) {
+        if (cartUpdateStatus) {
+            showPreloader(cartContent);
 
-        $.ajax({
-            url: 'ajax/ajax-cart/cart',
-            method: 'GET',
-            dataType: 'html',
-            success: function(res) {
-                cartContent.html(res)
-            },
-            error: function(xhr) {
-                console.log('Трапилась помилка при завантаженні корзини.')
-            }
-        });
+            $.ajax({
+                url: 'ajax/ajax-cart/cart',
+                method: 'GET',
+                dataType: 'html',
+                success: function(res) {
+                    cartUpdateStatus = false;
+                    cartContent.html(res)
+                },
+                error: function(xhr) {
+                    console.log('Трапилась помилка при завантаженні корзини.')
+                }
+            });
+        }
 
         bootstrap.Offcanvas.getOrCreateInstance(drawer[0]).show();
     });
@@ -658,6 +707,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    function showPreloader(block)
+    {
+        block.html(`<div class="text-center py-4">
+            <div class="spinner-border text-dark" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-2">Loading...</div>
+        </div>`);
+    }
 
 
     initCategoryNav();

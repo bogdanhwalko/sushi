@@ -26,14 +26,18 @@ $cartTotal = 0;
                             <?= Html::img('@web/images/icons/delete.png', ['alt' => 'Видалити', 'class' => 'cart-remove']) ?>
                         </button>
                     </div>
-                    <div class="text-muted small item-price"><?= $cartItem->product->price ?> ₴ • <?= $cartItem->product->weight ?> г</div>
+                    <div class="text-muted small">
+                        <span class="item-price"><?= $cartItem->product->price ?></span> ₴ • <?= $cartItem->product->weight ?> г
+                    </div>
                     <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                         <div class="qty-control" aria-label="Кількість">
                             <button class="qty-btn" type="button" aria-label="Зменшити" data-type="dec">-</button>
                             <span class="qty-value"><?= $cartItem->qty ?></span>
                             <button class="qty-btn" type="button" aria-label="Збільшити" data-type="inc">+</button>
                         </div>
-                        <div class="price align-content-end ms-auto"><?= ($cartItem->product->price * $cartItem->qty) ?> ₴</div>
+                        <div class="price align-content-end ms-auto">
+                            <span class="total-item-price"><?= ($cartItem->product->price * $cartItem->qty) ?></span> ₴
+                        </div>
                     </div>
                 </div>
 
@@ -44,7 +48,9 @@ $cartTotal = 0;
 </div>
 <div class="d-flex justify-content-between align-items-center">
     <span class="fw-semibold">Разом</span>
-    <span class="fw-bold fs-5" id="cartTotal"><?= $cartTotal ?> ₴</span>
+    <span class="fw-bold fs-5">
+        <span id="cartTotal"><?= $cartTotal ?></span> ₴
+    </span>
 </div>
 <div class="d-grid gap-2">
     <button class="btn btn-dark" type="button" id="checkoutBtn">Оформити</button>

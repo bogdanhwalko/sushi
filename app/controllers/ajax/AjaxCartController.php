@@ -78,6 +78,12 @@ class AjaxCartController extends Controller
     }
 
 
+    public function actionChangeQty(int $item_id, int $qty)
+    {
+        return CartItems::updateAll(['qty' => $qty], ['id' => $item_id]);
+    }
+
+
     public function actionDeleteItem(int $item_id)
     {
         $result = ['status' => false];
