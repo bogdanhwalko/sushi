@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartCountSideEl = document.getElementById('cartCountSide');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const cartFeedback = document.getElementById('cartFeedback');
-    const cartItemsContainer = document.getElementById('cartItems');
-    const cartTotalEl = document.getElementById('cartTotal');
     const clearCartBtn = document.getElementById('clearCartBtn');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const checkoutModalEl = document.getElementById('checkoutModal');
@@ -41,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const happyDot = document.getElementById('happyDot');
     const happyStatus = document.getElementById('happyStatus');
 
-
     const productGridContainer = $('#productGrid');
     const productDetailModal = $('#productModal');
     const productDetailModalContent = productDetailModal.find('.modal-body');
@@ -51,15 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryButtons = categoryFilters.find('button');
     const categoryPrevBtn = $('.category-prev');
 
+    const cartItemsBlock = $('#cartItems');
+    const cartButton = $('#cart-button');
+    const cartContent = $('#cart-content');
+    const drawer = $('#cartDrawer');
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
         $('.category-nav').each(function () {
-
             if (!categoryFilters.length || !categoryPrevBtn.length || !categoryNextBtn.length) return;
 
             const el = categoryFilters[0];
-
             const getScrollStep = () => Math.max(160, Math.round(el.clientWidth * 0.6));
 
             const updateNavState = () => {
@@ -135,27 +134,73 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
     productGridContainer.on('click', '.add-to-cart', addToCart);
     productDetailModal.on('click', '.add-to-cart', addToCart);
+
     function addToCart()
     {
         let parentBlock = $(this).closest('.product-card');
+        cartUpdate(parentBlock.data('product'), true)
+    }
 
+    function cartUpdate(product_id, qtyStatus = true)
+    {
         $.ajax({
             url: 'ajax/ajax-cart/add-product',
             method: 'GET',
             dataType: 'json',
-            data: {product_id: parentBlock.data('product'), session_id: "asdasdasd1d1z"},
+            data: {product_id: product_id, qtyStatus: qtyStatus},
             success: function(res) {
-                res.status ?
-                    showToast(res.product_name + ' додано у кошик. (' + res.qty + 'шт.)') :
+                res.errors.length < 1 ?
+                    showToast('Товар додано до кошика') :
                     showToast('Трапилась помилка при додаванні товару в корзину.');
             },
             error: function(xhr) {
                 console.log('Трапилась помилка при додаванні товару в корзину.')
             }
         });
+
+        return false;
     }
 
     /* ---END [Додавання товарів до кошика] END--- */
+
+
+    /* ---BEGIN [Видалення товару з кошика] BEGIN--- */
+    cartContent.on('click', '.remove-item', function (e) {
+        let el = $(this);
+        let parentBlock = el.closest('.cart-item');
+        el.remove();
+
+        $.ajax({
+            url: 'ajax/ajax-cart/delete-item',
+            method: 'GET',
+            dataType: 'json',
+            data: {item_id: parentBlock.data('item_id')},
+            success: function(res) {
+                if (res.status) {
+                    parentBlock.remove();
+                    showToast('Товар успішно видалено.');
+                    return true;
+                }
+
+                showToast('Трапилась помилка при видаленні товару в корзини, зверніться у підтримку.');
+            },
+            error: function(xhr) {
+                console.log('Трапилась помилка при видаленні товару з корзини.')
+            }
+        });
+
+
+    });
+    /* ---END [Видалення товару з кошика] END--- */
+
+
+    /* ---BEGIN [Інкремент, декремент товару] BEGIN--- */
+    cartItemsBlock.on('click', '.qty-btn', function (e) {
+        let el = $(this);
+        let parentBlock = el.closest('.cart-item');
+    });
+    /* ---BEGIN [Інкремент, декремент товару] BEGIN--- */
+
 
     /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
     productGridContainer.on('click', '.view-details', (e) => {
@@ -193,6 +238,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     /* ---END [Зміна категорії] END--- */
 
+
+    /* ---BEGIN [Відкриття корзини] BEGIN--- */
+    cartButton.on('click', function (e) {
+
+        $.ajax({
+            url: 'ajax/ajax-cart/cart',
+            method: 'GET',
+            dataType: 'html',
+            success: function(res) {
+                cartContent.html(res)
+            },
+            error: function(xhr) {
+                console.log('Трапилась помилка при завантаженні корзини.')
+            }
+        });
+
+        bootstrap.Offcanvas.getOrCreateInstance(drawer[0]).show();
+    });
+    /* ---END [Відкриття корзини] END--- */
 
 
     // Bootstrap modal if available; otherwise fallback to manual toggling.
@@ -237,21 +301,35 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(checkoutBackdropEl);
     };
 
-    const hideCheckoutModal = () => {
-        if (checkoutModal) {
-            checkoutModal.hide();
+    checkoutBtn?.addEventListener('click', () => {
+        if (Object.keys(cart).length === 0) {
+            showToast('Кошик порожній. Додайте товари перед оформленням.');
             return;
         }
-        if (!checkoutModalEl) return;
-        checkoutModalEl.classList.remove('show');
-        checkoutModalEl.style.display = 'none';
-        checkoutModalEl.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-        if (checkoutBackdropEl && checkoutBackdropEl.parentNode) {
-            checkoutBackdropEl.parentNode.removeChild(checkoutBackdropEl);
+        resetCheckoutForm();
+        if (window.bootstrap) {
+            const cartDrawerEl = document.getElementById('cartDrawer');
+            const drawerInstance = cartDrawerEl ? bootstrap.Offcanvas.getInstance(cartDrawerEl) : null;
+            drawerInstance?.hide();
         }
-        checkoutBackdropEl = null;
-    };
+        showCheckoutModal();
+    });
+
+    // const hideCheckoutModal = () => {
+    //     if (checkoutModal) {
+    //         checkoutModal.hide();
+    //         return;
+    //     }
+    //     if (!checkoutModalEl) return;
+    //     checkoutModalEl.classList.remove('show');
+    //     checkoutModalEl.style.display = 'none';
+    //     checkoutModalEl.setAttribute('aria-hidden', 'true');
+    //     document.body.classList.remove('modal-open');
+    //     if (checkoutBackdropEl && checkoutBackdropEl.parentNode) {
+    //         checkoutBackdropEl.parentNode.removeChild(checkoutBackdropEl);
+    //     }
+    //     checkoutBackdropEl = null;
+    // };
 
     const resetCheckoutForm = () => {
         if (!checkoutForm) return;
@@ -483,18 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const filterProducts = (city = citySelector?.value || 'all') => {
-        const cards = document.querySelectorAll('.product-card');
-        cards.forEach((card) => {
-            const cities = (card.dataset.cities || '').split(',');
-            const category = card.dataset.category || 'all';
-            const matchesCity = city === 'all' || cities.includes(city) || cities.includes('all');
-            const matchesCategory = currentCategory === 'all' || category === currentCategory;
-            const isVisible = matchesCity && matchesCategory;
-            card.style.display = isVisible ? '' : 'none';
-        });
-    };
-
     const openModal = (productId) => {
 
         const city = citySelector?.value || 'all';
@@ -528,60 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const adjustQuantity = (productId, delta) => {
-        if (!cart[productId]) return;
-        const nextQty = cart[productId] + delta;
-        if (nextQty <= 0) {
-            delete cart[productId];
-        } else {
-            cart[productId] = nextQty;
-        }
-        renderCart();
-    };
 
-    const removeFromCart = (productId) => {
-        if (!cart[productId]) return;
-        delete cart[productId];
-        renderCart();
-    };
-
-    const clearCart = () => {
-        Object.keys(cart).forEach((k) => delete cart[k]);
-        renderCart();
-    };
-
-    citySelector?.addEventListener('change', (e) => {
-        const city = e.target.value;
-        setCity(city, true);
-    });
-
-    sideCitySelector?.addEventListener('change', (e) => {
-        const city = e.target.value;
-        setCity(city, true);
-    });
-
-
-
-    addToCartBtn?.addEventListener('click', () => {
-        if (!activeProductId) return;
-        addToCart(activeProductId, true);
-    });
-
-    clearCartBtn?.addEventListener('click', clearCart);
-
-    checkoutBtn?.addEventListener('click', () => {
-        if (Object.keys(cart).length === 0) {
-            showToast('Кошик порожній. Додайте товари перед оформленням.');
-            return;
-        }
-        resetCheckoutForm();
-        if (window.bootstrap) {
-            const cartDrawerEl = document.getElementById('cartDrawer');
-            const drawerInstance = cartDrawerEl ? bootstrap.Offcanvas.getInstance(cartDrawerEl) : null;
-            drawerInstance?.hide();
-        }
-        showCheckoutModal();
-    });
 
     consultBtn?.addEventListener('click', () => {
         resetConsultForm();
@@ -644,49 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setSnowEnabled(!enabled, true);
     });
 
-    const sideMenu = document.getElementById('sideMenu');
-    if (sideMenu) {
-        let pendingScrollTarget = null;
 
-        sideMenu.addEventListener('hidden.bs.offcanvas', () => {
-            if (!pendingScrollTarget) return;
-            const targetEl = document.querySelector(pendingScrollTarget);
-            if (targetEl) {
-                targetEl.scrollIntoView({behavior: 'smooth', block: 'start'});
-            }
-            pendingScrollTarget = null;
-        });
-
-        sideMenu.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href^="#"]');
-            if (!link) return;
-            const targetId = link.getAttribute('href');
-            const targetEl = targetId && targetId !== '#' ? document.querySelector(targetId) : null;
-            if (targetEl) {
-                e.preventDefault();
-                pendingScrollTarget = targetId;
-            }
-
-            if (window.bootstrap && typeof bootstrap.Offcanvas === 'function') {
-                const instance = bootstrap.Offcanvas.getInstance(sideMenu) || new bootstrap.Offcanvas(sideMenu);
-                instance.hide();
-            } else {
-                sideMenu.classList.remove('show');
-                sideMenu.setAttribute('aria-hidden', 'true');
-                const backdrop = document.querySelector('.offcanvas-backdrop');
-                if (backdrop) backdrop.remove();
-                document.body.style.removeProperty('overflow');
-                document.body.style.removeProperty('padding-right');
-                if (pendingScrollTarget) {
-                    const fallbackTarget = document.querySelector(pendingScrollTarget);
-                    if (fallbackTarget) {
-                        fallbackTarget.scrollIntoView({behavior: 'smooth', block: 'start'});
-                    }
-                    pendingScrollTarget = null;
-                }
-            }
-        });
-    }
 
 
     initCategoryNav();

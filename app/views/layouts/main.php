@@ -6,37 +6,8 @@
 
 use app\assets\AppAsset;
 use yii\bootstrap5\Html;
-use yii\helpers\Json;
-use yii\web\View;
 use app\models\Categorys;
 
-$cityMap = $this->params['cityMap'];
-$defaultCity = $this->params['defaultCity'] ?? 'all';
-
-$defaultCityLabel = $cityMap[$defaultCity]['label'] ?? '';
-$defaultCityAddress = $cityMap[$defaultCity]['address'] ?? '';
-
-$heroTitle =  'UMI Signature Set';
-$heroMeta = '24 шт • Лосось / тунець / вугор • Фірмовий соус';
-$heroPriceText =  '649 ₴';
-$heroImage = 'assets/sushi-signature.svg';
-$heroAvailability =  'Всі міста';
-
-$cityMapForJs = [];
-foreach ($cityMap as $cityKey => $city) {
-    if (!is_array($city)) {
-        continue;
-    }
-    $label = $city['label'] ?? $cityKey;
-    $address = $city['address'] ?? '';
-    $cityMapForJs[(string) $cityKey] = [
-        'label' => (string) $label,
-        'address' => (string) $address,
-    ];
-}
-if (!empty($cityMapForJs)) {
-    $this->registerJs('window.cityMap = ' . Json::encode($cityMapForJs) . ';', View::POS_HEAD);
-}
 
 AppAsset::register($this);
 
@@ -46,6 +17,8 @@ $this->registerMetaTag(['name' => 'viewport', 'content' => 'width=device-width, 
 $this->registerMetaTag(['name' => 'description', 'content' => $this->params['meta_description'] ?? '']);
 $this->registerMetaTag(['name' => 'keywords', 'content' => $this->params['meta_keywords'] ?? '']);
 $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web/favicon.ico')]);
+
+$cartTotal = 0;
 
 ?>
 
@@ -71,8 +44,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <span>Графік: 10:00 — 23:00</span>
                 </div>
                 <div class="d-flex gap-3 align-items-center">
-                    <span>+38 (093) 000 10 10</span>
-                    <span>@umi.sushi</span>
+                    <span><?= Yii::$app->params['phone'] ?></span>
+                    <span><?= Yii::$app->params['senderEmail'] ?></span>
                     <button class="btn btn-outline-light btn-sm snow-toggle" type="button" id="snowToggle" aria-pressed="true" title="Сніг увімкнено">
                         <span class="snow-icon" aria-hidden="true"></span>
                     </button>
@@ -95,7 +68,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
 
 
-                <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-controls="cartDrawer" aria-label="Open cart">
+                <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" id="cart-button" type="button" aria-label="Open cart">
                     <span class="icon-cart" aria-hidden="true"></span>
                     <span class="bg-accent cart-badge" id="cartCount">1000 ₴</span>
                 </button>
@@ -131,26 +104,17 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </div>
         </div>
 
+        <!--КОРЗИНА-->
         <div class="offcanvas offcanvas-end" tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title fw-bold" id="cartDrawerLabel">Ваш кошик</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body d-flex flex-column gap-3">
-                <div id="cartItems" class="cart-items">
+            <div class="offcanvas-body d-flex flex-column gap-3" id="cart-content">
 
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">Разом</span>
-                    <span class="fw-bold fs-5" id="cartTotal">0 ₴</span>
-                </div>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-dark" type="button" id="checkoutBtn">Оформити</button>
-                    <button class="btn btn-outline-dark" type="button" id="clearCartBtn">Очистити кошик</button>
-                </div>
-                <p class="text-muted small mb-0">Соєвий соус, імбир та васабі додаємо безкоштовно.</p>
             </div>
         </div>
+
         <div class="container pt-4">
             <div class="row align-items-center gy-4">
                 <div class="col-lg-6">
@@ -174,17 +138,17 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
                         <div class="d-flex align-items-center mb-3">
                             <div class="hero-badge me-3">Шеф рекомендує</div>
-                            <?php if ($heroAvailability !== ''): ?>
-                                <span class="text-muted small">???????? ?: <?= Html::encode($heroAvailability) ?></span>
-                            <?php endif; ?>
+
+                                <span class="text-muted small">???????? ?: <?= Html::encode(1) ?></span>
+
                         </div>
                         <div class="d-flex align-items-center">
-                            <img src="<?= Html::encode($heroImage) ?>" class="rounded-3 me-3 hero-img" alt="<?= Html::encode($heroTitle) ?>">
+                            <img src="" class="rounded-3 me-3 hero-img" alt="<?= Html::encode('dasdad') ?>">
                             <div class="">
-                                <h4 class="fw-semibold mb-1"><?= Html::encode($heroTitle) ?></h4>
-                                <p class="text-muted small mb-2"><?= Html::encode($heroMeta) ?></p>
+                                <h4 class="fw-semibold mb-1"><?= Html::encode('$heroTitle') ?></h4>
+                                <p class="text-muted small mb-2"><?= Html::encode('$heroMeta') ?></p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="fs-5 fw-bold"><?= Html::encode($heroPriceText) ?></span>
+                                    <span class="fs-5 fw-bold"><?= Html::encode('$heroPriceText') ?></span>
                                     <button class="btn btn-sm btn-dark">Детальніше</button>
                                     <button class="btn btn-sm btn-outline-dark">До кошика</button>
                                 </div>
@@ -269,15 +233,15 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                             <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <div>
                                     <div class="text-muted small">Телефон</div>
-                                    <div class="fw-semibold">+38 (093) 000 10 10</div>
+                                    <div class="fw-semibold"><?= Yii::$app->params['phone'] ?></div>
                                 </div>
                                 <div>
                                     <div class="text-muted small">Instagram</div>
-                                    <div class="fw-semibold">@umi.sushi</div>
+                                    <div class="fw-semibold"><?= Yii::$app->params['instagram'] ?></div>
                                 </div>
                                 <div>
                                     <div class="text-muted small">Адреса</div>
-                                    <div class="fw-semibold" id="addressLabel"><?= Html::encode($defaultCityAddress) ?></div>
+                                    <div class="fw-semibold" id="addressLabel"><?= Yii::$app->params['address'] ?></div>
                                 </div>
                             </div>
                         </div>
@@ -376,11 +340,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                             <label for="cityWelcomeSelect" class="form-label">Місто доставки</label>
                             <select id="cityWelcomeSelect" class="form-select" required>
                         <option value="" disabled selected>???????? ?????</option>
-                        <?php foreach ($cityMap as $cityKey => $city): ?>
-                            <?php if (!is_array($city)) { continue; } ?>
-                            <?php $label = $city['label'] ?? $cityKey; ?>
-                            <option value="<?= Html::encode($cityKey) ?>"><?= Html::encode($label) ?></option>
-                        <?php endforeach; ?>
+<!--                        --><?php //foreach ($cityMap as $cityKey => $city): ?>
+<!--                            --><?php //if (!is_array($city)) { continue; } ?>
+<!--                            --><?php //$label = $city['label'] ?? $cityKey; ?>
+<!--                            <option value="--><?php //= Html::encode($cityKey) ?><!--">--><?php //= Html::encode($label) ?><!--</option>-->
+<!--                        --><?php //endforeach; ?>
                     </select>
                             <div class="invalid-feedback">Оберіть місто для продовження.</div>
                         </div>

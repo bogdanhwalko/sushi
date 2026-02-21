@@ -380,10 +380,13 @@ body.snow-hidden .snow-layer {
 }
 
 .cart-thumb {
-  width: 56px;
-  height: 56px;
+  width: 25%;
   border-radius: 10px;
   object-fit: cover;
+}
+
+.cart-remove {
+  width: 20px;
 }
 
 .qty-control {

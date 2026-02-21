@@ -8,14 +8,12 @@ use yii\helpers\Html;
 
 <?php if ($products): ?>
     <?php foreach ($products as $product): ?>
-    <div
-        class="col-md-6 col-lg-4 product-card"
-        data-product="<?= Html::encode($product->id) ?>"
-        data-cities="<?= Html::encode('city') ?>"
-        data-category="<?= Html::encode('cagegory') ?>">
-
+    <div class="col-md-6 col-lg-4 product-card" data-product="<?= $product->id ?>">
         <div class="card h-100 shadow-sm border-0 rounded-4">
-            <?= Html::img('@web/images/products/' . $product->image, ['alt' => $product->name, 'class' => 'card-img-top']) ?>
+            <?= Html::img('@web/images/products/' . $product->image, [
+                'alt' => $product->name,
+                'class' => 'card-img-top'
+            ]) ?>
             <div class="card-body d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>

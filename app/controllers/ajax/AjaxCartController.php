@@ -2,6 +2,7 @@
 
 namespace app\controllers\ajax;
 
+use app\forms\CartUpdateForm;
 use Yii;
 use app\models\Carts;
 use yii\web\Response;
@@ -28,47 +29,63 @@ class AjaxCartController extends Controller
     }
 
 
-    public function actionAddProduct(int $product_id, string $session_id)
+    public function beforeAction($action): bool
     {
-        $result = [];
 
-        $product = Products::find()
-            ->where(['id' => $product_id])
-            ->andWhere(['status' => 1])
-            ->one();
-
-        $result['product_name'] = $product->name;
-
-        if (empty($product)) {
-            $result['status'] = false;
-            return $result;
+        if (! parent::beforeAction($action)) {
+            return false;
         }
 
-        $cart = Carts::findOne(['session_id' => $session_id]);
-        if (empty($cart)) {
-            $cart = new Carts();
-            $cart->session_id = $session_id;
-            $cart->save();
+        if (Yii::$app->session->get('session_id')) {
+            return true;
         }
 
-        $cartItem = CartItems::find()
-            ->where(['cart_id' => $cart->id])
-            ->where(['product_id' => $product_id])
-            ->one();
-
-        if (empty($cartItem)) {
-            $cartItem = new CartItems();
-            $cartItem->product_id = $product_id;
-            $cartItem->cart_id = $cart->id;
-        }
-        else {
-            $cartItem->incrementQty();
+        GENERATE_SESSION_ID: $session_id = Yii::$app->security->generateRandomString();
+        if (Carts::findOne(['session_id' => $session_id])) {
+            goto GENERATE_SESSION_ID;
         }
 
-        $cartItem->price = $product->price;
+        Yii::$app->session->set('session_id', $session_id);
 
-        $result['qty'] = max(1, $cartItem->qty);
-        $result['status'] = $cartItem->save();
+        return true;
+    }
+
+
+    public function actionCart()
+    {
+        Yii::$app->response->format = Response::FORMAT_HTML;
+
+        $cartItems = CartItems::find()
+            ->where(['session_id' => Yii::$app->session->get('session_id')])
+            ->all();
+
+        return $this->renderPartial('cart', [
+            'cartItems' => $cartItems,
+        ]);
+    }
+
+
+
+    public function actionAddProduct(int $product_id, bool $qtyStatus = true)
+    {
+        $form = new CartUpdateForm();
+        $form->product_id = $product_id;
+        $form->qtyStatus = $qtyStatus;
+
+        $form->validate() && $form->cartItemUpdate();
+
+        return ['errors' => $form->getErrorSummary(true)];
+    }
+
+
+    public function actionDeleteItem(int $item_id)
+    {
+        $result = ['status' => false];
+
+        $cartItem = CartItems::findOne(['id' => $item_id, 'session_id' => Yii::$app->session->get('session_id')]);
+        if ($cartItem !== null) {
+            $result['status'] = $cartItem->delete();
+        }
 
         return $result;
     }

@@ -8,12 +8,14 @@ use yii\db\Expression;
 
 /**
  * @property int $id
- * @property int $cart_id
+ * @property string $session_id
  * @property int $product_id
  * @property int $qty
  * @property float $price
  * @property string $created_at
  * @property string $updated_at
+ *
+ * @property Products $product
  */
 class CartItems extends ActiveRecord
 {
@@ -27,14 +29,20 @@ class CartItems extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['cart_id', 'product_id', 'price'], 'required'],
+            [['session_id', 'product_id', 'price'], 'required'],
 
-            [['cart_id', 'product_id'], 'integer'],
+            ['product_id', 'integer'],
             ['qty', 'default', 'value' => 1],
             ['qty', 'integer', 'min' => 1],
 
+            ['session_id', 'string', 'max' => 64],
+
             ['price', 'number'],
-            [['cart_id', 'product_id'], 'unique', 'targetAttribute' => ['cart_id', 'product_id']],
+            [
+                ['session_id', 'product_id'], 'unique',
+                'targetAttribute' => ['session_id', 'product_id'],
+                'when' => fn($ml) => $ml->isNewRecord
+            ],
         ];
     }
 
@@ -55,7 +63,7 @@ class CartItems extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'cart_id' => 'Корзина',
+            'session_id' => 'Сесія користувача',
             'product_id' => 'Товар',
             'qty' => 'Кількість',
             'price' => 'Ціна за одиницю',
@@ -69,7 +77,7 @@ class CartItems extends ActiveRecord
      */
     public function getCart()
     {
-        return $this->hasOne(Carts::class, ['id' => 'cart_id']);
+        return $this->hasOne(Carts::class, ['session_id' => 'session_id']);
     }
 
     /**
@@ -91,8 +99,14 @@ class CartItems extends ActiveRecord
     /**
      * Збільшити кількість
      */
-    public function incrementQty(int $by = 1)
+    public function incrementQty(int $by = 1): void
     {
-        $this->qty += $by;
+        $this->qty = min($this->qty + $by, 100);
+    }
+
+
+    public function decrementQty(int $by = 1): void
+    {
+        $this->qty = max($this->qty - $by, 1);
     }
 }

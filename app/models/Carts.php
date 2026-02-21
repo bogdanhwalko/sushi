@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\validators\PhoneValidator;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
@@ -76,4 +77,9 @@ class Carts extends ActiveRecord
         ];
     }
 
+
+    public function getProducts()
+    {
+        return $this->hasMany(CartItems::class, ['cart_id' => 'id']);
+    }
 }
