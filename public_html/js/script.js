@@ -1,44 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const modalElement = document.getElementById('productModal');
-    const citySelector = document.getElementById('citySelector');
-    const sideCitySelector = document.getElementById('sideCitySelector');
-    const cityLabel = document.getElementById('cityLabel');
-    const addressLabel = document.getElementById('addressLabel');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalAvailability = document.getElementById('modalAvailability');
-    const modalDescription = document.getElementById('modalDescription');
-    const modalPrice = document.getElementById('modalPrice');
-    const modalWeight = document.getElementById('modalWeight');
-    const modalPieces = document.getElementById('modalPieces');
-    const modalImage = document.getElementById('modalImage');
-    const closeBtn = modalElement?.querySelector('.btn-close');
-    const cartCountEl = document.getElementById('cartCount');
-    const cartCountSideEl = document.getElementById('cartCountSide');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const cartFeedback = document.getElementById('cartFeedback');
-
-
-    const checkoutForm = document.getElementById('checkoutForm');
-    const checkoutNameEl = document.getElementById('checkoutName');
-    const checkoutPhoneEl = document.getElementById('checkoutPhone');
-    const consultModalEl = document.getElementById('consultModal');
-    const consultForm = document.getElementById('consultForm');
-    const consultPhoneEl = document.getElementById('consultPhone');
-    const consultBtn = document.getElementById('consultBtn');
-    const cityWelcomeModalEl = document.getElementById('cityWelcomeModal');
-    const cityWelcomeForm = document.getElementById('cityWelcomeForm');
-    const cityWelcomeSelect = document.getElementById('cityWelcomeSelect');
-    const cityWelcomeBtn = document.getElementById('cityWelcomeBtn');
-    const cartToastEl = document.getElementById('cartToast');
-    const cartToastMessageEl = document.getElementById('cartToastMessage');
     const snowLayer = document.getElementById('snowLayer');
     const snowToggle = document.getElementById('snowToggle');
     const happyDot = document.getElementById('happyDot');
     const happyStatus = document.getElementById('happyStatus');
 
     const productGridContainer = $('#productGrid');
-    const productDetailModal = $('#productModal');
-    const productDetailModalContent = productDetailModal.find('.modal-body');
+    const productDetailBlock = $('#productModal');
+    const productDetailModalContent = productDetailBlock.find('.modal-body');
 
     const categoryNextBtn = $('.category-next');
     const categoryFilters = $('#categoryFilters');
@@ -59,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let cartModal = bootstrap.Offcanvas.getOrCreateInstance(drawer[0]);
     let checkoutModal = bootstrap.Modal.getOrCreateInstance(checkoutModalEl[0]);
+    let productDetailModal = bootstrap.Modal.getOrCreateInstance(productDetailBlock[0]);
+
+    $('.modal').on('hide.bs.modal', function () {
+        const focusedEl = this.querySelector(':focus');
+        if (focusedEl) focusedEl.blur();
+    });
 
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
@@ -143,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
     productGridContainer.on('click', '.add-to-cart', addToCart);
-    productDetailModal.on('click', '.add-to-cart', addToCart);
+    productDetailBlock.on('click', '.add-to-cart', addToCart);
 
     function addToCart()
     {
@@ -273,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        productDetailModal.modal('show');
+        productDetailModal.show();
     })
     /* ---END [Детальна інформація про товар] END--- */
 
@@ -335,23 +309,50 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     /* ---END [Очистити корзину] END--- */
 
+
+    /* ---BEGIN [Вікно замовлення] BEGIN--- */
     cartContent.on('click', '#checkoutBtn', function (e) {
+        drawer[0].addEventListener('hidden.bs.offcanvas', function handler() {
+            checkoutModal.show();
+            drawer[0].removeEventListener('hidden.bs.offcanvas', handler);
+        });
+
         cartModal.hide();
-        checkoutModal.show();
     });
 
-    // cartContent.on('hidden.bs.modal', '#checkoutBtn', function () {
-    //     document.body.focus();
-    // });
+    $('#order-confirm-button').on('click', function (e) {
+        let name = checkoutModalEl.find('#checkoutName').val();
+        let phone = checkoutModalEl.find('#checkoutPhone').val();
 
+        let el = $(this);
+        el.prop('disabled', true);
 
-    // $(document).on('hidden.bs.modal', '.modal', function () {
-    //     document.getElementById('link-logo')?.focus();
-    // });
-    //
-    // $(document).on('hidden.bs.offcanvas', '.offcanvas', function () {
-    //     document.getElementById('link-logo')?.focus();
-    // });
+        $.ajax({
+            url: 'ajax/ajax-cart/confirm',
+            method: 'GET',
+            dataType: 'json',
+            data: {phone: phone, name: name},
+            success: function(res) {
+                cartContent.find('#cartItems').remove();
+                cartContent.find('#cartTotal').text(0);
+                el.prop('disabled', false);
+                cartModal.hide();
+                showToast('Замовлення успішно підтверджено!');
+            },
+            error: function(xhr) {
+                console.log('Помилка при спробі підтвердити замовлення!')
+            }
+        });
+    })
+
+    /* ---END [Вікно замовлення] END--- */
+
+    function nameValidator(name)
+    {
+        if (name.length < 2) {
+            showToast()
+        }
+    }
 
 
 

@@ -24,6 +24,8 @@ class Yii {
  * 
  */
 class __Application {
+
+    public \app\components\TelegramSender $ts;
 }
 
 /**

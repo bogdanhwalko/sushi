@@ -101,4 +101,19 @@ class AjaxCartController extends Controller
     {
         return CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
     }
+
+
+    public function actionConfirm($phone, $name)
+    {
+        $items = CartItems::findAll(['session_id' => Yii::$app->session->get('session_id')]);
+
+        $message = "$name ($phone) \n\n";
+        foreach ($items as $item) {
+            $message .= "{$item->product->name} {$item->qty} {$item->price} \n";
+        }
+
+        CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
+
+        return Yii::$app->ts->sendMessage($message);
+    }
 }
