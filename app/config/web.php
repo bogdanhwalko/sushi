@@ -52,7 +52,7 @@ $config = [
         'ts' => [
             'class' => \app\components\TelegramSender::class,
             'token' => '8224387367:AAFe8W9qJFq4o91npmd0kjgSmi2KuectxE0',
-            'chatId' => '359666918',
+            'chatId' => '-5169754991',
             'sending' => true
         ],
     ],

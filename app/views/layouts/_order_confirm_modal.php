@@ -9,11 +9,18 @@
                 <div class="mb-3">
                     <label for="checkoutName" class="form-label">Прізвище та ім'я</label>
                     <input type="text" class="form-control" id="checkoutName" placeholder="Напр. Іваненко Іван" autocomplete="name" required>
-                    <div class="invalid-feedback">Вкажіть прізвище та ім'я.</div>
+                    <div class="invalid-feedback">Вкажіть коректне прізвище та ім'я.</div>
                 </div>
                 <div class="mb-3">
                     <label for="checkoutPhone" class="form-label">Номер телефону</label>
-                    <input type="tel" class="form-control" id="checkoutPhone" placeholder="+38 (0XX) XXX-XX-XX" autocomplete="tel" required>
+                    <input
+                        type="tel"
+                        class="form-control"
+                        id="checkoutPhone"
+                        placeholder="+380 (XX) XXX-XX-XX"
+                        autocomplete="tel"
+                        value="+38"
+                        required>
                     <div class="invalid-feedback">Вкажіть коректний номер телефону.</div>
                 </div>
                 <button class="btn btn-dark w-100" type="submit" id="order-confirm-button">Підтвердити замовлення</button>

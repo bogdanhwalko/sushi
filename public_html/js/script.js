@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearCartBtn = $('#clearCartBtn');
     const checkoutBtn = $('#checkoutBtn');
     const checkoutModalEl = $('#checkoutModal');
+    const checkoutNameInput = $('#checkoutName');
+    const checkoutPhoneInput = $('#checkoutPhone');
+
 
     var cartUpdateStatus = true;
 
@@ -298,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'GET',
             dataType: 'json',
             success: function(res) {
-                cartContent.find('#cartItems').remove();
+                cartContent.find('#cartItems').empty();
                 cartContent.find('#cartTotal').text(0);
                 el.prop('disabled', false);
             },
@@ -312,6 +315,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---BEGIN [Вікно замовлення] BEGIN--- */
     cartContent.on('click', '#checkoutBtn', function (e) {
+        if (cartContent.find('#cartTotal').text() < 1) {
+            showToast('Для того щоб зробити замовлення потрібно мати більше одного товару в кошику!');
+            return false;
+        }
+
+        if (localStorage.getItem('phone')) {
+            checkoutPhoneInput.val(localStorage.getItem('phone'))
+        }
+
+        if (localStorage.getItem('name')) {
+            checkoutNameInput.val(localStorage.getItem('name'))
+        }
+
         drawer[0].addEventListener('hidden.bs.offcanvas', function handler() {
             checkoutModal.show();
             drawer[0].removeEventListener('hidden.bs.offcanvas', handler);
@@ -320,9 +336,17 @@ document.addEventListener('DOMContentLoaded', () => {
         cartModal.hide();
     });
 
-    $('#order-confirm-button').on('click', function (e) {
-        let name = checkoutModalEl.find('#checkoutName').val();
-        let phone = checkoutModalEl.find('#checkoutPhone').val();
+    $('#order-confirm-button').on('click', function (e)
+    {
+        let name = nameValidator(checkoutNameInput);
+        let phone = phoneValidator(checkoutPhoneInput);
+
+        if (name === false || phone === false) {
+            return;
+        }
+
+        localStorage.setItem('phone', phone);
+        localStorage.setItem('name', name);
 
         let el = $(this);
         el.prop('disabled', true);
@@ -336,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartContent.find('#cartItems').remove();
                 cartContent.find('#cartTotal').text(0);
                 el.prop('disabled', false);
-                cartModal.hide();
+                checkoutModal.hide();
                 showToast('Замовлення успішно підтверджено!');
             },
             error: function(xhr) {
@@ -347,11 +371,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---END [Вікно замовлення] END--- */
 
-    function nameValidator(name)
+    function nameValidator(nameInput)
     {
-        if (name.length < 2) {
-            showToast()
+        let name = nameInput.val();
+
+        let trimName = name.trim();
+        if (trimName.length < 2 || trimName.length > 150) {
+            nameInput.addClass('is-invalid');
+            return false;
         }
+
+        nameInput.removeClass('is-invalid');
+        return trimName;
+    }
+
+
+    function phoneValidator(phoneInput)
+    {
+        let phone = phoneInput.val();
+
+        let digits = phone.replace(/\D/g, '');
+        if (digits.length < 9 || digits.length > 12) {
+            phoneInput.addClass('is-invalid');
+            return false;
+        }
+
+        phoneInput.removeClass('is-invalid');
+        return digits;
     }
 
 
@@ -478,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`);
     }
 
-
     initCategoryNav();
     loadProducts();
 
@@ -490,20 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function showToast(message) {
     const toastEl = document.getElementById('cartToast');
     const toastMessageEl = document.getElementById('cartToastMessage');
+
     if (!toastEl || !toastMessageEl) return;
     toastMessageEl.textContent = message;
 
-    if (window.bootstrap && typeof bootstrap.Toast === 'function') {
-        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2200});
-        toast.show();
-        return;
-    }
-
-    // Fallback: basic show/hide if Bootstrap JS is unavailable.
-    toastEl.classList.add('show');
-    toastEl.style.display = 'block';
-    setTimeout(() => {
-        toastEl.classList.remove('show');
-        toastEl.style.display = 'none';
-    }, 2200);
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2200});
+    toast.show();
 }
