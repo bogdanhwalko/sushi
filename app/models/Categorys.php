@@ -93,4 +93,14 @@ class Categorys extends ActiveRecord
             ->orderBy(['sort_order' => SORT_ASC])
             ->all();
     }
+
+
+    public static function getActiveFirstId(): int
+    {
+        return static::find()
+            ->andWhere(['status' => 1])
+            ->orderBy(['sort_order' => SORT_ASC])
+            ->limit(1)
+            ->scalar();
+    }
 }

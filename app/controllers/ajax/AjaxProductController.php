@@ -2,6 +2,7 @@
 
 namespace app\controllers\ajax;
 
+use app\models\Categorys;
 use app\models\Products;
 use yii\filters\ContentNegotiator;
 use yii\rest\Controller;
@@ -25,8 +26,12 @@ class AjaxProductController extends Controller
     }
 
 
-    public function actionGetByFilters(string $categoryId = null)
+    public function actionGetByFilters($categoryId = null)
     {
+        if (empty($categoryId)) {
+            $categoryId = Categorys::getActiveFirstId();
+        }
+
         return $this->renderPartial('get-by-filters', [
             'products' => Products::findActive($categoryId),
         ]);
