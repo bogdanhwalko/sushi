@@ -95,4 +95,10 @@ class AjaxCartController extends Controller
 
         return $result;
     }
+
+
+    public function actionClearCart()
+    {
+        return CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
+    }
 }

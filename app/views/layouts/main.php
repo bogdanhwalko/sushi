@@ -57,7 +57,7 @@ $cartTotal = 0;
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <a class="navbar-brand fw-bold brand-mark" href="/">
+                <a class="navbar-brand fw-bold brand-mark" href="/" id="link-logo">
                     <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi', 'id' => 'logo']) ?>
                 </a>
             </div>

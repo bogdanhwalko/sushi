@@ -1,5 +1,3 @@
-const cityMap = window.cityMap && typeof window.cityMap === 'object' ? window.cityMap : {};
-
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('productModal');
     const citySelector = document.getElementById('citySelector');
@@ -18,9 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartCountSideEl = document.getElementById('cartCountSide');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const cartFeedback = document.getElementById('cartFeedback');
-    const clearCartBtn = document.getElementById('clearCartBtn');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const checkoutModalEl = document.getElementById('checkoutModal');
+
+
     const checkoutForm = document.getElementById('checkoutForm');
     const checkoutNameEl = document.getElementById('checkoutName');
     const checkoutPhoneEl = document.getElementById('checkoutPhone');
@@ -53,7 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartContent = $('#cart-content');
     const drawer = $('#cartDrawer');
 
+    const clearCartBtn = $('#clearCartBtn');
+    const checkoutBtn = $('#checkoutBtn');
+    const checkoutModalEl = $('#checkoutModal');
+
     var cartUpdateStatus = true;
+
+
+    let cartModal = bootstrap.Offcanvas.getOrCreateInstance(drawer[0]);
+    let checkoutModal = bootstrap.Modal.getOrCreateInstance(checkoutModalEl[0]);
+
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
@@ -308,102 +314,49 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---END [Відкриття корзини] END--- */
 
 
-    // Bootstrap modal if available; otherwise fallback to manual toggling.
+    /* ---BEGIN [Очистити корзину] BEGIN--- */
+    cartContent.on('click', '#clearCartBtn', function (e) {
+        let el = $(this);
+        el.prop('disabled', true);
 
-    let backdropEl = null;
-    const showFallbackModal = () => {
-        if (!modalElement) return;
-        modalElement.classList.add('show');
-        modalElement.style.display = 'block';
-        modalElement.removeAttribute('aria-hidden');
-        document.body.classList.add('modal-open');
-        backdropEl = document.createElement('div');
-        backdropEl.className = 'modal-backdrop fade show';
-        document.body.appendChild(backdropEl);
-    };
+        $.ajax({
+            url: 'ajax/ajax-cart/clear-cart',
+            method: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                cartContent.find('#cartItems').remove();
+                cartContent.find('#cartTotal').text(0);
+                el.prop('disabled', false);
+            },
+            error: function(xhr) {
+                console.log('Помилка при спробі очистити корзину, спробуйте ще раз!')
+            }
+        });
+    })
+    /* ---END [Очистити корзину] END--- */
 
-    const hideFallbackModal = () => {
-        if (!modalElement) return;
-        modalElement.classList.remove('show');
-        modalElement.style.display = 'none';
-        modalElement.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-        if (backdropEl && backdropEl.parentNode) {
-            backdropEl.parentNode.removeChild(backdropEl);
-        }
-        backdropEl = null;
-    };
-
-    let checkoutBackdropEl = null;
-    const showCheckoutModal = () => {
-        if (checkoutModal) {
-            checkoutModal.show();
-            return;
-        }
-        if (!checkoutModalEl) return;
-        checkoutModalEl.classList.add('show');
-        checkoutModalEl.style.display = 'block';
-        checkoutModalEl.removeAttribute('aria-hidden');
-        document.body.classList.add('modal-open');
-        checkoutBackdropEl = document.createElement('div');
-        checkoutBackdropEl.className = 'modal-backdrop fade show';
-        document.body.appendChild(checkoutBackdropEl);
-    };
-
-    checkoutBtn?.addEventListener('click', () => {
-        if (Object.keys(cart).length === 0) {
-            showToast('Кошик порожній. Додайте товари перед оформленням.');
-            return;
-        }
-        resetCheckoutForm();
-        if (window.bootstrap) {
-            const cartDrawerEl = document.getElementById('cartDrawer');
-            const drawerInstance = cartDrawerEl ? bootstrap.Offcanvas.getInstance(cartDrawerEl) : null;
-            drawerInstance?.hide();
-        }
-        showCheckoutModal();
+    cartContent.on('click', '#checkoutBtn', function (e) {
+        cartModal.hide();
+        checkoutModal.show();
     });
 
-    // const hideCheckoutModal = () => {
-    //     if (checkoutModal) {
-    //         checkoutModal.hide();
-    //         return;
-    //     }
-    //     if (!checkoutModalEl) return;
-    //     checkoutModalEl.classList.remove('show');
-    //     checkoutModalEl.style.display = 'none';
-    //     checkoutModalEl.setAttribute('aria-hidden', 'true');
-    //     document.body.classList.remove('modal-open');
-    //     if (checkoutBackdropEl && checkoutBackdropEl.parentNode) {
-    //         checkoutBackdropEl.parentNode.removeChild(checkoutBackdropEl);
-    //     }
-    //     checkoutBackdropEl = null;
-    // };
+    // cartContent.on('hidden.bs.modal', '#checkoutBtn', function () {
+    //     document.body.focus();
+    // });
 
-    const resetCheckoutForm = () => {
-        if (!checkoutForm) return;
-        checkoutForm.reset();
-        if (checkoutNameEl) checkoutNameEl.classList.remove('is-invalid');
-        if (checkoutPhoneEl) checkoutPhoneEl.classList.remove('is-invalid');
-    };
 
-    const CITY_STORAGE_KEY = 'umiCity';
+    // $(document).on('hidden.bs.modal', '.modal', function () {
+    //     document.getElementById('link-logo')?.focus();
+    // });
+    //
+    // $(document).on('hidden.bs.offcanvas', '.offcanvas', function () {
+    //     document.getElementById('link-logo')?.focus();
+    // });
 
-    const getStoredCity = () => {
-        try {
-            return localStorage.getItem(CITY_STORAGE_KEY);
-        } catch (e) {
-            return null;
-        }
-    };
 
-    const setStoredCity = (city) => {
-        try {
-            localStorage.setItem(CITY_STORAGE_KEY, city);
-        } catch (e) {
-            // Ignore storage errors (privacy mode, blocked, etc.)
-        }
-    };
+
+
+    // Bootstrap modal if available; otherwise fallback to manual toggling.
 
     const SNOW_STORAGE_KEY = 'umiSnowEnabled';
 
@@ -506,200 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         happyStatus.classList.remove('is-active');
     };
 
-    let cityBackdropEl = null;
-    const showCityWelcomeModal = () => {
-        if (cityWelcomeModal) {
-            cityWelcomeModal.show();
-            return;
-        }
-        if (!cityWelcomeModalEl) return;
-        cityWelcomeModalEl.classList.add('show');
-        cityWelcomeModalEl.style.display = 'block';
-        cityWelcomeModalEl.removeAttribute('aria-hidden');
-        document.body.classList.add('modal-open');
-        cityBackdropEl = document.createElement('div');
-        cityBackdropEl.className = 'modal-backdrop fade show';
-        document.body.appendChild(cityBackdropEl);
-    };
 
-    const hideCityWelcomeModal = () => {
-        if (cityWelcomeModal) {
-            cityWelcomeModal.hide();
-            return;
-        }
-        if (!cityWelcomeModalEl) return;
-        cityWelcomeModalEl.classList.remove('show');
-        cityWelcomeModalEl.style.display = 'none';
-        cityWelcomeModalEl.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-        if (cityBackdropEl && cityBackdropEl.parentNode) {
-            cityBackdropEl.parentNode.removeChild(cityBackdropEl);
-        }
-        cityBackdropEl = null;
-    };
-
-    const setCity = (city, persist) => {
-        const normalized = cityMap[city] ? city : 'all';
-        updateCityUI(normalized);
-        filterProducts(normalized);
-        if (persist) setStoredCity(normalized);
-    };
-
-    let consultBackdropEl = null;
-    const showConsultModal = () => {
-        if (consultModal) {
-            consultModal.show();
-            return;
-        }
-        if (!consultModalEl) return;
-        consultModalEl.classList.add('show');
-        consultModalEl.style.display = 'block';
-        consultModalEl.removeAttribute('aria-hidden');
-        document.body.classList.add('modal-open');
-        consultBackdropEl = document.createElement('div');
-        consultBackdropEl.className = 'modal-backdrop fade show';
-        document.body.appendChild(consultBackdropEl);
-    };
-
-    const hideConsultModal = () => {
-        if (consultModal) {
-            consultModal.hide();
-            return;
-        }
-        if (!consultModalEl) return;
-        consultModalEl.classList.remove('show');
-        consultModalEl.style.display = 'none';
-        consultModalEl.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-        if (consultBackdropEl && consultBackdropEl.parentNode) {
-            consultBackdropEl.parentNode.removeChild(consultBackdropEl);
-        }
-        consultBackdropEl = null;
-    };
-
-    const resetConsultForm = () => {
-        if (!consultForm) return;
-        consultForm.reset();
-        if (consultPhoneEl) consultPhoneEl.classList.remove('is-invalid');
-    };
-
-    const isValidName = (value) => {
-        const clean = value.trim();
-        if (!clean) return false;
-        const parts = clean.split(/\s+/);
-        if (parts.length < 2) return false;
-        return parts.every((part) => /^[A-Za-zА-Яа-яІіЇїЄєҐґ'-]{2,}$/.test(part));
-    };
-
-    const isValidPhone = (value) => {
-        const digits = value.replace(/\D/g, '');
-        return digits.length >= 10;
-    };
-
-    const updateCityUI = (city) => {
-        cityLabel.textContent = cityMap[city]?.label || cityMap.all.label;
-        addressLabel.textContent = cityMap[city]?.address || cityMap.all.address;
-        if (sideCitySelector && sideCitySelector.value !== city) {
-            sideCitySelector.value = city;
-        }
-        if (citySelector && citySelector.value !== city) {
-            citySelector.value = city;
-        }
-        if (cityWelcomeSelect && cityWelcomeSelect.value !== city) {
-            cityWelcomeSelect.value = city;
-        }
-    };
-
-    const openModal = (productId) => {
-
-        const city = citySelector?.value || 'all';
-        const cities = Array.isArray(product.cities) && product.cities.length ? product.cities : ['all'];
-        const available = cities.includes('all') || cities.includes(city);
-        const availabilityText = available
-            ? `Доступно у: ${cities.includes('all') ? 'всі міста' : cities.map((c) => cityMap[c]?.label).join(', ')}`
-            : 'Немає у вибраному місті, спробуйте інший філіал.';
-
-        modalTitle.textContent = product.name || '';
-        modalDescription.textContent = product.description || '';
-        const priceText = product.price || (product.priceValue ? String(product.priceValue) : '');
-        modalPrice.textContent = priceText;
-        if (modalWeight) {
-            modalWeight.textContent = product.weight || '';
-            modalWeight.style.display = product.weight ? '' : 'none';
-        }
-        if (modalPieces) {
-            modalPieces.textContent = product.pieces || '';
-            modalPieces.style.display = product.pieces ? '' : 'none';
-        }
-        modalImage.setAttribute('src', product.image || '');
-        modalImage.setAttribute('alt', product.name || '');
-        modalAvailability.textContent = availabilityText;
-        if (cartFeedback) cartFeedback.style.display = 'none';
-
-        if (bsModal) {
-            bsModal.show();
-        } else {
-            showFallbackModal();
-        }
-    };
-
-
-
-    consultBtn?.addEventListener('click', () => {
-        resetConsultForm();
-        showConsultModal();
-    });
-
-    checkoutNameEl?.addEventListener('input', () => {
-        checkoutNameEl.classList.remove('is-invalid');
-    });
-
-    checkoutPhoneEl?.addEventListener('input', () => {
-        checkoutPhoneEl.classList.remove('is-invalid');
-    });
-
-    consultPhoneEl?.addEventListener('input', () => {
-        consultPhoneEl.classList.remove('is-invalid');
-    });
-
-    checkoutForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nameValue = checkoutNameEl ? checkoutNameEl.value : '';
-        const phoneValue = checkoutPhoneEl ? checkoutPhoneEl.value : '';
-        const nameOk = isValidName(nameValue);
-        const phoneOk = isValidPhone(phoneValue);
-        if (checkoutNameEl) checkoutNameEl.classList.toggle('is-invalid', !nameOk);
-        if (checkoutPhoneEl) checkoutPhoneEl.classList.toggle('is-invalid', !phoneOk);
-        if (!nameOk || !phoneOk) return;
-        showToast('Замовлення прийнято. Очікуйте дзвінок!');
-        hideCheckoutModal();
-        clearCart();
-    });
-
-    consultForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const phoneValue = consultPhoneEl ? consultPhoneEl.value : '';
-        const phoneOk = isValidPhone(phoneValue);
-        if (consultPhoneEl) consultPhoneEl.classList.toggle('is-invalid', !phoneOk);
-        if (!phoneOk) return;
-        showToast('Дякуємо! Ми зателефонуємо найближчим часом.');
-        hideConsultModal();
-    });
-
-    cityWelcomeSelect?.addEventListener('change', () => {
-        cityWelcomeSelect.classList.remove('is-invalid');
-    });
-
-    cityWelcomeForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const selectedCity = cityWelcomeSelect ? cityWelcomeSelect.value : '';
-        if (!selectedCity) {
-            if (cityWelcomeSelect) cityWelcomeSelect.classList.add('is-invalid');
-            return;
-        }
-        setCity(selectedCity, true);
-        hideCityWelcomeModal();
-    });
 
     snowToggle?.addEventListener('click', () => {
         const enabled = !document.body.classList.contains('snow-hidden');
@@ -721,10 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initCategoryNav();
     loadProducts();
 
-
-    if (false) {
-        showCityWelcomeModal();
-    }
     initSnow();
     updateHappyHours();
     setInterval(updateHappyHours, 60000);
