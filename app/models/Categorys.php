@@ -90,7 +90,7 @@ class Categorys extends ActiveRecord
         return static::find()
             ->select(['slug', 'name', 'id'])
             ->andWhere(['status' => 1])
-            ->orderBy(['sort_order' => SORT_ASC])
+            ->orderBy(['sort_order' => SORT_DESC])
             ->all();
     }
 
@@ -99,7 +99,7 @@ class Categorys extends ActiveRecord
     {
         return static::find()
             ->andWhere(['status' => 1])
-            ->orderBy(['sort_order' => SORT_ASC])
+            ->orderBy(['sort_order' => SORT_DESC])
             ->limit(1)
             ->scalar();
     }
