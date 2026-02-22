@@ -48,9 +48,9 @@ $cartTotal = 0;
                 <div class="d-flex gap-3 align-items-center">
                     <span><?= Yii::$app->params['phone'] ?></span>
                     <span><?= Yii::$app->params['senderEmail'] ?></span>
-                    <button class="btn btn-outline-light btn-sm snow-toggle" type="button" id="snowToggle" aria-pressed="true" title="Сніг увімкнено">
-                        <span class="snow-icon" aria-hidden="true"></span>
-                    </button>
+<!--                    <button class="btn btn-outline-light btn-sm snow-toggle" type="button" id="snowToggle" aria-pressed="true" title="Сніг увімкнено">-->
+<!--                        <span class="snow-icon" aria-hidden="true"></span>-->
+<!--                    </button>-->
                 </div>
             </div>
         </div>
