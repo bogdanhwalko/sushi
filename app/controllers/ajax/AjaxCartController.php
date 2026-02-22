@@ -108,7 +108,7 @@ class AjaxCartController extends Controller
         $items = CartItems::findAll(['session_id' => Yii::$app->session->get('session_id')]);
 
         $total = 0;
-        $message = "\xf0\x9f\x93\x91 <b>$name</b> \n \xe2\x98\x8e $phone \n\n";
+        $message = "\xe2\x98\x8e <b>$phone</b> ($name) \n\n";
         foreach ($items as $item) {
             $total += ($item->price * $item->qty);
             $message .= "\xf0\x9f\x8d\xa3 {$item->product->name} {$item->qty}шт. <b>{$item->price}</b>₴ \n";
