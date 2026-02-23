@@ -22,27 +22,27 @@ use yii\helpers\Html;
                 </div>
             </div>
         </div>
-        <div class="col-lg-5 ms-auto">
-            <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="hero-badge me-3">Шеф рекомендує</div>
-
-                    <span class="text-muted small">???????? ?: <?= Html::encode(1) ?></span>
-
-                </div>
-                <div class="d-flex align-items-center">
-                    <img src="" class="rounded-3 me-3 hero-img" alt="<?= Html::encode('dasdad') ?>">
-                    <div class="">
-                        <h4 class="fw-semibold mb-1"><?= Html::encode('$heroTitle') ?></h4>
-                        <p class="text-muted small mb-2"><?= Html::encode('$heroMeta') ?></p>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="fs-5 fw-bold"><?= Html::encode('$heroPriceText') ?></span>
-                            <button class="btn btn-sm btn-dark">Детальніше</button>
-                            <button class="btn btn-sm btn-outline-dark">До кошика</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!--        <div class="col-lg-5 ms-auto">-->
+<!--            <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">-->
+<!--                <div class="d-flex align-items-center mb-3">-->
+<!--                    <div class="hero-badge me-3">Щасливі години</div>-->
+<!---->
+<!--                    <span class="text-muted small">Доступно з 12:00–15:00 та 19:00–22:00</span>-->
+<!---->
+<!--                </div>-->
+<!--                <div class="d-flex align-items-center">-->
+<!--                    <img src="" class="rounded-3 me-3 hero-img" alt="--><?php //= Html::encode('dasdad') ?><!--">-->
+<!--                    <div class="">-->
+<!--                        <h4 class="fw-semibold mb-1">--><?php //= Html::encode('$heroTitle') ?><!--</h4>-->
+<!--                        <p class="text-muted small mb-2">--><?php //= Html::encode('$heroMeta') ?><!--</p>-->
+<!--                        <div class="d-flex align-items-center gap-2 flex-wrap">-->
+<!--                            <span class="fs-5 fw-bold">--><?php //= Html::encode('$heroPriceText') ?><!--</span>-->
+<!--                            <button class="btn btn-sm btn-dark">Детальніше</button>-->
+<!--                            <button class="btn btn-sm btn-outline-dark">До кошика</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
     </div>
 </div>
