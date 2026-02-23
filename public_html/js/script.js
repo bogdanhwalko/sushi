@@ -369,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
             success: function(res) {
                 cartContent.find('#cartItems').remove();
                 cartContent.find('#cartTotal').text(0);
+                cartCountSpan.text(0);
                 el.prop('disabled', false);
                 checkoutModal.hide();
                 showToast('Замовлення успішно підтверджено!');

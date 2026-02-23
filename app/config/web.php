@@ -7,6 +7,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'language' => 'uk',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -47,6 +48,9 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 '' => 'site/index',
+                'admin-panel/<controller>/<action>' => 'admin-panel/<controller>/<action>',
+                'admin-panel/<controller>' => 'admin-panel/<controller>/index',
+                'admin-panel' => 'admin-panel/default/index',
             ],
         ],
         'ts' => [
@@ -54,6 +58,11 @@ $config = [
             'token' => '8224387367:AAFe8W9qJFq4o91npmd0kjgSmi2KuectxE0',
             'chatId' => '-5169754991',
             'sending' => true
+        ],
+    ],
+    'modules' => [
+        'admin-panel' => [
+            'class' => \app\modules\admin\Admin::class,
         ],
     ],
     'params' => $params,
@@ -72,7 +81,7 @@ if (YII_ENV_DEV) {
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['*'],
     ];
 }
 
