@@ -122,8 +122,8 @@ $cartTotal = 0;
                 </div>
 
                 <!--Продукти-->
-                <div class="row g-4 mt-0" id="productGrid"></div>
             </div>
+            <div class="row g-4" id="productGrid"></div>
         </section>
 
 
