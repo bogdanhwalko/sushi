@@ -38,7 +38,7 @@ class Products extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['category_id', 'name', 'slug', 'price'], 'required'],
+            [['category_id', 'name', 'price'], 'required'],
 
             [['category_id', 'status', 'sort_order'], 'integer'],
 
