@@ -50,21 +50,9 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-
-        $cityMap = [
-            'all' => ['label' => 'Всі міста', 'address' => 'Всі міста'],
-            'kyiv' => ['label' => 'Київ', 'address' => 'Київ, Київська 10'],
-            'kyiv20' => ['label' => 'Київ', 'address' => 'Київ, Київська 20'],
-            'kyiv30' => ['label' => 'Київ', 'address' => 'Київ, Київська 30'],
-        ];
-
-        $this->view->params['cityMap'] = $cityMap;
-        $this->view->params['defaultCity'] = 'kyiv';
-
-        $this->view->params['cartItems'] = CartItems::findAll([
-            'session_id' => Yii::$app->session->get('session_id'),
-        ]);
-
+        $this->view->params['totalCount'] = (int)CartItems::find()
+            ->where(['session_id' => Yii::$app->session->get('session_id')])
+            ->sum('qty');
 
         return $this->render('index');
     }

@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const clearCartBtn = $('#clearCartBtn');
     const checkoutBtn = $('#checkoutBtn');
+    const cartCountSpan = $('#cartCount');
     const checkoutModalEl = $('#checkoutModal');
     const checkoutNameInput = $('#checkoutName');
     const checkoutPhoneInput = $('#checkoutPhone');
@@ -137,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {product_id: product_id, qtyStatus: qtyStatus},
             success: function(res) {
                 if (res.errors.length < 1) {
+                    cartCountSpan.text(cartCountSpan.text() * 1 + 1);
                     showToast('Товар додано до кошика');
                     cartUpdateStatus = true;
                     return true;
@@ -168,6 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {item_id: parentBlock.data('item_id')},
             success: function(res) {
                 if (res.status) {
+                    if (res.qty > 0) {
+                        cartCountSpan.text(cartCountSpan.text() * 1 - res.qty);
+                    }
+
                     let totalBlock = cartContent.find('#cartTotal');
                     totalBlock.text(totalBlock.text() - parentBlock.find('.total-item-price').text());
 
@@ -218,7 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalPriceItemBlock.text(itemPrice * qty);
 
                     let totalBlock = cartContent.find('#cartTotal');
-                    totalBlock.text(Number(totalBlock.text()) + itemPrice * prefix);
+                    totalBlock.text(totalBlock.text() * 1 + itemPrice * prefix);
+
+                    cartCountSpan.text(cartCountSpan.text() * 1 + prefix)
+
                     el.prop('disabled', false);
                 },
                 error: function(xhr) {
@@ -303,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             success: function(res) {
                 cartContent.find('#cartItems').empty();
                 cartContent.find('#cartTotal').text(0);
+                cartCountSpan.text(0);
                 el.prop('disabled', false);
             },
             error: function(xhr) {

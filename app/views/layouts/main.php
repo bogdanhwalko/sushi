@@ -68,11 +68,11 @@ $cartTotal = 0;
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#contact">Контакти</a>
 
-
-
                 <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" id="cart-button" type="button" aria-label="Open cart">
+                    <span class="bg-accent cart-badge">
+                        <span id="cartCount"><?= $this->params['totalCount'] ?> </span>
+                    </span>
                     <span class="icon-cart" aria-hidden="true"></span>
-                    <span class="bg-accent cart-badge" id="cartCount">1000 ₴</span>
                 </button>
                 <a class="order-button btn btn-light text-dark fw-semibold px-3 d-none d-lg-inline-flex" href="#menu">Замовити</a>
             </div>

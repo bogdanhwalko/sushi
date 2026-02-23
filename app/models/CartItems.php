@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
@@ -11,7 +12,7 @@ use yii\db\Expression;
  * @property string $session_id
  * @property int $product_id
  * @property int $qty
- * @property float $price
+ * @property int $price
  * @property string $created_at
  * @property string $updated_at
  *
@@ -108,5 +109,13 @@ class CartItems extends ActiveRecord
     public function decrementQty(int $by = 1): void
     {
         $this->qty = max($this->qty - $by, 1);
+    }
+
+
+    public static function getTotalPrice(): int
+    {
+        return self::find()
+            ->where(['session_id' => Yii::$app->session->get('session_id')])
+            ->sum(new Expression('price * qty')) ?? 0;
     }
 }

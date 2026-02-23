@@ -90,6 +90,7 @@ class AjaxCartController extends Controller
 
         $cartItem = CartItems::findOne(['id' => $item_id, 'session_id' => Yii::$app->session->get('session_id')]);
         if ($cartItem !== null) {
+            $result['qty'] = $cartItem->qty;
             $result['status'] = $cartItem->delete();
         }
 
