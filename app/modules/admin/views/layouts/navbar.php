@@ -31,7 +31,9 @@ use app\models\Notification;
             </a>
         </li>
         <li class="nav-item">
-            <?= Html::a('<i class="fas fa-sign-out-alt"></i>', ['/auth/logout'], ['data-method' => 'post', 'class' => 'nav-link']) ?>
+            <?= Html::a('<i class="fas fa-sign-out-alt"></i>',
+                ['/admin-panel/auth/logout'],
+                ['data-method' => 'post', 'class' => 'nav-link']) ?>
         </li>
     </ul>
 </nav>

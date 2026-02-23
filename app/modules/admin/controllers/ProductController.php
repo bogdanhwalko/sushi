@@ -4,7 +4,6 @@ namespace app\modules\admin\controllers;
 
 use app\modules\admin\models\Product;
 use app\modules\admin\models\search\ProductSearch;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
@@ -12,7 +11,7 @@ use yii\web\UploadedFile;
 /**
  * ProductController implements the CRUD actions for Product model.
  */
-class ProductController extends Controller
+class ProductController extends AbstractController
 {
     /**
      * @inheritDoc

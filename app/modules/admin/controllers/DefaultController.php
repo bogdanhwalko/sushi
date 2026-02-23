@@ -2,12 +2,8 @@
 
 namespace app\modules\admin\controllers;
 
-use yii\web\Controller;
 
-/**
- * Default controller for the `admin-panel` module
- */
-class DefaultController extends Controller
+class DefaultController extends AbstractController
 {
     /**
      * Renders the index view for the module
