@@ -55,7 +55,7 @@ class Product extends \yii\db\ActiveRecord
             [['currency'], 'default', 'value' => 'UAH'],
             [['status'], 'default', 'value' => 1],
             [['sort_order'], 'default', 'value' => 100],
-            [['category_id', 'name', 'slug', 'price'], 'required'],
+            [['category_id', 'name', 'price'], 'required'],
             [['category_id', 'price', 'status', 'sort_order'], 'integer'],
             [['description'], 'string'],
             [['old_price', 'weight'], 'number'],
