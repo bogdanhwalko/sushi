@@ -4,6 +4,8 @@ namespace app\modules\admin\models;
 
 use app\models\CartItems;
 use Yii;
+use yii\helpers\FileHelper;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "product".
@@ -30,6 +32,9 @@ use Yii;
  */
 class Product extends \yii\db\ActiveRecord
 {
+
+    /** @var UploadedFile|null */
+    public $imageFile;
 
 
     /**
@@ -59,6 +64,12 @@ class Product extends \yii\db\ActiveRecord
             [['short_description', 'meta_description'], 'string', 'max' => 500],
             [['currency'], 'string', 'max' => 3],
             [['slug'], 'unique'],
+
+            [['imageFile'], 'file',
+                'skipOnEmpty' => true,
+                'extensions' => ['png','jpg','jpeg','webp'],
+                'maxSize' => 5 * 1024 * 1024, // 5MB
+            ],
         ];
     }
 
@@ -104,4 +115,31 @@ class Product extends \yii\db\ActiveRecord
         return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
 
+
+    public function uploadImage(): bool
+    {
+        if (!$this->imageFile) {
+            return true; // нічого не завантажували — не помилка
+        }
+
+        if (!$this->validate(['imageFile'])) {
+            return false;
+        }
+
+        $dir = \Yii::getAlias('@webroot/uploads/products/');
+
+        // безпечно генеруємо ім'я
+        $name = bin2hex(random_bytes(16)) . '.' . $this->imageFile->extension;
+        $path = $dir . DIRECTORY_SEPARATOR . $name;
+
+        if (!$this->imageFile->saveAs($path)) {
+            $this->addError('imageFile', 'Не вдалося зберегти файл.');
+            return false;
+        }
+
+        // шлях для збереження в БД (url-частина)
+        $this->image = $name;
+
+        return true;
+    }
 }

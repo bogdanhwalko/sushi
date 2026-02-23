@@ -10,10 +10,11 @@ use yii\helpers\Html;
     <?php foreach ($products as $product): ?>
     <div class="col-md-6 col-lg-4 product-card" data-product="<?= $product->id ?>">
         <div class="card h-100 shadow-sm border-0 rounded-4">
-            <?= Html::img('@web/images/products/' . $product->image, [
+            <?= Html::img('@products/' . $product->image, [
                 'alt' => $product->name,
-                'class' => 'card-img-top'
+                'class' => 'card-img-top',
             ]) ?>
+
             <div class="card-body d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
@@ -24,15 +25,13 @@ use yii\helpers\Html;
                     </div>
                     <span class="badge bg-primary-soft text-primary"><?= Html::encode($product->getPriseAsText()) ?></span>
                 </div>
-                <?php if (! empty($product->description)): ?>
-                    <p class="card-text text-muted small flex-grow-1"><?= Html::encode($product->description) ?></p>
-                <?php endif; ?>
+                <p class="card-text text-muted small flex-grow-1"><?= Html::encode($product->description) ?></p>
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-outline-dark btn-sm view-details">Детальніше</button>
                         <button class="btn btn-dark btn-sm add-to-cart">До кошика</button>
                     </div>
-                    <span class="city-tag"><?= Html::encode('city') ?></span>
+<!--                    <span class="city-tag">--><?php //= Html::encode('city') ?><!--</span>-->
                 </div>
             </div>
         </div>

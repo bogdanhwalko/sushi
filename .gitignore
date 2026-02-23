@@ -36,5 +36,7 @@ tests/_support/_generated
 /app/vagrant
 /app/tests
 
+/public_html/uploads/
+
 /app/composer.lock
 /public_html/images/products/original

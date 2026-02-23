@@ -14,7 +14,9 @@ $this->params['breadcrumbs'][] = 'Оновлення';
 ?>
 <div class="product-update">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+        'options' => ['enctype' => 'multipart/form-data'],
+    ]); ?>
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -72,7 +74,13 @@ $this->params['breadcrumbs'][] = 'Оновлення';
                             <?= $form->field($model, 'short_description')->textarea(['rows' => 2]) ?>
                         </div>
                         <div class="col-md-12">
-                            <?= $form->field($model, 'image')->textInput(['maxlength' => true]) ?>
+                            <?php if ($model->image): ?>
+                                <?= Html::img('@products/'. $model->image, [
+                                    'alt' => $model->name, 'class' => 'img-fluid', 'width' => '300px'
+                                ]) ?>
+                            <?php endif; ?>
+                            <?= $form->field($model, 'imageFile')
+                                ->fileInput(['accept' => 'image/*', 'class' => 'form-control']) ?>
                         </div>
                     </div>
                 </div>
@@ -81,7 +89,7 @@ $this->params['breadcrumbs'][] = 'Оновлення';
 
         <div class="col-md-12 text-right">
             <div class="form-group">
-                <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+                <?= Html::submitButton('Зберегти', ['class' => 'btn btn-success']) ?>
             </div>
         </div>
     </div>
