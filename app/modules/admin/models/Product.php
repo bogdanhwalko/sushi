@@ -63,7 +63,6 @@ class Product extends \yii\db\ActiveRecord
             [['name', 'slug', 'image', 'meta_title'], 'string', 'max' => 255],
             [['short_description', 'meta_description'], 'string', 'max' => 500],
             [['currency'], 'string', 'max' => 3],
-            [['slug'], 'unique'],
 
             [['imageFile'], 'file',
                 'skipOnEmpty' => true,
