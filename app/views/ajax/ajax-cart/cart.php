@@ -15,7 +15,7 @@ $cartTotal = 0;
                 class="cart-line d-flex gap-3 align-items-center cart-item"
                 data-item_id="<?= $cartItem->id ?>">
 
-                <?= Html::img('@web/images/products/' . $cartItem->product->image, [
+                <?= Html::img('@products/' . $cartItem->product->image, [
                     'alt' => $cartItem->product->name,
                     'class' => 'cart-thumb align-self-start'
                 ]) ?>
