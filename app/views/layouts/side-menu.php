@@ -26,8 +26,8 @@ use yii\helpers\Html;
 //            )?>
         </div>
         <div class="border-top pt-3 text-white-50 small">
-            <div>Графік: 10:00 — 23:00</div>
-            <div>Телефон: +38 (093) 000 10 10</div>
+            <div>Графік: <?= Yii::$app->params['schedule'] ?></div>
+            <div>Телефон: <?= Yii::$app->params['phone'] ?></div>
         </div>
     </div>
 </div>

@@ -484,8 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const HAPPY_HOURS = [
-        {start: 12 * 60, end: 15 * 60},
-        {start: 19 * 60, end: 22 * 60}
+        {start: 10 * 60, end: 14 * 60},
     ];
 
     const minutesToLabel = (minutes) => {

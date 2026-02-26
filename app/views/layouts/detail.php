@@ -6,7 +6,7 @@ use yii\helpers\Html;
 <div class="container pt-4">
     <div class="row align-items-center gy-4">
         <div class="col-lg-6">
-            <p class="eyebrow mb-2">Доставка за 45 хвилин</p>
+            <p class="eyebrow mb-2">Забери сам та отримай знижку -5%</p>
             <h1 class="display-4 fw-bold lh-1 mb-3">
                 Доставка японської кухні у твоєму місті
                 <span class="highlight text-sushi">"107 SUSHI"</span>

@@ -13,7 +13,7 @@
                 <div class="contact-card bg-white rounded-4 p-4 shadow-lg">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="fw-semibold">Графік</span>
-                        <span class="text-muted small">10:00 — 23:00</span>
+                        <span class="text-muted small"><?= Yii::$app->params['schedule'] ?></span>
                     </div>
                     <p class="text-muted small mb-3">Однаковий для всіх міст, доставка починається за 45 хвилин.</p>
                     <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -22,13 +22,17 @@
                             <div class="fw-semibold"><?= Yii::$app->params['phone'] ?></div>
                         </div>
                         <div>
-                            <div class="text-muted small">Instagram</div>
-                            <div class="fw-semibold"><?= Yii::$app->params['instagram'] ?></div>
+                            <div class="text-muted small">Email</div>
+                            <div class="fw-semibold"><?= Yii::$app->params['senderEmail'] ?></div>
                         </div>
-                        <div>
-                            <div class="text-muted small">Адреса</div>
-                            <div class="fw-semibold" id="addressLabel"><?= Yii::$app->params['address'] ?></div>
-                        </div>
+<!--                        <div>-->
+<!--                            <div class="text-muted small">Instagram</div>-->
+<!--                            <div class="fw-semibold">--><?php //= Yii::$app->params['instagram'] ?><!--</div>-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <div class="text-muted small">Адреса</div>-->
+<!--                            <div class="fw-semibold" id="addressLabel">--><?php //= Yii::$app->params['address'] ?><!--</div>-->
+<!--                        </div>-->
                     </div>
                 </div>
             </div>
