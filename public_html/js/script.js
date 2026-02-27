@@ -483,40 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setSnowEnabled(enabled, false);
     };
 
-    const HAPPY_HOURS = [
-        {start: 10 * 60, end: 14 * 60},
-    ];
-
-    const minutesToLabel = (minutes) => {
-        const h = String(Math.floor(minutes / 60)).padStart(2, '0');
-        const m = String(minutes % 60).padStart(2, '0');
-        return `${h}:${m}`;
-    };
-
-    const buildRangeLabel = (range) => `${minutesToLabel(range.start)}–${minutesToLabel(range.end)}`;
-
-    const updateHappyHours = () => {
-        if (!happyStatus || !happyDot) return;
-        const now = new Date();
-        const minutes = now.getHours() * 60 + now.getMinutes();
-        const active = HAPPY_HOURS.find((range) => minutes >= range.start && minutes < range.end);
-        if (active) {
-            happyStatus.textContent = `Діють зараз • -20% до ${minutesToLabel(active.end)}`;
-            happyDot.classList.add('is-active');
-            happyStatus.classList.add('is-active');
-            return;
-        }
-        const next = HAPPY_HOURS.find((range) => range.start > minutes);
-        if (next) {
-            happyStatus.textContent = `Наступні ${buildRangeLabel(next)}`;
-        } else {
-            happyStatus.textContent = `Завтра ${buildRangeLabel(HAPPY_HOURS[0])}`;
-        }
-        happyDot.classList.remove('is-active');
-        happyStatus.classList.remove('is-active');
-    };
-
-
 
     snowToggle?.addEventListener('click', () => {
         const enabled = !document.body.classList.contains('snow-hidden');
@@ -538,8 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
 
     initSnow();
-    updateHappyHours();
-    setInterval(updateHappyHours, 60000);
 });
 
 function showToast(message) {

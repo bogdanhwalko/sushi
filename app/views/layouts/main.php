@@ -42,12 +42,11 @@ $cartTotal = 0;
         <div class="topbar">
             <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">
                 <div class="d-flex gap-3 align-items-center">
-                    <span class="d-flex align-items-center gap-1"><span class="dot"></span>Доставка 45 хв</span>
                     <span>Графік: <?= Yii::$app->params['schedule'] ?></span>
                 </div>
                 <div class="d-flex gap-3 align-items-center">
-                    <span><?= Yii::$app->params['phone'] ?></span>
-                    <span><?= Yii::$app->params['senderEmail'] ?></span>
+<!--                    <span>--><?php //= Yii::$app->params['phone'] ?><!--</span>-->
+<!--                    <span>--><?php //= Yii::$app->params['senderEmail'] ?><!--</span>-->
 <!--                    <button class="btn btn-outline-light btn-sm snow-toggle" type="button" id="snowToggle" aria-pressed="true" title="Сніг увімкнено">-->
 <!--                        <span class="snow-icon" aria-hidden="true"></span>-->
 <!--                    </button>-->
@@ -82,7 +81,7 @@ $cartTotal = 0;
 
         <?= $this->render('cart') ?>
 
-        <?= $this->render('detail') ?>
+        <?= $this->render('detail', ['productOfWeek' => $this->params['productOfWeek']]) ?>
 
 
     </header>

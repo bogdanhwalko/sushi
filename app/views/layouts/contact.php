@@ -15,7 +15,7 @@
                         <span class="fw-semibold">Графік</span>
                         <span class="text-muted small"><?= Yii::$app->params['schedule'] ?></span>
                     </div>
-                    <p class="text-muted small mb-3">Однаковий для всіх міст, доставка починається за 45 хвилин.</p>
+                    <p class="text-muted small mb-3">Однаковий для всіх міст.</p>
                     <div class="d-flex align-items-center gap-3 flex-wrap">
                         <div>
                             <div class="text-muted small">Телефон</div>

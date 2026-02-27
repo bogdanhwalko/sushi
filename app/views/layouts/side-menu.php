@@ -27,7 +27,6 @@ use yii\helpers\Html;
         </div>
         <div class="border-top pt-3 text-white-50 small">
             <div>Графік: <?= Yii::$app->params['schedule'] ?></div>
-            <div>Телефон: <?= Yii::$app->params['phone'] ?></div>
         </div>
     </div>
 </div>
