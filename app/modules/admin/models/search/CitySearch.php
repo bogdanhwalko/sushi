@@ -4,12 +4,12 @@ namespace app\modules\admin\models\search;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\modules\admin\models\Product;
+use app\modules\admin\models\City;
 
 /**
- * ProductSearch represents the model behind the search form of `app\modules\admin\models\Product`.
+ * CitySearch represents the model behind the search form of `app\modules\admin\models\City`.
  */
-class ProductSearch extends Product
+class CitySearch extends City
 {
     /**
      * {@inheritdoc}
@@ -17,9 +17,8 @@ class ProductSearch extends Product
     public function rules(): array
     {
         return [
-            [['id', 'category_id', 'price', 'status', 'sort_order'], 'integer'],
-            [['name', 'slug', 'description', 'short_description', 'currency', 'image', 'meta_title', 'meta_description', 'created_at', 'updated_at'], 'safe'],
-            [['old_price', 'weight'], 'number'],
+            [['id', 'sort_order', 'status'], 'integer'],
+            [['alias', 'name', 'full_name', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -42,7 +41,7 @@ class ProductSearch extends Product
      */
     public function search($params, $formName = null)
     {
-        $query = Product::find();
+        $query = City::find();
 
         // add conditions that should always apply here
 
@@ -61,24 +60,15 @@ class ProductSearch extends Product
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'category_id' => $this->category_id,
-            'price' => $this->price,
-            'old_price' => $this->old_price,
-            'weight' => $this->weight,
-            'status' => $this->status,
             'sort_order' => $this->sort_order,
+            'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'slug', $this->slug])
-            ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'short_description', $this->short_description])
-            ->andFilterWhere(['like', 'currency', $this->currency])
-            ->andFilterWhere(['like', 'image', $this->image])
-            ->andFilterWhere(['like', 'meta_title', $this->meta_title])
-            ->andFilterWhere(['like', 'meta_description', $this->meta_description]);
+        $query->andFilterWhere(['like', 'alias', $this->alias])
+            ->andFilterWhere(['like', 'name', $this->name])
+            ->andFilterWhere(['like', 'full_name', $this->full_name]);
 
         return $dataProvider;
     }

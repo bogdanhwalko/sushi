@@ -139,6 +139,8 @@ $cartTotal = 0;
 
     <?= $this->render('_consultation_modal') ?>
 
+    <?= $this->render('_city_select_modal') ?>
+
     <?= $this->render('toast') ?>
 
     <?php $this->endBody() ?>

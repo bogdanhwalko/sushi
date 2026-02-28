@@ -4,6 +4,8 @@ namespace app\controllers;
 
 use app\models\CartItems;
 use app\models\Carts;
+use app\models\Cities;
+use app\models\Products;
 use Yii;
 use yii\web\Controller;
 
@@ -53,6 +55,9 @@ class SiteController extends Controller
         $this->view->params['totalCount'] = (int)CartItems::find()
             ->where(['session_id' => Yii::$app->session->get('session_id')])
             ->sum('qty');
+
+        $this->view->params['productOfWeek'] = Products::findOne(1);
+        $this->view->params['cities'] = Cities::getCitiesInSelect();
 
         return $this->render('index');
     }

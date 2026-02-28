@@ -56,6 +56,14 @@
                         'icon' => 'fa-sharp fa-light fa-user',
                         'visible' => true,
                     ],
+
+                    [
+                        'label' => 'Міста',
+                        'url' => ['/admin-panel/city/index'],
+                        //'iconStyle' => 'far',
+                        'icon' => 'fa-sharp fa-light fa-user',
+                        'visible' => true,
+                    ],
                 ],
             ]);
             ?>

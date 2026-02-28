@@ -14,16 +14,12 @@ use yii\helpers\Html;
         <a class="text-white text-decoration-none fw-semibold" href="#about" data-bs-dismiss="offcanvas">Про нас</a>
         <a class="text-white text-decoration-none fw-semibold" href="#contact" data-bs-dismiss="offcanvas">Контакти</a>
         <div class="border-top pt-3">
-<!--            <div class="city-select-label">Місто</div>-->
-<!--            --><?php //= Html::dropDownList(
-//                'cities_in_menu',
-//                'all',
-//                \app\models\Cities::getCitiesInSelect(),
-//                [
-//                    'class' => 'form-select form-select-sm side-city-select',
-//                    'id' => 'sideCitySelector'
-//                ]
-//            )?>
+            <label for="cityWelcomeSelect" class="form-label">Локація</label>
+            <?= \yii\helpers\Html::dropDownList('city', null, $this->params['cities'], [
+                'class' => 'form-select form-select-sm side-city-select city-dropdown',
+                'id' => 'sideCitySelector',
+            ])?>
+            <div class="invalid-feedback">Вказаний заклад відсутній у списку</div>
         </div>
         <div class="border-top pt-3 text-white-50 small">
             <div>Графік: <?= Yii::$app->params['schedule'] ?></div>

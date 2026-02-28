@@ -34,49 +34,41 @@ class Categorys extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['name', 'slug'], 'required'],
+            [['parent_id', 'description'], 'default', 'value' => null],
+            [['sort_order'], 'default', 'value' => 100],
+            [['status'], 'default', 'value' => 1],
             [['parent_id', 'sort_order', 'status'], 'integer'],
+            [['name', 'slug'], 'required'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
-
             [['name', 'slug'], 'string', 'max' => 100],
-
-            // slug повинен бути унікальним
-            [['slug'], 'unique'],
-
-            // parent_id має посилатися на існуючу категорію
-            [
-                ['parent_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => self::class,
-                'targetAttribute' => ['parent_id' => 'id'],
-            ],
-
-            // (опційно) slug у форматі "rolls", "sets", "veggie"
-            [['slug'], 'match', 'pattern' => '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'message' => 'Slug має містити лише латиницю, цифри та дефіси.'],
         ];
     }
 
-    public function attributeLabels(): array
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
     {
         return [
             'id' => 'ID',
             'parent_id' => 'Батьківська категорія',
-            'name' => 'Назва категорії',
-            'slug' => 'Slug (URL-ідентифікатор)',
+            'name' => 'Назва',
+            'slug' => 'Аліс',
             'description' => 'Опис',
-            'sort_order' => 'Порядок сортування',
+            'sort_order' => 'Сортування',
             'status' => 'Статус',
             'created_at' => 'Створено',
             'updated_at' => 'Оновлено',
         ];
     }
 
+
     public function getParent()
     {
         return $this->hasOne(self::class, ['id' => 'parent_id']);
     }
+
 
     public function getChildren()
     {

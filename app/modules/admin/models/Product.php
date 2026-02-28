@@ -2,9 +2,8 @@
 
 namespace app\modules\admin\models;
 
-use app\models\CartItems;
+use app\models\Products;
 use Yii;
-use yii\helpers\FileHelper;
 use yii\web\UploadedFile;
 
 /**
@@ -30,7 +29,7 @@ use yii\web\UploadedFile;
  *
  * @property CartItem[] $cartItems
  */
-class Product extends \yii\db\ActiveRecord
+class Product extends Products
 {
 
     /** @var UploadedFile|null */
@@ -40,79 +39,17 @@ class Product extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public function rules(): array
     {
-        return 'product';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function rules()
-    {
-        return [
-            [['description', 'short_description', 'old_price', 'weight', 'image', 'meta_title', 'meta_description'], 'default', 'value' => null],
-            [['currency'], 'default', 'value' => 'UAH'],
-            [['status'], 'default', 'value' => 1],
-            [['sort_order'], 'default', 'value' => 100],
-            [['category_id', 'name', 'price'], 'required'],
-            [['category_id', 'price', 'status', 'sort_order'], 'integer'],
-            [['description'], 'string'],
-            [['old_price', 'weight'], 'number'],
-            [['created_at', 'updated_at'], 'safe'],
-            [['name', 'slug', 'image', 'meta_title'], 'string', 'max' => 255],
-            [['short_description', 'meta_description'], 'string', 'max' => 500],
-            [['currency'], 'string', 'max' => 3],
-
+        return array_merge(parent::rules(), [
             [['imageFile'], 'file',
                 'skipOnEmpty' => true,
                 'extensions' => ['png','jpg','jpeg','webp'],
                 'maxSize' => 5 * 1024 * 1024, // 5MB
             ],
-        ];
+        ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
-    {
-        return [
-            'id' => 'ID',
-            'category_id' => 'Категорія',
-            'name' => 'Назва',
-            'slug' => 'Аліас',
-            'description' => 'Опис',
-            'short_description' => 'Короткий опис',
-            'price' => 'Ціна',
-            'old_price' => 'Стара ціна',
-            'currency' => 'Валюта',
-            'weight' => 'Вага',
-            'image' => 'Зображення',
-            'meta_title' => 'Meta Title',
-            'meta_description' => 'Meta Description',
-            'status' => 'Статус',
-            'sort_order' => 'Сортування',
-            'created_at' => 'Створено',
-            'updated_at' => 'Оновлено',
-        ];
-    }
-
-    /**
-     * Gets query for [[CartItems]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCartItems()
-    {
-        return $this->hasMany(CartItems::class, ['product_id' => 'id']);
-    }
-
-
-    public function getCategory()
-    {
-        return $this->hasOne(Category::class, ['id' => 'category_id']);
-    }
 
 
     public function uploadImage(): bool

@@ -3,6 +3,7 @@
 namespace app\controllers\ajax;
 
 use app\forms\CartUpdateForm;
+use app\models\Cities;
 use Yii;
 use app\models\Carts;
 use yii\web\Response;
@@ -104,12 +105,17 @@ class AjaxCartController extends Controller
     }
 
 
-    public function actionConfirm($phone, $name)
+    public function actionConfirm($phone, $name, $city)
     {
         $items = CartItems::findAll(['session_id' => Yii::$app->session->get('session_id')]);
+        $city = Cities::findOne(['id' => (int)$city]);
 
         $total = 0;
-        $message = "\xe2\x98\x8e <b>$phone</b> ($name) \n\n";
+        $message = "\xe2\x98\x8e <b>$phone</b> ($name) \n";
+        if (isset($city->name)) {
+            $message .= "\xf0\x9f\x97\xba <b>{$city->name}</b> \n\n";
+        }
+
         foreach ($items as $item) {
             $total += ($item->price * $item->qty);
             $message .= "\xf0\x9f\x8d\xa3 {$item->product->name} {$item->qty}шт. <b>{$item->price}</b>₴ \n";
@@ -118,7 +124,7 @@ class AjaxCartController extends Controller
         $message .= "\n \xf0\x9f\x92\xb3 Загальна сума замовлення: <b>{$total}</b>₴";
 
         CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
-
-        return Yii::$app->ts->sendMessage($message);
+        return true;
+        //return Yii::$app->ts->sendMessage($message);
     }
 }

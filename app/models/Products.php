@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\modules\admin\models\Category;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
@@ -38,23 +39,18 @@ class Products extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['category_id', 'name', 'price'], 'required'],
-
-            [['category_id', 'status', 'sort_order'], 'integer'],
-
-            [['price', 'old_price', 'weight'], 'number'],
-
-            [['description'], 'string'],
-            [['short_description', 'meta_description'], 'string', 'max' => 500],
-
-            [['name', 'slug', 'image', 'meta_title'], 'string', 'max' => 255],
-            [['currency'], 'string', 'max' => 3],
-
-            [['slug'], 'unique'],
-
+            [['description', 'short_description', 'old_price', 'weight', 'image', 'meta_title', 'meta_description'], 'default', 'value' => null],
+            [['currency'], 'default', 'value' => 'UAH'],
             [['status'], 'default', 'value' => 1],
             [['sort_order'], 'default', 'value' => 100],
-            [['currency'], 'default', 'value' => 'UAH'],
+            [['category_id', 'name', 'price'], 'required'],
+            [['category_id', 'price', 'status', 'sort_order'], 'integer'],
+            [['description'], 'string'],
+            [['old_price', 'weight'], 'number'],
+            [['created_at', 'updated_at'], 'safe'],
+            [['name', 'slug', 'image', 'meta_title'], 'string', 'max' => 255],
+            [['short_description', 'meta_description'], 'string', 'max' => 500],
+            [['currency'], 'string', 'max' => 3],
         ];
     }
 
@@ -70,22 +66,22 @@ class Products extends ActiveRecord
         ];
     }
 
-    public function attributeLabels(): array
+    public function attributeLabels()
     {
         return [
             'id' => 'ID',
             'category_id' => 'Категорія',
-            'name' => 'Назва товару',
-            'slug' => 'URL',
+            'name' => 'Назва',
+            'slug' => 'Аліас',
             'description' => 'Опис',
             'short_description' => 'Короткий опис',
             'price' => 'Ціна',
             'old_price' => 'Стара ціна',
             'currency' => 'Валюта',
-            'weight' => 'Вага (кг)',
+            'weight' => 'Вага',
             'image' => 'Зображення',
-            'meta_title' => 'Meta title',
-            'meta_description' => 'Meta description',
+            'meta_title' => 'Meta Title',
+            'meta_description' => 'Meta Description',
             'status' => 'Статус',
             'sort_order' => 'Сортування',
             'created_at' => 'Створено',
@@ -94,9 +90,20 @@ class Products extends ActiveRecord
     }
 
 
+    /**
+     * Gets query for [[CartItems]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCartItems()
+    {
+        return $this->hasMany(CartItems::class, ['product_id' => 'id']);
+    }
+
+
     public function getCategory()
     {
-        return $this->hasOne(Categorys::class, ['id' => 'category_id']);
+        return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
 
 

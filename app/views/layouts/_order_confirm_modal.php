@@ -23,6 +23,13 @@
                         required>
                     <div class="invalid-feedback">Вкажіть коректний номер телефону.</div>
                 </div>
+                <div class="mb-3">
+                    <label for="cityWelcomeSelect" class="form-label">Локація</label>
+                    <?= \yii\helpers\Html::dropDownList('city', null, $this->params['cities'], [
+                        'class' => 'form-select city-dropdown'
+                    ])?>
+                    <div class="invalid-feedback">Вказаний заклад відсутній у списку</div>
+                </div>
                 <button class="btn btn-dark w-100" type="submit" id="order-confirm-button">Підтвердити замовлення</button>
                 <p class="text-muted small mt-2 mb-0">Менеджер зателефонує для підтвердження деталей.</p>
             </div>

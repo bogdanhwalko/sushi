@@ -70,11 +70,11 @@ class Cities extends ActiveRecord
     public static function getCitiesInSelect(): array
     {
         $query = self::find()
-            ->select(['alias', 'full_name'])
+            ->select(['id', 'name'])
             ->where(['status' => 1])
             ->orderBy(['sort_order' => SORT_ASC])
             ->asArray();
 
-        return ['all' => 'Усі міста'] + ArrayHelper::map($query->all(), 'alias', 'full_name');
+        return ArrayHelper::map($query->all(), 'id', 'name');
     }
 }

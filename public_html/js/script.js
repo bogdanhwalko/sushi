@@ -1,9 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const snowLayer = document.getElementById('snowLayer');
-    const snowToggle = document.getElementById('snowToggle');
-    const happyDot = document.getElementById('happyDot');
-    const happyStatus = document.getElementById('happyStatus');
-
     const productGridContainer = $('#productGrid');
     const productDetailBlock = $('#productModal');
     const productDetailModalContent = productDetailBlock.find('.modal-body');
@@ -13,17 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryButtons = categoryFilters.find('button');
     const categoryPrevBtn = $('.category-prev');
 
-    const cartItemsBlock = $('#cartItems');
     const cartButton = $('#cart-button');
     const cartContent = $('#cart-content');
     const drawer = $('#cartDrawer');
 
-    const clearCartBtn = $('#clearCartBtn');
-    const checkoutBtn = $('#checkoutBtn');
     const cartCountSpan = $('#cartCount');
     const checkoutModalEl = $('#checkoutModal');
     const checkoutNameInput = $('#checkoutName');
     const checkoutPhoneInput = $('#checkoutPhone');
+    const checkoutCitySelect = $('#checkoutCity');
     const sideMenuEl = document.getElementById('sideMenu');
 
 
@@ -39,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (focusedEl) focusedEl.blur();
     });
 
+    /* ---BEGIN [Скрол до потрібної секції] BEGIN--- */
     const scrollToSection = (hash) => {
         if (!hash || hash === '#') return;
 
@@ -80,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    /* ---END [Скрол до потрібної секції] END--- */
 
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
@@ -283,7 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
-    productGridContainer.on('click', '.view-details', (e) => {
+    productGridContainer.on('click', '.view-details', detailProduct)
+    $('#hero-card').on('click', '.view-details', detailProduct)
+
+    function detailProduct(e)
+    {
         let parentBlock = $(e.target).closest('.product-card');
         showPreloader(productDetailModalContent)
 
@@ -303,7 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         productDetailModal.show();
-    })
+    }
+
     /* ---END [Детальна інформація про товар] END--- */
 
 
@@ -381,6 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
             checkoutNameInput.val(localStorage.getItem('name'))
         }
 
+        if (localStorage.getItem('city')) {
+            checkoutCitySelect.val(localStorage.getItem('city'));
+        }
+
         drawer[0].addEventListener('hidden.bs.offcanvas', function handler() {
             checkoutModal.show();
             drawer[0].removeEventListener('hidden.bs.offcanvas', handler);
@@ -393,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {
         let name = nameValidator(checkoutNameInput);
         let phone = phoneValidator(checkoutPhoneInput);
+        let city = checkoutCitySelect.val();
 
         if (name === false || phone === false) {
             return;
@@ -400,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem('phone', phone);
         localStorage.setItem('name', name);
+        localStorage.setItem('city', city);
 
         let el = $(this);
         el.prop('disabled', true);
@@ -408,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             url: 'ajax/ajax-cart/confirm',
             method: 'GET',
             dataType: 'json',
-            data: {phone: phone, name: name},
+            data: {phone: phone, name: name, city: city},
             success: function(res) {
                 cartContent.find('#cartItems').remove();
                 cartContent.find('#cartTotal').text(0);
@@ -456,81 +462,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    function showToast(message) {
+        const toastEl = document.getElementById('cartToast');
+        const toastMessageEl = document.getElementById('cartToastMessage');
 
-    // Bootstrap modal if available; otherwise fallback to manual toggling.
+        if (!toastEl || !toastMessageEl) return;
+        toastMessageEl.textContent = message;
 
-    const SNOW_STORAGE_KEY = 'umiSnowEnabled';
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2200});
+        toast.show();
+    }
 
-    const getStoredSnow = () => {
-        try {
-            return localStorage.getItem(SNOW_STORAGE_KEY);
-        } catch (e) {
-            return null;
+    document.addEventListener('error', function(e) {
+        const img = e.target;
+
+        if (img.tagName === 'IMG') {
+
+            if (img.dataset.fallback === '1') return;
+
+            img.dataset.fallback = '1';
+            img.src = '/images/products/no_image.png';
         }
-    };
-
-    const setStoredSnow = (value) => {
-        try {
-            localStorage.setItem(SNOW_STORAGE_KEY, value ? 'true' : 'false');
-        } catch (e) {
-            // Ignore storage errors (privacy mode, blocked, etc.)
-        }
-    };
-
-    const updateSnowToggle = (enabled) => {
-        if (!snowToggle) return;
-        snowToggle.setAttribute('aria-pressed', String(enabled));
-        snowToggle.classList.toggle('is-off', !enabled);
-        snowToggle.title = enabled ? 'Сніг увімкнено' : 'Сніг вимкнено';
-    };
-
-    const buildSnow = () => {
-        if (!snowLayer || snowLayer.dataset.ready === 'true') return;
-        const width = window.innerWidth || 1200;
-        const count = Math.max(24, Math.min(90, Math.floor(width / 14)));
-        for (let i = 0; i < count; i += 1) {
-            const flake = document.createElement('span');
-            flake.className = 'snowflake';
-            const size = (Math.random() * 3.5 + 2).toFixed(1);
-            const x = (Math.random() * 100).toFixed(2) + 'vw';
-            const drift = (Math.random() * 40 - 20).toFixed(1) + 'px';
-            const speed = (Math.random() * 12 + 8).toFixed(1) + 's';
-            const delay = (-Math.random() * 20).toFixed(1) + 's';
-            const opacity = (Math.random() * 0.5 + 0.35).toFixed(2);
-            flake.style.setProperty('--size', `${size}px`);
-            flake.style.setProperty('--x', x);
-            flake.style.setProperty('--drift', drift);
-            flake.style.setProperty('--speed', speed);
-            flake.style.setProperty('--delay', delay);
-            flake.style.setProperty('--opacity', opacity);
-            snowLayer.appendChild(flake);
-        }
-        snowLayer.dataset.ready = 'true';
-    };
-
-    const setSnowEnabled = (enabled, persist) => {
-        document.body.classList.toggle('snow-hidden', !enabled);
-        if (enabled) {
-            buildSnow();
-        }
-        if (persist) {
-            setStoredSnow(enabled);
-        }
-        updateSnowToggle(enabled);
-    };
-
-    const initSnow = () => {
-        const stored = getStoredSnow();
-        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const enabled = stored === null ? !prefersReduced : stored === 'true';
-        setSnowEnabled(enabled, false);
-    };
-
-
-    snowToggle?.addEventListener('click', () => {
-        const enabled = !document.body.classList.contains('snow-hidden');
-        setSnowEnabled(!enabled, true);
-    });
+    }, true);
 
 
     function showPreloader(block)
@@ -545,29 +498,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initCategoryNav();
     loadProducts();
-
-    initSnow();
 });
-
-function showToast(message) {
-    const toastEl = document.getElementById('cartToast');
-    const toastMessageEl = document.getElementById('cartToastMessage');
-
-    if (!toastEl || !toastMessageEl) return;
-    toastMessageEl.textContent = message;
-
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2200});
-    toast.show();
-}
-
-document.addEventListener('error', function(e) {
-    const img = e.target;
-
-    if (img.tagName === 'IMG') {
-
-        if (img.dataset.fallback === '1') return;
-
-        img.dataset.fallback = '1';
-        img.src = '/images/products/no_image.png'; // ІСНУЮЧИЙ файл!
-    }
-}, true);
