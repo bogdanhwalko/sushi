@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkoutModalEl = $('#checkoutModal');
     const checkoutNameInput = $('#checkoutName');
     const checkoutPhoneInput = $('#checkoutPhone');
+    const sideMenuEl = document.getElementById('sideMenu');
 
 
     var cartUpdateStatus = true;
@@ -37,6 +38,48 @@ document.addEventListener('DOMContentLoaded', () => {
         const focusedEl = this.querySelector(':focus');
         if (focusedEl) focusedEl.blur();
     });
+
+    const scrollToSection = (hash) => {
+        if (!hash || hash === '#') return;
+
+        const target = document.querySelector(hash);
+        if (!target) return;
+
+        const top = target.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+            top: Math.max(0, top),
+            behavior: 'smooth'
+        });
+
+        if (window.location.hash !== hash) {
+            history.replaceState(null, '', hash);
+        }
+    };
+
+    if (sideMenuEl) {
+        const sideMenu = bootstrap.Offcanvas.getOrCreateInstance(sideMenuEl);
+
+        sideMenuEl.querySelectorAll('a[href^="#"]').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                const hash = link.getAttribute('href');
+                const target = hash ? document.querySelector(hash) : null;
+
+                if (!target) return;
+
+                event.preventDefault();
+
+                const handleHidden = () => scrollToSection(hash);
+
+                if (sideMenuEl.classList.contains('show')) {
+                    sideMenuEl.addEventListener('hidden.bs.offcanvas', handleHidden, { once: true });
+                    sideMenu.hide();
+                    return;
+                }
+
+                handleHidden();
+            });
+        });
+    }
 
 
     /* ---BEGIN [прокрутка категорій] BEGIN--- */
