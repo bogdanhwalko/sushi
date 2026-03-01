@@ -111,10 +111,12 @@ class AjaxCartController extends Controller
         $city = Cities::findOne(['id' => (int)$city]);
 
         $total = 0;
-        $message = "\xe2\x98\x8e <b>$phone</b> ($name) \n";
-        if (isset($city->name)) {
-            $message .= "\xf0\x9f\x97\xba <b>{$city->name}</b> \n\n";
+        $message = "\xe2\x98\x8e <b>$phone</b> ($name)";
+        if (isset($city->name) && !isset($city->telegramGroup->telegram_id)) {
+            $message .= "\n \xf0\x9f\x97\xba <b>{$city->name}</b>";
         }
+        $message .= "\n\n";
+
 
         foreach ($items as $item) {
             $total += ($item->price * $item->qty);
