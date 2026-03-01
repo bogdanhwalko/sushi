@@ -2,15 +2,16 @@
 
 namespace app\modules\admin\models;
 
-use app\models\TelegramGroups;
 
-class TelegramGroup extends TelegramGroups
+use app\models\Configs;
+
+class Config extends Configs
 {
-    /**
-     * {@inheritdoc}
-     */
+
+
     public function rules()
     {
         return parent::rules();
     }
+
 }

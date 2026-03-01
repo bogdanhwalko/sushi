@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\modules\admin\models\Category;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
@@ -15,6 +17,7 @@ use yii\helpers\ArrayHelper;
  * @property string $full_name
  * @property int $sort_order Порядок сортування
  * @property int $status 1 = активна, 0 = вимкнена
+ * @property int $telegram_group_id
  * @property string $created_at
  * @property string $updated_at
  */
@@ -39,7 +42,7 @@ class Cities extends ActiveRecord
     {
         return [
             ['name', 'required'],
-            [['sort_order', 'status'], 'integer'],
+            [['sort_order', 'status', 'telegram_group_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
 
             [['name', 'full_name'], 'string', 'max' => 100],
@@ -47,6 +50,7 @@ class Cities extends ActiveRecord
             ['sort_order', 'default', 'value' => 100],
             ['status', 'default', 'value' => 1],
 
+            ['telegram_group_id', 'exist', 'targetClass' => TelegramGroups::class, 'targetAttribute' => ['telegram_group_id' => 'id']],
         ];
     }
 
@@ -58,8 +62,10 @@ class Cities extends ActiveRecord
             'full_name' => 'Повна назва',
             'sort_order' => 'Порядок сортування',
             'status' => 'Статус',
+            'telegram_group_id' => 'Група',
             'created_at' => 'Створено',
             'updated_at' => 'Оновлено',
+            'telegramGroup.name' => 'Група Telegram',
         ];
     }
 
@@ -73,5 +79,11 @@ class Cities extends ActiveRecord
             ->asArray();
 
         return ArrayHelper::map($query->all(), 'id', 'name');
+    }
+
+
+    public function getTelegramGroup(): ActiveQuery
+    {
+        return $this->hasOne(TelegramGroups::class, ['id' => 'telegram_group_id']);
     }
 }

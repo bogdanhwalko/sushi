@@ -3,6 +3,9 @@
 namespace app\modules\admin\controllers;
 
 
+use app\modules\admin\models\Config;
+use app\modules\admin\models\Product;
+
 class DefaultController extends AbstractController
 {
     /**
@@ -11,6 +14,10 @@ class DefaultController extends AbstractController
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $productWeekId = Config::get('product_week_id');
+
+        return $this->render('index', [
+            'productWeekId' => $productWeekId,
+        ]);
     }
 }

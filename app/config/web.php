@@ -57,7 +57,7 @@ $config = [
         ],
         'ts' => [
             'class' => \app\components\TelegramSender::class,
-            'token' => '8224387367:AAFe8W9qJFq4o91npmd0kjgSmi2KuectxE0',
+            'token' => '8561039078:AAGfsid4_ACKpiCLMe5z86IzAubQUPEbelI',
             'chatId' => '-5169754991',
             'sending' => true
         ],
@@ -65,6 +65,9 @@ $config = [
     'modules' => [
         'admin-panel' => [
             'class' => \app\modules\admin\Admin::class,
+        ],
+        'api' => [
+            'class' => \app\modules\api\Api::class,
         ],
     ],
     'params' => $params,

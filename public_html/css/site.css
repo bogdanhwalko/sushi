@@ -176,7 +176,7 @@ body.snow-hidden .snow-layer {
 }
 
 .hero-content {
-  min-width: 0;
+  width: 100%;
 }
 
 .hero-title {
@@ -200,7 +200,7 @@ body.snow-hidden .snow-layer {
   border-radius: 10px;
   border: 1px solid rgba(240, 93, 35, 0.25);
   background: rgba(240, 93, 35, 0.12);
-  font-size: clamp(0.95rem, 1.6vw, 1.08rem) !important;
+  font-size: clamp(0.85rem, 1.3vw, 0.9rem) !important;
   font-weight: 600 !important;
   color: var(--accent) !important;
   line-height: 1;

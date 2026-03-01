@@ -26,7 +26,8 @@
                 <div class="mb-3">
                     <label for="cityWelcomeSelect" class="form-label">Локація</label>
                     <?= \yii\helpers\Html::dropDownList('city', null, $this->params['cities'], [
-                        'class' => 'form-select city-dropdown'
+                        'class' => 'form-select city-dropdown',
+                        'id' => 'checkoutCity'
                     ])?>
                     <div class="invalid-feedback">Вказаний заклад відсутній у списку</div>
                 </div>

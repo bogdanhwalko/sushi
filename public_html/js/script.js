@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkoutCitySelect = $('#checkoutCity');
     const sideMenuEl = document.getElementById('sideMenu');
 
+    const heroCardBlock = $('#hero-card-block');
 
     var cartUpdateStatus = true;
 
@@ -160,6 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
     productGridContainer.on('click', '.add-to-cart', addToCart);
     productDetailBlock.on('click', '.add-to-cart', addToCart);
+    heroCardBlock.on('click', '.add-to-cart', function (e) {
+        cartUpdate(heroCardBlock.data('product'), true)
+    });
 
     function addToCart()
     {
@@ -278,12 +282,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
-    productGridContainer.on('click', '.view-details', detailProduct)
-    $('#hero-card').on('click', '.view-details', detailProduct)
+    productGridContainer.on('click', '.view-details', function (e) {
+        detailProduct($(this).closest('.product-card'))
+    })
+    heroCardBlock.on('click', '.view-details', function (e) {
+        detailProduct(heroCardBlock)
+    });
 
-    function detailProduct(e)
+    function detailProduct(parentBlock)
     {
-        let parentBlock = $(e.target).closest('.product-card');
         showPreloader(productDetailModalContent)
 
         $.ajax({
@@ -459,7 +466,6 @@ document.addEventListener('DOMContentLoaded', () => {
         phoneInput.removeClass('is-invalid');
         return digits;
     }
-
 
 
     function showToast(message) {

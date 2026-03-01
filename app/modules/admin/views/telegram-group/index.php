@@ -16,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="telegram-group-index">
 
     <p>
-        <?= Html::a('Додати групу', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Додати групу', ['create'], ['class' => 'btn btn-info']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -30,7 +30,17 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
             //'telegram_id',
             'description:ntext',
-            'status',
+            [
+                'attribute' => 'status',
+                'value' => fn ($ml) => $ml->status ? '<span class="badge bg-success">Активна</span>' : '<span class="badge bg-danger">Не активна</span>',
+                'format' => 'html',
+                'filter' => Html::activeDropDownList(
+                    $searchModel,
+                    'status',
+                    ['Не активна', 'Активна'],
+                    ['class'=>'form-control', 'prompt' => 'Всі статуси']
+                ),
+            ],
             //'bot_id',
             'created_at',
             //'updated_at',

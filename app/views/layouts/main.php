@@ -81,7 +81,7 @@ $cartTotal = 0;
 
         <?= $this->render('cart') ?>
 
-        <?= $this->render('detail', ['productOfWeek' => $this->params['productOfWeek']]) ?>
+        <?= $this->render('detail') ?>
 
 
     </header>

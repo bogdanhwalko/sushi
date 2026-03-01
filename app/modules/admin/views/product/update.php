@@ -79,15 +79,22 @@ $this->params['breadcrumbs'][] = 'Оновлення';
                         <div class="col-md-12">
                             <?= $form->field($model, 'short_description')->textarea(['rows' => 2]) ?>
                         </div>
-                        <div class="col-md-12">
-                            <?php if ($model->image): ?>
-                                <?= Html::img('@products/'. $model->image, [
-                                    'alt' => $model->name, 'class' => 'img-fluid', 'width' => '300px'
-                                ]) ?>
-                            <?php endif; ?>
-                            <?= $form->field($model, 'imageFile')
-                                ->fileInput(['accept' => 'image/*', 'class' => 'form-control']) ?>
+                        <div class="col-md-6">
+                            <div class="custom-file">
+                                <?= $form->field($model, 'imageFile')
+                                    ->fileInput(['accept' => 'image/*', 'class' => 'custom-file-input', 'id' => 'imageFile'])
+                                    ->label('Зображення', ['class' => 'custom-file-label', 'for' => 'imageFile']) ?>
+                            </div>
                         </div>
+                        <?php if ($model->image): ?>
+                            <div class="col-md-6">
+                                <?= Html::img('@products/'. $model->image, [
+                                    'alt' => $model->name, 'class' => 'img-fluid img-thumbnail shadow-sm', 'width' => '300px'
+                                ]) ?>
+                                <br>
+                                <br>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -41,7 +41,7 @@ class TelegramGroupSearch extends TelegramGroup
      */
     public function search($params, $formName = null)
     {
-        $query = TelegramGroup::find();
+        $query = TelegramGroup::find()->orderBy(['id' => SORT_DESC]);
 
         // add conditions that should always apply here
 

@@ -29,11 +29,11 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 clo-xxl-4">
                                 <?= $form->field($model, 'telegram_id')->textInput() ?>
                             </div>
-                            <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6 clo-xxl-4">
+                            <div class="col-sm-8 col-md-8 col-lg-8 col-xl-8 clo-xxl-8">
                                 <?= $form->field($model, 'bot_id')->textInput(['maxlength' => true]) ?>
                             </div>
                             <div class="col-sm-4 col-md-4 col-lg-4 col-xl-3">
-                                <?= $form->field($model, 'status')->textInput() ?>
+                                <?= $form->field($model, 'status')->dropDownList(['Не активна', 'Активна'], ['class' => 'form-control']) ?>
                             </div>
                         </div>
                     </div>

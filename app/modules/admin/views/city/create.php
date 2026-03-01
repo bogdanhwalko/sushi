@@ -39,6 +39,14 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4">
                                 <?= $form->field($model, 'sort_order')->textInput()->label('Сортування') ?>
                             </div>
+
+                            <div class="col-sm-8 col-md-8 col-lg-8 col-xl-6">
+                                <?= $form->field($model, 'telegram_group_id')
+                                    ->dropDownList(
+                                        \app\modules\admin\models\TelegramGroup::getBySelect(),
+                                        ['class' => 'form-control', 'prompt' => 'Загальна група'],
+                                    ); ?>
+                            </div>
                         </div>
                     </div>
                 </div>

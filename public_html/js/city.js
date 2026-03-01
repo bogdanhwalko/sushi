@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cityModal =  bootstrap.Modal.getOrCreateInstance(cityModalContainer[0])
     const sideCitySelector = $('.city-dropdown');
 
-    if (! localStorage.getItem('city')) {
+    let city = localStorage.getItem('city');
+    if (city === null || city === 'undefined' || city === '') {
         cityModal.show();
     }
     else {

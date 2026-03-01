@@ -124,7 +124,12 @@ class AjaxCartController extends Controller
         $message .= "\n \xf0\x9f\x92\xb3 Загальна сума замовлення: <b>{$total}</b>₴";
 
         CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
-        return true;
-        //return Yii::$app->ts->sendMessage($message);
+
+        if (! empty($city->telegramGroup->bot_id)) {
+            Yii::$app->ts->changeToken($city->telegramGroup->bot_id);
+        }
+
+        $telegram_id = $city->telegramGroup->telegram_id ?? null;
+        return Yii::$app->ts->sendMessage($message, $telegram_id);
     }
 }

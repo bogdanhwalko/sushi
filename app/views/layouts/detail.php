@@ -23,32 +23,38 @@ use yii\helpers\Html;
                 </div>
             </div>
         </div>
-        <div class="col-lg-5 ms-auto">
-            <div class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg">
-                <div class="hero-card-top d-flex align-items-center mb-3">
-                    <div class="hero-badge me-3">Акція тижня</div>
+        <?php if (! empty($this->params['productOfWeek'])): ?>
+            <div class="col-lg-5 ms-auto">
+                <div
+                    class="hero-card rounded-4 p-4 bg-white text-dark shadow-lg"
+                    id="hero-card-block"
+                    data-product="<?= $this->params['productOfWeek']->id ?>">
 
-                    <span class="hero-time text-muted small">Доступно з 12:00–14:00</span>
-
-                </div>
-                <div class="hero-product d-flex">
-                    <?= Html::img('@products/' . $productOfWeek->image, [
-                        'alt' => $productOfWeek->name,
-                        'class' => 'rounded-3 hero-img',
-                    ]) ?>
-                    <div class="hero-content">
-                        <h4 class="hero-title fw-semibold mb-1"><?= $productOfWeek->name ?></h4>
-                        <p class="hero-description text-muted small mb-2"><?= $productOfWeek->description ?></p>
-                        <div class="d-flex align-items-end text-right gap-2 flex-wrap">
-                            <span class="hero-price badge bg-primary-soft text-primary fw-bold"><?= $productOfWeek->price ?>$</span>
-                        </div>
-                        <div class="hero-actions d-flex align-items-center gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-dark">Детальніше</button>
-                            <button class="btn btn-sm btn-outline-dark">До кошика</button>
+                    <div class="hero-card-top d-flex align-items-center mb-2">
+                        <div class="hero-badge me-3">Акція тижня</div>
+                        <span class="hero-time text-muted small">
+                            Встигни до: <?= date('d-m-Y 22:00', strtotime('sunday this week'))?>
+                        </span>
+                    </div>
+                    <div class="hero-product d-flex">
+                        <?= Html::img('@products/' . $this->params['productOfWeek']->image, [
+                            'alt' => $this->params['productOfWeek']->name,
+                            'class' => 'rounded-3 hero-img',
+                        ]) ?>
+                        <div class="hero-content">
+                            <h4 class="hero-title fw-semibold mb-1"><?= $this->params['productOfWeek']->name ?></h4>
+                            <p class="hero-description text-muted small mb-2"><?= $this->params['productOfWeek']->description ?></p>
+                            <div class="d-flex align-items-end text-right gap-2 flex-wrap">
+                                <span class="hero-price badge bg-primary-soft text-primary fw-bold"><?= $this->params['productOfWeek']->price ?>$</span>
+                            </div>
+                            <div class="hero-actions d-flex align-items-center gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-dark view-details btn-block">Детальніше</button>
+                                <button class="btn btn-sm btn-outline-dark add-to-cart">До кошика</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 </div>

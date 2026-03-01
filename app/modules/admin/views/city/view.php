@@ -38,6 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->status ? 'Не активне' : 'Активне';
                 }
             ],
+            'telegramGroup.name',
             'created_at',
             'updated_at',
         ],
