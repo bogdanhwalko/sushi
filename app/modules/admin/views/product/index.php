@@ -16,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="product-index">
 
     <p>
-        <?= Html::a('Додати товар', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Додати товар', ['create'], ['class' => 'btn btn-info']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -28,9 +28,17 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
 
             'id',
-            'category.name',
             'name',
-            'slug',
+            [
+                'attribute' => 'category_id',
+                'value' => fn ($ml) => $ml->category->name,
+                'filter' => Html::activeDropDownList(
+                    $searchModel,
+                    'category_id',
+                    \app\modules\admin\models\Category::getBySelect(),
+                    ['class'=>'form-control', 'prompt' => 'Всі Категорії']
+                ),
+            ],
             'description:ntext',
             //'short_description',
             //'price',
@@ -40,7 +48,17 @@ $this->params['breadcrumbs'][] = $this->title;
             //'image',
             //'meta_title',
             //'meta_description',
-            //'status',
+            [
+                'attribute' => 'status',
+                'value' => fn ($ml) => $ml->status ? '<span class="badge bg-success">Активний</span>' : '<span class="badge bg-danger">Не активний</span>',
+                'format' => 'html',
+                'filter' => Html::activeDropDownList(
+                    $searchModel,
+                    'status',
+                    ['Не активний', 'Активний'],
+                    ['class'=>'form-control', 'prompt' => 'Всі статуси']
+                ),
+            ],
             //'sort_order',
             //'created_at',
             //'updated_at',

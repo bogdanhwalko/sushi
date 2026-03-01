@@ -4,21 +4,21 @@ namespace app\modules\admin\models\search;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\modules\admin\models\City;
+use app\modules\admin\models\TelegramGroup;
 
 /**
- * CitySearch represents the model behind the search form of `app\modules\admin\models\City`.
+ * TelegramGroupSearch represents the model behind the search form of `app\modules\admin\models\TelegramGroup`.
  */
-class CitySearch extends City
+class TelegramGroupSearch extends TelegramGroup
 {
     /**
      * {@inheritdoc}
      */
-    public function rules(): array
+    public function rules()
     {
         return [
-            [['id', 'sort_order', 'status'], 'integer'],
-            [['name', 'full_name', 'created_at', 'updated_at'], 'safe'],
+            [['id', 'telegram_id', 'status'], 'integer'],
+            [['name', 'description', 'bot_id', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class CitySearch extends City
      */
     public function search($params, $formName = null)
     {
-        $query = City::find()->orderBy(['id' => SORT_DESC]);
+        $query = TelegramGroup::find();
 
         // add conditions that should always apply here
 
@@ -60,14 +60,15 @@ class CitySearch extends City
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'sort_order' => $this->sort_order,
+            'telegram_id' => $this->telegram_id,
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'full_name', $this->full_name]);
+            ->andFilterWhere(['like', 'description', $this->description])
+            ->andFilterWhere(['like', 'bot_id', $this->bot_id]);
 
         return $dataProvider;
     }

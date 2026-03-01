@@ -42,7 +42,9 @@ class ProductSearch extends Product
      */
     public function search($params, $formName = null)
     {
-        $query = Product::find();
+        $query = Product::find()
+            ->joinWith(['category'])
+            ->orderBy(['id' => SORT_DESC]);
 
         // add conditions that should always apply here
 

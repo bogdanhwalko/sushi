@@ -35,17 +35,17 @@
             <?php
             echo \hail812\adminlte\widgets\Menu::widget([
                 'items' => [
-                    ['label' => 'Головна', 'url' => ['/admin-panel/'], 'iconStyle' => 'far'],
                     [
-                        'label' => 'SALON',
-                        'header' => true
+                        'label' => 'Головна',
+                        'url' => ['/admin-panel/'],
+                        'iconStyle' => 'nav-icon fas fa-home'
                     ],
 
                     [
                         'label' => 'Товари',
                         'url' => ['/admin-panel/product/index'],
                         //'iconStyle' => 'far',
-                        'icon' => 'fa-sharp fa-light fa-user',
+                        'icon' => 'nav-icon fas fa-utensils',
                         'visible' => true,
                     ],
 
@@ -53,7 +53,7 @@
                         'label' => 'Категорії',
                         'url' => ['/admin-panel/category/index'],
                         //'iconStyle' => 'far',
-                        'icon' => 'fa-sharp fa-light fa-user',
+                        'icon' => 'nav-icon fas fa-th-large',
                         'visible' => true,
                     ],
 
@@ -61,7 +61,15 @@
                         'label' => 'Міста',
                         'url' => ['/admin-panel/city/index'],
                         //'iconStyle' => 'far',
-                        'icon' => 'fa-sharp fa-light fa-user',
+                        'icon' => 'nav-icon fas fa-city',
+                        'visible' => true,
+                    ],
+
+                    [
+                        'label' => 'Групи Telegram',
+                        'url' => ['/admin-panel/telegram-group/index'],
+                        //'iconStyle' => 'far',
+                        'icon' => 'nav-icon fas fa-users',
                         'visible' => true,
                     ],
                 ],

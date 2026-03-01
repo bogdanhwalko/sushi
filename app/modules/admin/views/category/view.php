@@ -7,15 +7,15 @@ use yii\widgets\DetailView;
 /** @var app\modules\admin\models\Category $model */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Categories', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Категорії', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
 <div class="category-view">
 
     <p>
-        <?= Html::a('Оновити', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Видалити', ['delete', 'id' => $model->id], [
+        <?= Html::a('Оновити', ['Оновити', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Видалити', ['Видалити', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',
@@ -33,7 +33,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'slug',
             'description:ntext',
             'sort_order',
-            'status',
+            [
+                'attribute' => 'status',
+                'value' => function ($model) {
+                    return $model->status ? 'Не активне' : 'Активне';
+                }
+            ],
             'created_at',
             'updated_at',
         ],

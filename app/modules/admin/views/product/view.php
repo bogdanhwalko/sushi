@@ -40,7 +40,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'image',
             'meta_title',
             'meta_description',
-            'status',
+            [
+                'attribute' => 'status',
+                'value' => function ($model) {
+                    return $model->status ? 'Не активне' : 'Активне';
+                }
+            ],
             'sort_order',
             'created_at',
             'updated_at',

@@ -86,6 +86,7 @@ class Products extends ActiveRecord
             'sort_order' => 'Сортування',
             'created_at' => 'Створено',
             'updated_at' => 'Оновлено',
+            'category.name' => 'Категорія'
         ];
     }
 

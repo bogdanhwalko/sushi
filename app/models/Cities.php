@@ -11,7 +11,6 @@ use yii\helpers\ArrayHelper;
  * This is the model class for table "cities".
  *
  * @property int $id
- * @property string $alias
  * @property string $name
  * @property string $full_name
  * @property int $sort_order Порядок сортування
@@ -39,16 +38,15 @@ class Cities extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['alias', 'name', 'full_name'], 'required'],
+            ['name', 'required'],
             [['sort_order', 'status'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
 
-            [['alias', 'name', 'full_name'], 'string', 'max' => 100],
+            [['name', 'full_name'], 'string', 'max' => 100],
 
             ['sort_order', 'default', 'value' => 100],
             ['status', 'default', 'value' => 1],
 
-            ['alias', 'unique'],
         ];
     }
 
@@ -56,7 +54,6 @@ class Cities extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'alias' => 'Аліас',
             'name' => 'Назва',
             'full_name' => 'Повна назва',
             'sort_order' => 'Порядок сортування',

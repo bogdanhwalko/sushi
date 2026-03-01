@@ -19,7 +19,12 @@ $this->params['breadcrumbs'][] = 'Оновлення';
     ]); ?>
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card card-lightblue">
+                <div class="card-header">
+                    <div class="card-tool text-right">
+                        <?= Html::submitButton('Оновити', ['class' => 'btn btn-sm btn-light']) ?>
+                    </div>
+                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -64,7 +69,8 @@ $this->params['breadcrumbs'][] = 'Оновлення';
         </div>
 
         <div class="col-md-6">
-            <div class="card">
+            <div class="card card-lightblue">
+                <div class="card-header"></div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
@@ -84,12 +90,6 @@ $this->params['breadcrumbs'][] = 'Оновлення';
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-md-12 text-right">
-            <div class="form-group">
-                <?= Html::submitButton('Зберегти', ['class' => 'btn btn-success']) ?>
             </div>
         </div>
     </div>

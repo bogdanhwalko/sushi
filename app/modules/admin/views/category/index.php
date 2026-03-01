@@ -15,7 +15,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="category-index">
     <p>
-        <?= Html::a('Додати категорію', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Додати категорію', ['create'], ['class' => 'btn btn-info']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -27,15 +27,16 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             'id',
             'name',
-            'slug',
             'sort_order',
             [
                 'attribute' => 'status',
+                'value' => fn ($ml) => $ml->status ? '<span class="badge bg-success">Активна</span>' : '<span class="badge bg-danger">Не активна</span>',
+                'format' => 'html',
                 'filter' => Html::activeDropDownList(
                     $searchModel,
                     'status',
                     ['Не активна', 'Активна'],
-                    ['class'=>'form-control', 'prompt' => 'Всі статуси']
+                    ['class'=>'form-control', 'prompt' => 'Всі категорії']
                 ),
             ],
             'created_at',

@@ -10,15 +10,13 @@ use yii\grid\GridView;
 /** @var app\modules\admin\models\search\CitySearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Cities';
+$this->title = 'Міста';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="city-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <p>
-        <?= Html::a('Create City', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Додати місто', ['create'], ['class' => 'btn btn-info']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -26,17 +24,24 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'pager' => ['class' => \yii\bootstrap4\LinkPager::class],
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'alias',
             'name',
             'full_name',
             'sort_order',
-            //'status',
-            //'created_at',
-            //'updated_at',
+            [
+                'attribute' => 'status',
+                'filter' => Html::activeDropDownList(
+                    $searchModel,
+                    'status',
+                    ['Не активне', 'Активне'],
+                    ['class'=>'form-control', 'prompt' => 'Всі статуси']
+                ),
+                'format' => 'html',
+                'value' => fn ($ml) => $ml->status ? '<span class="badge bg-success">Активне</span>' : '<span class="badge bg-danger">Не активне</span>',
+            ],
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, City $model, $key, $index, $column) {

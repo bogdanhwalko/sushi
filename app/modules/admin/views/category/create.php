@@ -15,7 +15,12 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php $form = ActiveForm::begin(); ?>
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card card-lightblue">
+                <div class="card-header">
+                    <div class="card-tool text-right">
+                        <?= Html::submitButton('Додати', ['class' => 'btn btn-sm btn-light']) ?>
+                    </div>
+                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -36,12 +41,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         <div class="col-md-6">
                             <?= $form->field($model, 'status')
                                 ->dropDownList(['Не активна', 'Активна'], ['class' => 'form-control']) ?>
-                        </div>
-
-                        <div class="col-md-12 text-right">
-                            <div class="form-group">
-                                <?= Html::submitButton('Зберегти', ['class' => 'btn btn-success']) ?>
-                            </div>
                         </div>
                     </div>
 
