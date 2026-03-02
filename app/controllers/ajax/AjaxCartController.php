@@ -131,7 +131,7 @@ class AjaxCartController extends Controller
             Yii::$app->ts->changeToken($city->telegramGroup->bot_id);
         }
 
-        $telegram_id = $city->telegramGroup->telegram_id ?? null;
-        return Yii::$app->ts->sendMessage($message, $telegram_id);
+        $chat_id = $city->telegramGroup->telegram_id ?? null;
+        return Yii::$app->ts->sendMessage($message, $chat_id);
     }
 }

@@ -24,7 +24,7 @@ class AppAsset extends AssetBundle
 
     public $css = [
         'css/bootstrap.min.css',
-        'css/site.css',
+        'css/site.css?v=1',
     ];
 
     public $cssOptions = [
@@ -34,8 +34,8 @@ class AppAsset extends AssetBundle
     public $js = [
         'js/jquery-3.7.1.min.js',
         'js/bootstrap.bundle.min.js',
-        'js/city.js',
-        'js/script.js',
+        'js/city.js?v=1',
+        'js/script.js?v=1',
     ];
 
     public $jsOptions = [
