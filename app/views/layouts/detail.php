@@ -15,11 +15,10 @@ use yii\helpers\Html;
             <p class="lead mb-4 fs-6 fw-medium">Обирайте страви. Про все інше подбає наша команда.</p>
             <div class="d-flex gap-3 flex-wrap">
                 <div class="d-flex align-items-center gap-2 flex-wrap" id="happyHours">
-<!--                    <div class="pill-pill d-inline-flex align-items-center gap-2">-->
-<!--                        <span class="happy-dot" id="happyDot" aria-hidden="true"></span>-->
-<!--                        <span>Щасливі години</span>-->
-<!--                    </div>-->
-<!--                    <div class="pill-pill" id="happyStatus">Сьогодні 12:00–14:00</div>-->
+                    <div class="pill-pill d-inline-flex align-items-center gap-2 is-active">
+                        <span class="happy-dot is-active" id="happyDot" aria-hidden="true"></span>
+                        <span>Доставка від 700 грн БЕЗКОШТОВНА</span>
+                    </div>
                 </div>
             </div>
         </div>
