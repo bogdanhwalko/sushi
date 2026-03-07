@@ -43,15 +43,44 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         </div>
     </div>
 
-    <nav class="navbar navbar-dark container py-3">
-        <div class="d-flex align-items-center gap-2">
+    <nav class="navbar navbar-dark container py-2 compact-menu-navbar">
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <a class="navbar-brand fw-bold brand-mark" href="<?= Url::home() ?>" id="link-logo">
                 <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi', 'id' => 'logo']) ?>
             </a>
         </div>
-    </nav>
-    <div class="container pb-4">
 
+        <div class="compact-menu-hero-copy d-none d-lg-grid" aria-label="Переваги доставки">
+            <div class="compact-menu-hero-item compact-menu-hero-item-eyebrow">
+                <p class="compact-menu-hero-eyebrow mb-0">Забери сам та отримай знижку -5%</p>
+            </div>
+            <div class="compact-menu-hero-item compact-menu-hero-item-title">
+                <p class="compact-menu-hero-title mb-0">
+                    Доставка японської кухні у твоєму місті
+                    <span class="compact-menu-hero-brand">"107 SUSHI"</span>
+                </p>
+            </div>
+            <div class="compact-menu-hero-item compact-menu-hero-item-pill">
+                <p class="compact-menu-hero-pill mb-0">
+                    <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
+                    Доставка від 700 грн БЕЗКОШТОВНА
+                </p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container compact-menu-mobile-hero d-lg-none">
+        <div class="compact-menu-mobile-hero-card" aria-label="Переваги доставки">
+            <p class="compact-menu-mobile-eyebrow mb-1">Забери сам та отримай знижку -5%</p>
+            <p class="compact-menu-mobile-title mb-2">
+                Доставка японської кухні у твоєму місті
+                <span class="compact-menu-hero-brand">"107 SUSHI"</span>
+            </p>
+            <p class="compact-menu-mobile-pill mb-0">
+                <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
+                Доставка від 700 грн БЕЗКОШТОВНА
+            </p>
+        </div>
     </div>
 </header>
 
