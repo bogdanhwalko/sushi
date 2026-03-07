@@ -3,9 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const categoryNextBtn = $('.category-next');
     const categoryPrevBtn = $('.category-prev');
+    const scrollTopBtn = $('#menuScrollTop');
 
-
-    /* ---BEGIN [прокрутка категорій] BEGIN--- */
     const initCategoryNav = () => {
         $('.category-nav').each(function () {
             if (!categoryFilters.length || !categoryPrevBtn.length || !categoryNextBtn.length) return;
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const maxScroll = el.scrollWidth - el.clientWidth;
                 const current = Math.round(el.scrollLeft);
 
-                // якщо скролу нема — вимикаємо обидві кнопки
                 const hasScroll = maxScroll > 1;
 
                 categoryPrevBtn.prop('disabled', !hasScroll || current <= 0);
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
             };
 
-            // чистимо старі хендлери, щоб init можна було викликати повторно
             categoryPrevBtn.off('click.categoryNav').on('click.categoryNav', function () {
                 scrollToX(el.scrollLeft - getScrollStep());
             });
@@ -48,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryFilters.off('scroll.categoryNav').on('scroll.categoryNav', function () {
                 if (rafPending) return;
                 rafPending = true;
+
                 requestAnimationFrame(() => {
                     rafPending = false;
                     updateNavState();
@@ -59,7 +57,35 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNavState();
         });
     };
-    /* ---END [прокрутка категорій] END--- */
+
+    const initScrollTopButton = () => {
+        if (!scrollTopBtn.length) return;
+
+        const toggleButtonState = () => {
+            scrollTopBtn.toggleClass('is-visible', window.scrollY > 420);
+        };
+
+        let rafPending = false;
+        $(window).off('scroll.menuScrollTop').on('scroll.menuScrollTop', function () {
+            if (rafPending) return;
+            rafPending = true;
+
+            requestAnimationFrame(() => {
+                rafPending = false;
+                toggleButtonState();
+            });
+        });
+
+        scrollTopBtn.off('click.menuScrollTop').on('click.menuScrollTop', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        toggleButtonState();
+    };
 
     initCategoryNav();
+    initScrollTopButton();
 });

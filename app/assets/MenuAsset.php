@@ -13,7 +13,7 @@ class MenuAsset extends AssetBundle
 
     public $css = [
         'css/bootstrap.min.css',
-        'css/site.css?v=2',
+        'css/site.css?v=3',
     ];
 
     public $cssOptions = [
@@ -23,7 +23,7 @@ class MenuAsset extends AssetBundle
     public $js = [
         'js/jquery-3.7.1.min.js',
         'js/bootstrap.bundle.min.js',
-        'js/menu.js?v=3',
+        'js/menu.js?v=4',
         'js/img-error.js?v=3',
     ];
 

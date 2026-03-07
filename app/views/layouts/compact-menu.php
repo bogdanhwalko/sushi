@@ -88,6 +88,10 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <?= $content ?>
 </main>
 
+<button class="compact-menu-scroll-top" id="menuScrollTop" type="button" aria-label="Догори" title="Догори">
+    <span aria-hidden="true">↑</span>
+</button>
+
 <?= $this->render('footer') ?>
 
 <?php $this->endBody() ?>
