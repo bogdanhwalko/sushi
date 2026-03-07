@@ -159,8 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Додавання товарів до кошика] BEGIN--- */
-    productGridContainer.on('click', '.add-to-cart', addToCart);
-    productDetailBlock.on('click', '.add-to-cart', addToCart);
+    $(document).on('click', '.product-card .add-to-cart', addToCart);
     heroCardBlock.on('click', '.add-to-cart', function (e) {
         cartUpdate(heroCardBlock.data('product'), true)
     });
@@ -282,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* ---BEGIN [Детальна інформація про товар] BEGIN--- */
-    productGridContainer.on('click', '.view-details', function (e) {
+    $(document).on('click', '.product-card .view-details', function (e) {
         detailProduct($(this).closest('.product-card'))
     })
     heroCardBlock.on('click', '.view-details', function (e) {
@@ -503,5 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initCategoryNav();
+
     loadProducts();
 });

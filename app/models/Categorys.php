@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\modules\api\models\Product;
 use Yii;
 use yii\db\ActiveRecord;
 
@@ -70,6 +71,15 @@ class Categorys extends ActiveRecord
     }
 
 
+    public function getProducts()
+    {
+        return $this->hasMany(Product::class, ['category_id' => 'id'])
+            ->alias('p')
+            ->andOnCondition(['p.status' => 1])
+            ->orderBy(['p.sort_order' => SORT_DESC]);
+    }
+
+
     public function getChildren()
     {
         return $this->hasMany(self::class, ['parent_id' => 'id'])
@@ -77,13 +87,19 @@ class Categorys extends ActiveRecord
     }
 
 
-    public static function getActive()
+    public static function getActive(bool $withProducts = false): array
     {
-        return static::find()
-            ->select(['slug', 'name', 'id'])
-            ->andWhere(['status' => 1])
-            ->orderBy(['sort_order' => SORT_DESC])
-            ->all();
+        $query = static::find()
+            ->alias('t1')
+            ->select(['t1.slug', 't1.name', 't1.id'])
+            ->andWhere(['t1.status' => 1])
+            ->orderBy(['t1.sort_order' => SORT_DESC]);
+
+        if ($withProducts) {
+            $query->joinWith('products');
+        }
+
+        return $query->all();
     }
 
 

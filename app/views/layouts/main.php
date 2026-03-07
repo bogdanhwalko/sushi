@@ -5,8 +5,9 @@
 /** @var array $products */
 
 use app\assets\AppAsset;
-use yii\bootstrap5\Html;
 use app\models\Categorys;
+use yii\bootstrap5\Html;
+use yii\helpers\Url;
 
 
 AppAsset::register($this);
@@ -66,6 +67,8 @@ $cartTotal = 0;
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#menu">Меню</a>
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#contact">Контакти</a>
+
+                <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="<?= Url::to(['/site/menu']) ?>">Усе меню</a>
 
                 <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" id="cart-button" type="button" aria-label="Open cart">
                     <span class="bg-accent cart-badge">

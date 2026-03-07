@@ -50,6 +50,7 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 '' => 'site/index',
+                'menu' => 'site/menu',
                 'admin-panel/<controller>/<action>' => 'admin-panel/<controller>/<action>',
                 'admin-panel/<controller>' => 'admin-panel/<controller>/index',
                 'admin-panel' => 'admin-panel/default/index',
