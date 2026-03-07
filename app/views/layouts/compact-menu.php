@@ -3,11 +3,11 @@
 /** @var yii\web\View $this */
 /** @var string $content */
 
-use app\assets\AppAsset;
+use app\assets\MenuAsset;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
-AppAsset::register($this);
+MenuAsset::register($this);
 
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');

@@ -3,10 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const productDetailBlock = $('#productModal');
     const productDetailModalContent = productDetailBlock.find('.modal-body');
 
-    const categoryNextBtn = $('.category-next');
     const categoryFilters = $('#categoryFilters');
     const categoryButtons = categoryFilters.find('button');
-    const categoryPrevBtn = $('.category-prev');
 
     const cartButton = $('#cart-button');
     const cartContent = $('#cart-content');
@@ -78,61 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---END [Скрол до потрібної секції] END--- */
 
 
-    /* ---BEGIN [прокрутка категорій] BEGIN--- */
-    const initCategoryNav = () => {
-        $('.category-nav').each(function () {
-            if (!categoryFilters.length || !categoryPrevBtn.length || !categoryNextBtn.length) return;
+    /* ---BEGIN [Зміна категорії] BEGIN--- */
+    categoryFilters.on('click', 'button', function (e) {
+        let clicked = $(this);
 
-            const el = categoryFilters[0];
-            const getScrollStep = () => Math.max(160, Math.round(el.clientWidth * 0.6));
+        categoryButtons.removeClass('active');
+        clicked.addClass('active');
 
-            const updateNavState = () => {
-                const maxScroll = el.scrollWidth - el.clientWidth;
-                const current = Math.round(el.scrollLeft);
-
-                // якщо скролу нема — вимикаємо обидві кнопки
-                const hasScroll = maxScroll > 1;
-
-                categoryPrevBtn.prop('disabled', !hasScroll || current <= 0);
-                categoryNextBtn.prop('disabled', !hasScroll || current >= maxScroll - 1);
-            };
-
-            const scrollToX = (x) => {
-                const maxScroll = el.scrollWidth - el.clientWidth;
-                const target = Math.max(0, Math.min(x, maxScroll));
-
-                categoryFilters.stop(true).animate(
-                    { scrollLeft: target },
-                    250,
-                    updateNavState
-                );
-            };
-
-            // чистимо старі хендлери, щоб init можна було викликати повторно
-            categoryPrevBtn.off('click.categoryNav').on('click.categoryNav', function () {
-                scrollToX(el.scrollLeft - getScrollStep());
-            });
-
-            categoryNextBtn.off('click.categoryNav').on('click.categoryNav', function () {
-                scrollToX(el.scrollLeft + getScrollStep());
-            });
-
-            let rafPending = false;
-            categoryFilters.off('scroll.categoryNav').on('scroll.categoryNav', function () {
-                if (rafPending) return;
-                rafPending = true;
-                requestAnimationFrame(() => {
-                    rafPending = false;
-                    updateNavState();
-                });
-            });
-
-            $(window).off('resize.categoryNav').on('resize.categoryNav', updateNavState);
-
-            updateNavState();
-        });
-    };
-    /* ---END [прокрутка категорій] END--- */
+        loadProducts(clicked.data('id'));
+    });
+    /* ---END [Зміна категорії] END--- */
 
 
     /* ---BEGIN [завантаження товарів] BEGIN--- */
@@ -313,18 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---END [Детальна інформація про товар] END--- */
 
 
-    /* ---BEGIN [Зміна категорії] BEGIN--- */
-    categoryFilters.on('click', 'button', function (e) {
-        let clicked = $(this);
-
-        categoryButtons.removeClass('active');
-        clicked.addClass('active');
-
-        loadProducts(clicked.data('id'));
-    });
-    /* ---END [Зміна категорії] END--- */
-
-
     /* ---BEGIN [Відкриття корзини] BEGIN--- */
     cartButton.on('click', function (e) {
         if (cartUpdateStatus) {
@@ -478,18 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.show();
     }
 
-    document.addEventListener('error', function(e) {
-        const img = e.target;
-
-        if (img.tagName === 'IMG') {
-
-            if (img.dataset.fallback === '1') return;
-
-            img.dataset.fallback = '1';
-            img.src = '/images/products/no_image.png';
-        }
-    }, true);
-
 
     function showPreloader(block)
     {
@@ -500,8 +429,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="mt-2">Loading...</div>
         </div>`);
     }
-
-    initCategoryNav();
 
     loadProducts();
 });
