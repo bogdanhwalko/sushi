@@ -5,22 +5,19 @@
                 <div class="col-lg-5">
                     <div class="contact-card h-100">
                         <div class="contact-head d-flex justify-content-between align-items-center mb-2">
-                            <span class="contact-label">Графік</span>
-                            <span class="contact-time"><?= Yii::$app->params['schedule'] ?></span>
+                            <span class="contact-label text-primary">107 Sushi</span>
                         </div>
-                        <p class="contact-subtext mb-3">Однаковий для всіх міст.</p>
+                        <p class="contact-subtext mb-3">Готуємо роли та сети зі свіжих інгредієнтів, зберігаючи стабільний смак і охайну подачу в кожному замовленні.</p>
                         <div class="contact-grid">
                             <div class="contact-item">
-                                <div class="contact-item-label">Телефон</div>
-                                <a class="contact-item-value" href="tel:<?= preg_replace('/[^0-9+]/', '', Yii::$app->params['phone']) ?>">
-                                    <?= Yii::$app->params['phone'] ?>
-                                </a>
+                                <div class="contact-item-label">Смак</div>
+                                <span class="contact-item-value">
+                                    Баланс риби, рису та соусів
+                                </span>
                             </div>
                             <div class="contact-item">
-                                <div class="contact-item-label">Email</div>
-                                <a class="contact-item-value" href="mailto:<?= Yii::$app->params['senderEmail'] ?>">
-                                    <?= Yii::$app->params['senderEmail'] ?>
-                                </a>
+                                <div class="contact-item-label">Подача</div>
+                                <span class="contact-item-value">Акуратне пакування і контроль якості</span>
                             </div>
                         </div>
                     </div>

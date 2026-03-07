@@ -1499,9 +1499,24 @@ footer {
     align-items: flex-start;
   }
 
-  .compact-menu-card {
-    grid-template-columns: 82px minmax(0, 1fr);
-    gap: 0.8rem;
+  #menu.compact-menu-page .compact-menu-card {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  #menu.compact-menu-page .compact-menu-card-image-wrap {
+    width: 100%;
+    height: 220px;
+    aspect-ratio: auto;
+  }
+
+  #menu.compact-menu-page .compact-menu-card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 0;
+    filter: none;
   }
 
   .compact-menu-card-price {
@@ -1557,8 +1572,8 @@ footer {
     border-radius: 18px;
   }
 
-  .compact-menu-card {
-    grid-template-columns: 72px minmax(0, 1fr);
+  #menu.compact-menu-page .compact-menu-card {
+    grid-template-columns: 1fr;
   }
 
   .compact-menu-actions {

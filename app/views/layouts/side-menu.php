@@ -5,7 +5,6 @@ use yii\helpers\Url;
 
 $navItems = $this->params['sideMenuLinks'] ?? [
     ['label' => 'Меню', 'href' => '#menu'],
-    ['label' => 'Усе меню', 'href' => Url::to(['/site/menu'])],
     ['label' => 'Про нас', 'href' => '#about'],
     ['label' => 'Контакти', 'href' => '#contact'],
 ];

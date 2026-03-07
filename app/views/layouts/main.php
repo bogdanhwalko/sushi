@@ -68,8 +68,6 @@ $cartTotal = 0;
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#contact">Контакти</a>
 
-                <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="<?= Url::to(['/site/menu']) ?>">Усе меню</a>
-
                 <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" id="cart-button" type="button" aria-label="Open cart">
                     <span class="bg-accent cart-badge">
                         <span id="cartCount"><?= $this->params['totalCount'] ?> </span>
