@@ -17,7 +17,7 @@ use yii\helpers\Html;
                 <div class="d-flex align-items-center gap-2 flex-wrap" id="happyHours">
                     <div class="pill-pill d-inline-flex align-items-center gap-2 is-active">
                         <span class="happy-dot is-active" id="happyDot" aria-hidden="true"></span>
-                        <span>Доставка від 700 грн БЕЗКОШТОВНА</span>
+                        <span>Доставка від 800 грн БЕЗКОШТОВНА</span>
                     </div>
                 </div>
             </div>

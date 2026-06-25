@@ -63,7 +63,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <div class="compact-menu-hero-item compact-menu-hero-item-pill">
                 <p class="compact-menu-hero-pill mb-0">
                     <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                    Доставка від 700 грн БЕЗКОШТОВНА
+                    Доставка від 800 грн БЕЗКОШТОВНА
                 </p>
             </div>
         </div>
@@ -78,7 +78,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </p>
             <p class="compact-menu-mobile-pill mb-0">
                 <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                Доставка від 700 грн БЕЗКОШТОВНА
+                Доставка від 800 грн БЕЗКОШТОВНА
             </p>
         </div>
     </div>
