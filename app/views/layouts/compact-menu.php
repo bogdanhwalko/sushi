@@ -4,10 +4,12 @@
 /** @var string $content */
 
 use app\assets\MenuAsset;
+use app\components\HeroSettings;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
 MenuAsset::register($this);
+HeroSettings::registerPreload($this);
 
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');
@@ -31,14 +33,14 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <?php $this->beginBody() ?>
 
 <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
-<header class="gradient-hero text-white compact-menu-header">
+<header class="gradient-hero text-white compact-menu-header" style="<?= Html::encode(HeroSettings::headerStyle()) ?>">
     <div class="topbar">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">
             <div class="d-flex gap-3 align-items-center">
                 <span>Графік: <?= Yii::$app->params['schedule'] ?></span>
             </div>
             <span class="text-white-50 text-decoration-none small d-none d-md-inline">
-                Обирайте страви. Про все інше подбає наша команда.
+                <?= Html::encode(HeroSettings::get('subtitle')) ?>
             </span>
         </div>
     </div>
@@ -52,18 +54,17 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
         <div class="compact-menu-hero-copy d-none d-lg-grid" aria-label="Переваги доставки">
             <div class="compact-menu-hero-item compact-menu-hero-item-eyebrow">
-                <p class="compact-menu-hero-eyebrow mb-0">Забери сам та отримай знижку -5%</p>
+                <p class="compact-menu-hero-eyebrow mb-0"><?= Html::encode(HeroSettings::get('eyebrow')) ?></p>
             </div>
             <div class="compact-menu-hero-item compact-menu-hero-item-title">
                 <p class="compact-menu-hero-title mb-0">
-                    Доставка японської кухні у твоєму місті
-                    <span class="compact-menu-hero-brand">"107 SUSHI"</span>
+                    <?= HeroSettings::titleHtml('compact-menu-hero-brand') ?>
                 </p>
             </div>
             <div class="compact-menu-hero-item compact-menu-hero-item-pill">
                 <p class="compact-menu-hero-pill mb-0">
                     <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                    Доставка від 800 грн БЕЗКОШТОВНА
+                    <?= Html::encode(HeroSettings::get('badge')) ?>
                 </p>
             </div>
         </div>
@@ -71,14 +72,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
     <div class="container compact-menu-mobile-hero d-lg-none">
         <div class="compact-menu-mobile-hero-card" aria-label="Переваги доставки">
-            <p class="compact-menu-mobile-eyebrow mb-1">Забери сам та отримай знижку -5%</p>
+            <p class="compact-menu-mobile-eyebrow mb-1"><?= Html::encode(HeroSettings::get('eyebrow')) ?></p>
             <p class="compact-menu-mobile-title mb-2">
-                Доставка японської кухні у твоєму місті
-                <span class="compact-menu-hero-brand">"107 SUSHI"</span>
+                <?= HeroSettings::titleHtml('compact-menu-hero-brand') ?>
             </p>
             <p class="compact-menu-mobile-pill mb-0">
                 <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                Доставка від 800 грн БЕЗКОШТОВНА
+                <?= Html::encode(HeroSettings::get('badge')) ?>
             </p>
         </div>
     </div>

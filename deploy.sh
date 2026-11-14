@@ -215,6 +215,14 @@ done
 [[ ${#missing[@]} -eq 0 ]] || die "Не вистачає розширень PHP: ${missing[*]}"
 ok "розширення PHP: ${REQUIRED_EXTENSIONS[*]}"
 
+# стискання фото шапки (адмінка → «Шапка сайту»): не обов'язково, але без нього фото зберігаються як є
+image_lib="$(php_run -r 'if (extension_loaded("imagick")) { echo "Imagick", in_array("WEBP", Imagick::queryFormats("WEBP")) ? " (WebP)" : " (JPEG)"; } elseif (extension_loaded("gd")) { echo "GD", function_exists("imagewebp") ? " (WebP)" : " (JPEG)"; }')"
+if [[ -n "$image_lib" ]]; then
+    ok "стискання фото: $image_lib"
+else
+    warn "немає imagick і gd — фото шапки зберігатимуться без стискання (увімкніть imagick у cPanel → Select PHP Version)"
+fi
+
 # composer: явно задана команда → composer у PATH → ./composer.phar → завантажити composer.phar
 if [[ -n "$COMPOSER_BIN" ]]; then
     read -r -a COMPOSER_CMD <<< "$COMPOSER_BIN"
@@ -439,7 +447,7 @@ fi
 # ----------------------------------------------------------------------------
 step "Файли та кеш"
 # ----------------------------------------------------------------------------
-for dir in "$RUNTIME" "$WEB/assets" "$WEB/uploads/products"; do
+for dir in "$RUNTIME" "$WEB/assets" "$WEB/uploads/products" "$WEB/uploads/hero"; do
     mkdir -p "$dir"
     if [[ -w "$dir" ]]; then
         ok "запис дозволено: ${dir#"$ROOT"/}"

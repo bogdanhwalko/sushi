@@ -99,6 +99,13 @@
                     ],
 
                     [
+                        'label' => 'Шапка сайту',
+                        'url' => ['/admin-panel/hero/index'],
+                        'icon' => 'nav-icon fas fa-image',
+                        'visible' => true,
+                    ],
+
+                    [
                         'label' => 'Мій профіль',
                         'url' => ['/admin-panel/profile/index'],
                         'icon' => 'nav-icon fas fa-user-cog',

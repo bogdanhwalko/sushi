@@ -22,7 +22,20 @@ body {
   /*background: radial-gradient(120% 140% at 20% 20%, rgba(240, 93, 35, 0.35), transparent 50%),*/
   /*            radial-gradient(90% 120% at 80% 0%, rgba(13, 15, 16, 0.45), transparent 60%),*/
   /*            linear-gradient(135deg, #0f1113 0%, #101316 50%, #0c0e10 100%);*/
-  background: url("../images/header.png") no-repeat left / cover;
+  /* фото, затемнення й позиція задаються в адмінці → «Шапка сайту»
+     (HeroSettings::headerStyle() пише їх у style шапки); тут — значення за замовчуванням */
+  background:
+    linear-gradient(rgba(13, 15, 16, var(--hero-overlay, 0)), rgba(13, 15, 16, var(--hero-overlay, 0))),
+    var(--hero-bg, url("../images/header.webp")) no-repeat var(--hero-position, left) center / cover;
+  background-color: #0d0f10;
+}
+
+@media (max-width: 767.98px) {
+  .gradient-hero {
+    background-image:
+      linear-gradient(rgba(13, 15, 16, var(--hero-overlay, 0)), rgba(13, 15, 16, var(--hero-overlay, 0))),
+      var(--hero-bg-mobile, url("../images/header-mobile.webp"));
+  }
 }
 
 .brand-mark {
@@ -1653,10 +1666,23 @@ footer {
 }
 
 /* --- шапка кабінету --- */
+/* те саме фото шапки, що й на сайті, плюс власне затемнення кабінету */
 .account-header {
-  background: linear-gradient(rgba(13, 15, 16, 0.45), rgba(13, 15, 16, 0.45)),
-              url("../images/header.png") no-repeat left / cover;
+  background:
+    linear-gradient(rgba(13, 15, 16, 0.45), rgba(13, 15, 16, 0.45)),
+    linear-gradient(rgba(13, 15, 16, var(--hero-overlay, 0)), rgba(13, 15, 16, var(--hero-overlay, 0))),
+    var(--hero-bg, url("../images/header.webp")) no-repeat var(--hero-position, left) center / cover;
+  background-color: #0d0f10;
   padding: 12px 0;
+}
+
+@media (max-width: 767.98px) {
+  .account-header {
+    background-image:
+      linear-gradient(rgba(13, 15, 16, 0.45), rgba(13, 15, 16, 0.45)),
+      linear-gradient(rgba(13, 15, 16, var(--hero-overlay, 0)), rgba(13, 15, 16, var(--hero-overlay, 0))),
+      var(--hero-bg-mobile, url("../images/header-mobile.webp"));
+  }
 }
 
 .account-logo {

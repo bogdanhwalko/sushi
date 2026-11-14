@@ -5,6 +5,7 @@
 /** @var array $products */
 
 use app\assets\AppAsset;
+use app\components\HeroSettings;
 use app\models\Categorys;
 use yii\bootstrap5\Html;
 use yii\helpers\Url;
@@ -20,6 +21,8 @@ $this->registerMetaTag(['name' => 'keywords', 'content' => $this->params['meta_k
 $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web/images/icons/favicon.png')]);
 
 $this->title = '107 Sushi';
+
+HeroSettings::registerPreload($this);
 
 $cartTotal = 0;
 
@@ -45,7 +48,7 @@ $currentUser = Yii::$app->user->identity;
     <?php $this->beginBody() ?>
 
     <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
-    <header class="gradient-hero text-white pb-5">
+    <header class="gradient-hero text-white pb-5" style="<?= Html::encode(HeroSettings::headerStyle()) ?>">
         <div class="topbar">
             <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">
                 <div class="d-flex gap-3 align-items-center">
