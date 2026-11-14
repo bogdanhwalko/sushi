@@ -17,15 +17,23 @@ $this->title = 'Товари';
 $this->params['breadcrumbs'][] = $this->title;
 
 \yii\web\YiiAsset::register($this); // data-method / data-confirm для кнопки видалення в картках
-$this->registerJsFile('@web/js/admin/productInline.js?v=1', ['depends' => \yii\web\JqueryAsset::class]);
+$this->registerJsFile('@web/js/admin/productInline.js?v=2', ['depends' => \yii\web\JqueryAsset::class]);
 $this->registerCss(<<<CSS
 .js-inline-edit { cursor: pointer; border-bottom: 1px dashed transparent; white-space: nowrap; }
 .js-inline-edit:hover { border-bottom-color: #adb5bd; }
 .js-inline-edit.is-saved { background: #d4edda; transition: background .2s; }
-.js-inline-edit .form-control { width: 7rem; display: inline-block; }
-.product-admin-card .card-img-top { aspect-ratio: 1 / 1; object-fit: cover; background: #f4f6f9; }
-.product-admin-card .no-image { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; background: #f4f6f9; color: #adb5bd; font-size: 2rem; }
-.product-admin-card.is-inactive .card-img-top, .product-admin-card.is-inactive .no-image { opacity: .45; }
+.js-inline-edit.is-editing { cursor: default; border-bottom-color: transparent; display: inline-block; }
+.inline-edit-group { width: 10.5rem; flex-wrap: nowrap; }
+.inline-edit-group .form-control { min-width: 0; }
+.product-admin-card .product-excerpt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+.product-card-actions { display: flex; align-items: center; background: #fff; border-top: 1px solid rgba(0,0,0,.06); padding: .6rem .75rem; }
+.product-card-actions .btn + .btn { margin-left: .4rem; }
+.product-card-actions .btn-light { border: 1px solid #dee2e6; color: #495057; width: 2.1rem; }
+.product-card-actions .btn-light:hover { background: #e9ecef; }
+.product-card-actions .btn-delete:hover { background: #dc3545; border-color: #dc3545; color: #fff; }
+.product-card-img { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; overflow: hidden; background: #f4f6f9; color: #ced4da; font-size: 2.5rem; border-radius: .25rem .25rem 0 0; }
+.product-card-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.product-admin-card.is-inactive .product-card-img { opacity: .45; }
 .product-admin-card .card-title { font-size: 1rem; line-height: 1.3; }
 CSS);
 

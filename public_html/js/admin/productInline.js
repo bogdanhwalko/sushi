@@ -1,6 +1,6 @@
 /**
  * Список товарів в адмінці: ціна і вага змінюються подвійним кліком по значенню.
- * Enter або клік поза полем — зберегти, Esc — скасувати.
+ * Поруч із полем — кнопки ✓ (зберегти, або Enter) і ✕ (скасувати, або Esc).
  */
 $(function () {
     const csrf = () => $('meta[name="csrf-token"]').attr('content');
@@ -14,6 +14,11 @@ $(function () {
         const oldHtml = cell.html();
         const oldValue = String(cell.data('value') ?? '');
         const input = $('<input type="number" min="0" step="1" class="form-control form-control-sm">').val(oldValue);
+        const saveBtn = $('<button type="button" class="btn btn-success" title="Зберегти (Enter)"><i class="fas fa-check"></i></button>');
+        const cancelBtn = $('<button type="button" class="btn btn-outline-secondary" title="Скасувати (Esc)"><i class="fas fa-times"></i></button>');
+        const group = $('<div class="input-group input-group-sm inline-edit-group"></div>')
+            .append(input)
+            .append($('<div class="input-group-append"></div>').append(saveBtn, cancelBtn));
 
         let busy = false;
         const close = (html) => {
@@ -31,7 +36,7 @@ $(function () {
             }
 
             busy = true;
-            input.prop('disabled', true);
+            group.find('input, button').prop('disabled', true);
 
             $.ajax({
                 url: '/admin-panel/ajax/product/update-field',
@@ -48,31 +53,36 @@ $(function () {
                     return;
                 }
                 busy = false;
-                input.prop('disabled', false).addClass('is-invalid').attr('title', res.error).trigger('focus');
+                group.find('input, button').prop('disabled', false);
+                input.addClass('is-invalid').attr('title', res.error).trigger('focus');
                 alert(res.error);
             }).fail(function (xhr) {
                 busy = false;
-                input.prop('disabled', false).addClass('is-invalid').trigger('focus');
+                group.find('input, button').prop('disabled', false);
+                input.addClass('is-invalid').trigger('focus');
                 alert(xhr.status === 404 ? 'Товар не знайдено — оновіть сторінку.' : 'Не вдалося зберегти. Спробуйте ще раз.');
             });
         };
 
-        cell.addClass('is-editing').empty().append(input);
+        const cancel = () => {
+            busy = true;
+            close(oldHtml);
+        };
+
+        cell.addClass('is-editing').empty().append(group);
         input.trigger('focus').trigger('select');
+
+        // зберігається лише явно: кнопкою ✓ або Enter; ✕ або Esc — скасувати
+        saveBtn.on('click', save);
+        cancelBtn.on('click', cancel);
+        group.on('dblclick click', (e) => e.stopPropagation()); // кліки в полі не відкривають перегляд/редагування
 
         input.on('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 save();
             } else if (e.key === 'Escape') {
-                busy = true; // щоб blur після закриття не зберіг
-                close(oldHtml);
-            }
-        });
-        // alert забирає фокус — після помилки не зберігаємо повторно автоматично
-        input.on('blur', function () {
-            if (!input.hasClass('is-invalid')) {
-                save();
+                cancel();
             }
         });
         input.on('input', function () {
