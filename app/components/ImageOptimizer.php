@@ -23,10 +23,11 @@ final class ImageOptimizer
     /**
      * Зменшує зображення так, щоб воно вписалось у $maxWidth × $maxHeight (не збільшує),
      * стискає й зберігає у $dir під випадковим іменем.
+     * $keepAlpha — зберегти прозорість (логотип): без WebP буде PNG, а не JPEG з білим фоном.
      *
      * @return string|null ім'я збереженого файлу або null (причина — у self::$lastError)
      */
-    public static function save(string $source, string $dir, int $maxWidth, int $maxHeight, int $quality = 80): ?string
+    public static function save(string $source, string $dir, int $maxWidth, int $maxHeight, int $quality = 80, bool $keepAlpha = false): ?string
     {
         self::$lastError = null;
 
@@ -49,10 +50,10 @@ final class ImageOptimizer
 
         try {
             if (extension_loaded('imagick')) {
-                return self::withImagick($source, $dir, $name, $maxWidth, $maxHeight, $quality);
+                return self::withImagick($source, $dir, $name, $maxWidth, $maxHeight, $quality, $keepAlpha);
             }
             if (extension_loaded('gd')) {
-                return self::withGd($source, $info[2], $dir, $name, $maxWidth, $maxHeight, $quality);
+                return self::withGd($source, $info[2], $dir, $name, $maxWidth, $maxHeight, $quality, $keepAlpha);
             }
         } catch (\Throwable $e) {
             Yii::error('Не вдалося обробити зображення: ' . $e->getMessage(), __METHOD__);
@@ -71,7 +72,7 @@ final class ImageOptimizer
     }
 
 
-    private static function withImagick(string $source, string $dir, string $name, int $maxW, int $maxH, int $quality): string
+    private static function withImagick(string $source, string $dir, string $name, int $maxW, int $maxH, int $quality, bool $keepAlpha): string
     {
         $im = new \Imagick($source);
         $im->setIteratorIndex(0); // з анімованих / багатосторінкових — лише перший кадр
@@ -84,8 +85,8 @@ final class ImageOptimizer
             $im->thumbnailImage($maxW, $maxH, true);
         }
 
-        $webp = in_array('WEBP', \Imagick::queryFormats('WEBP'), true);
-        if (!$webp) {
+        $format = in_array('WEBP', \Imagick::queryFormats('WEBP'), true) ? 'webp' : ($keepAlpha ? 'png' : 'jpeg');
+        if ($format === 'jpeg') {
             // у JPEG немає прозорості — підкладаємо білий фон
             $im->setImageBackgroundColor('white');
             $im = $im->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
@@ -93,10 +94,10 @@ final class ImageOptimizer
         }
 
         $im->stripImage(); // без EXIF (геолокація з телефона тощо)
-        $im->setImageFormat($webp ? 'webp' : 'jpeg');
-        $im->setImageCompressionQuality($quality);
+        $im->setImageFormat($format);
+        $im->setImageCompressionQuality($format === 'png' ? 95 : $quality); // для PNG — рівень стиснення
 
-        $file = $name . ($webp ? '.webp' : '.jpg');
+        $file = $name . ['webp' => '.webp', 'png' => '.png', 'jpeg' => '.jpg'][$format];
         $im->writeImage("$dir/$file");
         $im->clear();
 
@@ -104,7 +105,7 @@ final class ImageOptimizer
     }
 
 
-    private static function withGd(string $source, int $type, string $dir, string $name, int $maxW, int $maxH, int $quality): string
+    private static function withGd(string $source, int $type, string $dir, string $name, int $maxW, int $maxH, int $quality, bool $keepAlpha): string
     {
         $src = imagecreatefromstring((string)file_get_contents($source));
         if ($src === false) {
@@ -127,18 +128,20 @@ final class ImageOptimizer
         $nh = max(1, (int)round($h * $scale));
 
         $dst = imagecreatetruecolor($nw, $nh);
-        $webp = function_exists('imagewebp');
-        if ($webp) {
+        $format = function_exists('imagewebp') ? 'webp' : ($keepAlpha ? 'png' : 'jpeg');
+        if ($format === 'jpeg') {
+            imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));
+        } else {
             imagealphablending($dst, false);
             imagesavealpha($dst, true);
-        } else {
-            imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));
         }
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
 
-        $file = $name . ($webp ? '.webp' : '.jpg');
-        if ($webp) {
+        $file = $name . ['webp' => '.webp', 'png' => '.png', 'jpeg' => '.jpg'][$format];
+        if ($format === 'webp') {
             imagewebp($dst, "$dir/$file", $quality);
+        } elseif ($format === 'png') {
+            imagepng($dst, "$dir/$file", 9);
         } else {
             imageinterlace($dst, true);
             imagejpeg($dst, "$dir/$file", $quality);

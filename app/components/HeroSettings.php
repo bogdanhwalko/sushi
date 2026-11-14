@@ -28,6 +28,12 @@ final class HeroSettings
         'mobile' => 'images/header-mobile.webp',
     ];
 
+    /** стандартний логотип — у репозиторії (стиснена копія logo.png) */
+    public const DEFAULT_LOGO = 'images/icons/logo.webp';
+
+    /** ключі налаштувань, що зберігають ім'я завантаженого файлу (для історії та прибирання) */
+    public const FILE_KEYS = ['image_desktop', 'image_mobile', 'logo'];
+
     /** до якої ширини екрана показується фото для телефона (як sm-брейкпоінт Bootstrap) */
     public const MOBILE_MAX_WIDTH = 767.98;
 
@@ -43,7 +49,18 @@ final class HeroSettings
         'accent_color' => '#dd4c2a',
     ];
 
-    public const TEXT_KEYS = ['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'];
+    /** стандартні відтінки помаранчевого — як у :root у site.css (для перегляду в адмінці) */
+    public const STANDARD_ACCENT_PALETTE = [
+        '--accent' => '#dd4c2a',
+        '--accent-dark' => '#d94c18',
+        '--accent-rgb' => '221, 76, 42',
+        '--accent-light-rgb' => '240, 93, 35',
+        '--accent-glow-rgb' => '255, 106, 42',
+        '--accent-darker' => '#b93c1d',
+        '--accent-deep' => '#7a210f',
+    ];
+
+    public const TEXT_KEYS =['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'];
 
     public const DEFAULTS = [
         'eyebrow' => 'Забери сам та отримай знижку -5%',
@@ -55,6 +72,7 @@ final class HeroSettings
         'accent_color' => '',
         'image_desktop' => '',   // ім'я файлу в UPLOAD_DIR; порожньо — стандартне фото
         'image_mobile' => '',
+        'logo' => '',            // ім'я файлу в UPLOAD_DIR; порожньо — стандартний логотип
         'overlay' => '0',        // затемнення фото, %
         'position' => 'left',    // яка частина фото лишається в кадрі
     ];
@@ -160,6 +178,22 @@ final class HeroSettings
     }
 
 
+    /** URL логотипа (свій або стандартний) */
+    public static function logoUrl(?array $values = null): string
+    {
+        $file = $values === null ? self::get('logo') : ($values['logo'] ?? '');
+
+        return Yii::getAlias('@web/') . ($file !== '' ? self::UPLOAD_DIR . '/' . $file : self::DEFAULT_LOGO);
+    }
+
+
+    /** <img> логотипа сайту; data-hero-logo — щоб перегляд в адмінці міг його підмінити */
+    public static function logoImg(array $options = []): string
+    {
+        return Html::img(self::logoUrl(), array_merge(['alt' => '107 Sushi', 'data-hero-logo' => true], $options));
+    }
+
+
     /** чи завантажене своє фото (а не стандартне) */
     public static function hasCustomImage(string $device): bool
     {
@@ -205,9 +239,6 @@ final class HeroSettings
         if (self::get('text_color') !== '') {
             $classes[] = 'hero-custom-text';
         }
-        if (self::get('accent_color') !== '') {
-            $classes[] = 'hero-custom-accent';
-        }
 
         return Html::beginTag('header', ['class' => implode(' ', $classes), 'style' => self::headerStyle()]);
     }
@@ -226,13 +257,58 @@ final class HeroSettings
             $position
         );
 
-        foreach (['text_color' => '--hero-text', 'accent_color' => '--hero-accent'] as $key => $var) {
-            if (self::isColor(self::get($key))) {
-                $style .= " $var: " . self::get($key) . ';';
-            }
+        if (self::isColor(self::get('text_color'))) {
+            $style .= ' --hero-text: ' . self::get('text_color') . ';';
         }
 
         return $style;
+    }
+
+
+    /**
+     * Фірмовий колір (помаранчевий) для всього сайту: заголовок, ціни, кнопки, підсвітки.
+     * Якщо задано в адмінці — перевизначає змінні --accent* з site.css; інакше нічого не виводить.
+     */
+    public static function registerAccent(View $view): void
+    {
+        $color = self::get('accent_color');
+        if (!self::isColor($color)) {
+            return;
+        }
+
+        $css = ':root {';
+        foreach (self::accentPalette($color) as $var => $value) {
+            $css .= " $var: $value;";
+        }
+        $view->registerCss($css . ' }', [], 'hero-accent');
+    }
+
+
+    /**
+     * Відтінки з одного кольору — у тих самих пропорціях, що й стандартні відтінки помаранчевого.
+     * Та сама формула є в JS перегляду адмінки (views/hero/index.php → accentPalette).
+     *
+     * @return array<string, string> CSS-змінна → значення
+     */
+    public static function accentPalette(string $hex): array
+    {
+        $rgb = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
+        $mix = static fn (array $to, float $t): array => array_map(
+            static fn ($c, $target) => (int)round($c + ($target - $c) * $t), $rgb, $to
+        );
+        $black = [0, 0, 0];
+        $white = [255, 255, 255];
+        $toHex = static fn (array $c): string => sprintf('#%02x%02x%02x', ...$c);
+
+        return [
+            '--accent' => $toHex($rgb),
+            '--accent-dark' => $toHex($mix($black, 0.04)),
+            '--accent-rgb' => implode(', ', $rgb),
+            '--accent-light-rgb' => implode(', ', $mix($white, 0.07)),
+            '--accent-glow-rgb' => implode(', ', $mix($white, 0.14)),
+            '--accent-darker' => $toHex($mix($black, 0.17)),
+            '--accent-deep' => $toHex($mix($black, 0.45)),
+        ];
     }
 
 

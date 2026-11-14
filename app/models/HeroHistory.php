@@ -101,8 +101,9 @@ class HeroHistory extends ActiveRecord
             static fn (self $row) => $row->getValues(),
             static::find()->all()
         )) as $values) {
-            $used[$values['image_desktop']] = true;
-            $used[$values['image_mobile']] = true;
+            foreach (HeroSettings::FILE_KEYS as $key) {
+                $used[$values[$key]] = true;
+            }
         }
 
         $dir = HeroSettings::uploadPath();

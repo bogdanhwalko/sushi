@@ -65,7 +65,7 @@ class HeroController extends AbstractController
 
         // фото могли видалити вручну з сервера — тоді ставимо стандартне, а не «бите» посилання
         $missing = [];
-        foreach (['image_desktop' => 'ПК', 'image_mobile' => 'телефона'] as $key => $label) {
+        foreach (['image_desktop' => 'фото для ПК', 'image_mobile' => 'фото для телефона', 'logo' => 'логотип'] as $key => $label) {
             if ($values[$key] !== '' && !HeroSettings::imageExists($values[$key])) {
                 $values[$key] = '';
                 $missing[] = $label;
@@ -76,7 +76,7 @@ class HeroController extends AbstractController
 
         $message = 'Відновлено варіант від ' . Yii::$app->formatter->asDatetime($row->created_at, 'php:d.m.Y H:i') . '.';
         if ($missing) {
-            $message .= ' Фото для ' . implode(' і ', $missing) . ' не знайдено на сервері — поставлено стандартне.';
+            $message .= ' Не знайдено на сервері: ' . implode(', ', $missing) . ' — поставлено стандартне.';
         }
         Yii::$app->session->setFlash('success', $message);
 

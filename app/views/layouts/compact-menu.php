@@ -10,6 +10,7 @@ use yii\helpers\Url;
 
 MenuAsset::register($this);
 HeroSettings::registerPreload($this);
+HeroSettings::registerAccent($this);
 
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');
@@ -48,7 +49,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <nav class="navbar navbar-dark container py-2 compact-menu-navbar">
         <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <a class="navbar-brand fw-bold brand-mark" href="<?= Url::home() ?>" id="link-logo">
-                <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi', 'id' => 'logo']) ?>
+                <?= HeroSettings::logoImg(['id' => 'logo']) ?>
             </a>
         </div>
 

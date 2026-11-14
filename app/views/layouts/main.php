@@ -23,6 +23,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 $this->title = '107 Sushi';
 
 HeroSettings::registerPreload($this);
+HeroSettings::registerAccent($this);
 
 $cartTotal = 0;
 
@@ -69,7 +70,7 @@ $currentUser = Yii::$app->user->identity;
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <a class="navbar-brand fw-bold brand-mark" href="/" id="link-logo">
-                    <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi', 'id' => 'logo']) ?>
+                    <?= HeroSettings::logoImg(['id' => 'logo']) ?>
                 </a>
             </div>
             <div class="ms-auto d-flex align-items-center gap-3">

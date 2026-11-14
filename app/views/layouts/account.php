@@ -9,6 +9,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 
 AccountAsset::register($this);
+HeroSettings::registerAccent($this);
 
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(['name' => 'robots', 'content' => 'noindex, nofollow']);
@@ -51,7 +52,7 @@ $headerButton = function (string $label, string $icon, $url, array $options = []
 <?= HeroSettings::headerTag('gradient-hero text-white account-header') ?>
     <div class="container d-flex align-items-center justify-content-between gap-3">
         <a class="account-logo" href="<?= Url::home() ?>" aria-label="107 Sushi — на головну">
-            <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi']) ?>
+            <?= HeroSettings::logoImg() ?>
         </a>
 
         <nav class="d-flex align-items-center gap-2" aria-label="Навігація кабінету">

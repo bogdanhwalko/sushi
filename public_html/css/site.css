@@ -3,6 +3,13 @@
   --sand: #f9f4ee;
   --accent: #dd4c2a;
   --accent-dark: #d94c18;
+  /* фірмовий помаранчевий і його відтінки; змінюється в адмінці → «Шапка сайту»
+     (HeroSettings::registerAccent перевизначає ці змінні, якщо колір задано) */
+  --accent-rgb: 221, 76, 42;
+  --accent-light-rgb: 240, 93, 35;   /* трохи яскравіший — фони, підсвітки */
+  --accent-glow-rgb: 255, 106, 42;   /* свічення тексту */
+  --accent-darker: #b93c1d;
+  --accent-deep: #7a210f;            /* текст на світло-помаранчевому фоні */
   --muted: #6c757d;
   --card-shadow: 0 25px 50px rgba(13, 15, 16, 0.08);
   --pill-bg: rgba(255, 255, 255, 0.16);
@@ -33,10 +40,6 @@ body {
 /* кольори текстів шапки з адмінки (класи додаються, лише якщо колір задано) */
 .gradient-hero.hero-custom-text [data-hero]:not([data-hero="title_accent"]) {
   color: var(--hero-text) !important;
-}
-
-.gradient-hero.hero-custom-accent [data-hero="title_accent"] {
-  color: var(--hero-accent) !important;
 }
 
 @media (max-width: 767.98px) {
@@ -158,7 +161,7 @@ body.snow-hidden .snow-layer {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(13, 15, 16, 0.08);
-  background: radial-gradient(120% 140% at 100% 0%, rgba(221, 76, 42, 0.15), transparent 56%), #fff;
+  background: radial-gradient(120% 140% at 100% 0%, rgba(var(--accent-rgb), 0.15), transparent 56%), #fff;
   box-shadow: var(--card-shadow);
 }
 
@@ -171,8 +174,8 @@ body.snow-hidden .snow-layer {
 .hero-badge {
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(221, 76, 42, 0.14);
-  color: #7a210f;
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent-deep);
   font-weight: 700;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
@@ -220,8 +223,8 @@ body.snow-hidden .snow-layer {
   align-items: center;
   padding: 0.28rem 0.6rem;
   border-radius: 10px;
-  border: 1px solid rgba(240, 93, 35, 0.25);
-  background: rgba(240, 93, 35, 0.12);
+  border: 1px solid rgba(var(--accent-light-rgb), 0.25);
+  background: rgba(var(--accent-light-rgb), 0.12);
   font-size: clamp(0.85rem, 1.3vw, 0.9rem) !important;
   font-weight: 600 !important;
   color: var(--accent) !important;
@@ -317,7 +320,7 @@ body.snow-hidden .snow-layer {
 }
 
 .bg-primary-soft {
-  background: rgba(240, 93, 35, 0.12);
+  background: rgba(var(--accent-light-rgb), 0.12);
 }
 
 .text-primary {
@@ -429,7 +432,7 @@ body.snow-hidden .snow-layer {
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.35);
   color: #fff;
-  background: radial-gradient(80% 120% at 15% 0%, rgba(240, 93, 35, 0.35), transparent 65%),
+  background: radial-gradient(80% 120% at 15% 0%, rgba(var(--accent-light-rgb), 0.35), transparent 65%),
               linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 22px rgba(13, 15, 16, 0.22);
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
@@ -437,7 +440,7 @@ body.snow-hidden .snow-layer {
 
 .cart-button:hover {
   border-color: rgba(255, 255, 255, 0.55);
-  background: radial-gradient(80% 120% at 15% 0%, rgba(240, 93, 35, 0.45), transparent 65%),
+  background: radial-gradient(80% 120% at 15% 0%, rgba(var(--accent-light-rgb), 0.45), transparent 65%),
               linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 16px 28px rgba(13, 15, 16, 0.3);
   transform: translateY(-1px);
@@ -449,7 +452,7 @@ body.snow-hidden .snow-layer {
 
 .cart-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(240, 93, 35, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 0.2rem rgba(var(--accent-light-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .navbar .cart-button {
@@ -500,8 +503,8 @@ body.snow-hidden .snow-layer {
 }
 
 .side-city-select:focus {
-  border-color: rgba(240, 93, 35, 0.6);
-  box-shadow: 0 0 0 0.2rem rgba(240, 93, 35, 0.2);
+  border-color: rgba(var(--accent-light-rgb), 0.6);
+  box-shadow: 0 0 0 0.2rem rgba(var(--accent-light-rgb), 0.2);
 }
 
 .side-city-select option {
@@ -610,7 +613,7 @@ body.snow-hidden .snow-layer {
   width: 340px;
   height: 340px;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(240, 93, 35, 0.2) 0%, rgba(240, 93, 35, 0) 70%);
+  background: radial-gradient(circle, rgba(var(--accent-light-rgb), 0.2) 0%, rgba(var(--accent-light-rgb), 0) 70%);
   pointer-events: none;
 }
 
@@ -641,7 +644,7 @@ body.snow-hidden .snow-layer {
 
 #about .about-block-intro {
   background:
-    linear-gradient(160deg, rgba(240, 93, 35, 0.14), rgba(255, 255, 255, 0.94) 36%),
+    linear-gradient(160deg, rgba(var(--accent-light-rgb), 0.14), rgba(255, 255, 255, 0.94) 36%),
     #fff;
 }
 
@@ -702,7 +705,7 @@ body.snow-hidden .snow-layer {
   height: 8px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 0 4px rgba(240, 93, 35, 0.2);
+  box-shadow: 0 0 0 4px rgba(var(--accent-light-rgb), 0.2);
 }
 
 #about .about-final {
@@ -739,7 +742,7 @@ body.snow-hidden .snow-layer {
 
 #contact .contact-intro {
   background:
-    radial-gradient(130% 130% at 100% 0%, rgba(240, 93, 35, 0.18), rgba(255, 255, 255, 0) 56%),
+    radial-gradient(130% 130% at 100% 0%, rgba(var(--accent-light-rgb), 0.18), rgba(255, 255, 255, 0) 56%),
     #fff;
 }
 
@@ -834,9 +837,9 @@ body.snow-hidden .snow-layer {
   font-weight: 500 !important;
 
   text-shadow:
-          0 0 6px rgba(255, 106, 42, 0.55),
-          0 0 18px rgba(255, 106, 42, 0.35),
-          0 0 36px rgba(255, 106, 42, 0.18);
+          0 0 6px rgba(var(--accent-glow-rgb), 0.55),
+          0 0 18px rgba(var(--accent-glow-rgb), 0.35),
+          0 0 36px rgba(var(--accent-glow-rgb), 0.18);
 }
 
 #about .text-sushi {
@@ -915,8 +918,20 @@ footer {
 }
 
 
+/* логотип змінюється в адмінці → «Шапка сайту»: задаємо висоту (стандартний — як раніше 100 px завширшки),
+   а надто широкий вписується в max-width */
 #logo {
-  width: 100px;
+  height: 69px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+}
+
+/* на телефоні поруч ще меню, кабінет і кошик — широкий логотип не має їх виштовхувати */
+@media (max-width: 575.98px) {
+  #logo {
+    max-width: 140px;
+  }
 }
 
 
@@ -945,7 +960,7 @@ footer {
     padding: 4px 10px;
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: #fff;
-    background: radial-gradient(80% 120% at 15% 0%, rgba(240, 93, 35, 0.35), transparent 65%),
+    background: radial-gradient(80% 120% at 15% 0%, rgba(var(--accent-light-rgb), 0.35), transparent 65%),
                 linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 22px rgba(13, 15, 16, 0.22);
     transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
@@ -961,7 +976,7 @@ footer {
 
   .navbar-toggler:hover {
     border-color: rgba(255, 255, 255, 0.55);
-    background: radial-gradient(80% 120% at 15% 0%, rgba(240, 93, 35, 0.45), transparent 65%),
+    background: radial-gradient(80% 120% at 15% 0%, rgba(var(--accent-light-rgb), 0.45), transparent 65%),
                 linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 16px 28px rgba(13, 15, 16, 0.3);
   }
@@ -998,6 +1013,7 @@ footer {
   width: auto;
   height: 56px;
   max-height: 56px;
+  max-width: 180px;
   display: block;
 }
 
@@ -1016,7 +1032,7 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.2);
   background:
     linear-gradient(135deg, rgba(11, 13, 15, 0.78), rgba(11, 13, 15, 0.58)),
-    radial-gradient(120% 140% at 0% 0%, rgba(221, 76, 42, 0.3), rgba(221, 76, 42, 0) 58%);
+    radial-gradient(120% 140% at 0% 0%, rgba(var(--accent-rgb), 0.3), rgba(var(--accent-rgb), 0) 58%);
   box-shadow: 0 12px 22px rgba(13, 15, 16, 0.2);
   display: flex;
   align-items: center;
@@ -1025,7 +1041,7 @@ footer {
 .compact-menu-hero-item-title {
   background:
     linear-gradient(135deg, rgba(11, 13, 15, 0.84), rgba(11, 13, 15, 0.62)),
-    radial-gradient(130% 120% at 20% 0%, rgba(221, 76, 42, 0.36), rgba(221, 76, 42, 0) 62%);
+    radial-gradient(130% 120% at 20% 0%, rgba(var(--accent-rgb), 0.36), rgba(var(--accent-rgb), 0) 62%);
 }
 
 .compact-menu-hero-item-pill {
@@ -1055,8 +1071,8 @@ footer {
   font-weight: 700;
   white-space: nowrap;
   text-shadow:
-    0 0 5px rgba(255, 106, 42, 0.48),
-    0 0 14px rgba(255, 106, 42, 0.28);
+    0 0 5px rgba(var(--accent-glow-rgb), 0.48),
+    0 0 14px rgba(var(--accent-glow-rgb), 0.28);
 }
 
 .compact-menu-hero-pill {
@@ -1089,7 +1105,7 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.22);
   background:
     linear-gradient(135deg, rgba(11, 13, 15, 0.84), rgba(11, 13, 15, 0.62)),
-    radial-gradient(140% 140% at 0% 0%, rgba(221, 76, 42, 0.34), rgba(221, 76, 42, 0) 60%);
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--accent-rgb), 0.34), rgba(var(--accent-rgb), 0) 60%);
   box-shadow: 0 14px 26px rgba(13, 15, 16, 0.24);
 }
 
@@ -1128,7 +1144,7 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.14);
   background:
     linear-gradient(135deg, rgba(12, 14, 16, 0.82), rgba(12, 14, 16, 0.6)),
-    radial-gradient(110% 180% at 0% 0%, rgba(221, 76, 42, 0.34), rgba(221, 76, 42, 0) 58%);
+    radial-gradient(110% 180% at 0% 0%, rgba(var(--accent-rgb), 0.34), rgba(var(--accent-rgb), 0) 58%);
   box-shadow: 0 20px 40px rgba(13, 15, 16, 0.2);
 }
 
@@ -1174,12 +1190,12 @@ footer {
 }
 
 .compact-menu-scroll-top:hover {
-  background: linear-gradient(145deg, #dd4c2a, #b93c1d);
+  background: linear-gradient(145deg, var(--accent), var(--accent-darker));
 }
 
 .compact-menu-scroll-top:focus-visible {
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(221, 76, 42, 0.35), 0 12px 24px rgba(13, 15, 16, 0.28);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.35), 0 12px 24px rgba(13, 15, 16, 0.28);
 }
 
 .compact-menu-scroll-top.is-visible {
@@ -1289,14 +1305,14 @@ footer {
   border-radius: 18px;
   border: 1px solid rgba(13, 15, 16, 0.08);
   background:
-    radial-gradient(120% 120% at 100% 0%, rgba(221, 76, 42, 0.08), rgba(255, 255, 255, 0) 56%),
+    radial-gradient(120% 120% at 100% 0%, rgba(var(--accent-rgb), 0.08), rgba(255, 255, 255, 0) 56%),
     #fcf9f5;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .compact-menu-card:hover {
   transform: translateY(-1px);
-  border-color: rgba(221, 76, 42, 0.2);
+  border-color: rgba(var(--accent-rgb), 0.2);
   box-shadow: 0 14px 24px rgba(13, 15, 16, 0.08);
 }
 
@@ -1433,7 +1449,7 @@ footer {
   border-radius: 24px;
   border: 1px solid rgba(13, 15, 16, 0.08);
   background:
-    radial-gradient(130% 130% at 100% 0%, rgba(221, 76, 42, 0.12), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(130% 130% at 100% 0%, rgba(var(--accent-rgb), 0.12), rgba(255, 255, 255, 0) 60%),
     #fff;
   box-shadow: 0 18px 34px rgba(13, 15, 16, 0.06);
 }
@@ -1703,6 +1719,8 @@ footer {
 .account-logo img {
   height: 44px;
   width: auto;
+  max-width: 180px;
+  object-fit: contain;
   display: block;
 }
 
@@ -1916,7 +1934,7 @@ footer {
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: transparent;
   --bs-btn-active-border-color: rgba(255, 255, 255, 0.55);
-  --bs-btn-focus-shadow-rgb: 240, 93, 35;
+  --bs-btn-focus-shadow-rgb: var(--accent-light-rgb);
   height: 40px;
   min-height: 40px;
   padding: 0 12px;
@@ -1938,7 +1956,7 @@ footer {
 
 .navbar .account-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(240, 93, 35, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 0.2rem rgba(var(--accent-light-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 /* однакове заокруглення всіх кнопок шапки (меню, кабінет, кошик, «Замовити») */

@@ -14,10 +14,15 @@ use yii\web\UploadedFile;
  */
 class HeroForm extends Model
 {
-    /** найбільший розмір після стискання: ПК / телефон */
-    private const SIZES = [
-        'desktop' => [1920, 1280],
-        'mobile' => [1080, 1600],
+    /**
+     * Завантажувані файли: ключ налаштування → [поле файлу, поле «повернути стандартне»,
+     * найбільша ширина, висота після стискання, чи зберігати прозорість]
+     */
+    private const UPLOADS = [
+        'image_desktop' => ['imageDesktop', 'resetDesktop', 1920, 1280, false],
+        'image_mobile' => ['imageMobile', 'resetMobile', 1080, 1600, false],
+        // логотип показується до ~70 px заввишки — 400 px вистачає й для екранів з високою щільністю
+        'logo' => ['logoFile', 'resetLogo', 800, 400, true],
     ];
 
     public $eyebrow;
@@ -35,10 +40,13 @@ class HeroForm extends Model
     public $imageDesktop;
     /** @var UploadedFile|null */
     public $imageMobile;
+    /** @var UploadedFile|null */
+    public $logoFile;
 
-    /** «повернути стандартне фото» */
+    /** «повернути стандартне» */
     public $resetDesktop = false;
     public $resetMobile = false;
+    public $resetLogo = false;
 
 
     public function init(): void
@@ -66,7 +74,7 @@ class HeroForm extends Model
 
             ['overlay', 'integer', 'min' => 0, 'max' => 80],
             ['position', 'in', 'range' => array_keys(HeroSettings::POSITIONS)],
-            [['resetDesktop', 'resetMobile'], 'boolean'],
+            [['resetDesktop', 'resetMobile', 'resetLogo'], 'boolean'],
 
             [['imageDesktop', 'imageMobile'], 'file',
                 'skipOnEmpty' => true,
@@ -76,6 +84,15 @@ class HeroForm extends Model
                 'tooBig' => 'Файл завеликий: до 15 МБ.',
                 'wrongExtension' => 'Лише JPG, PNG або WebP.',
                 'wrongMimeType' => 'Лише JPG, PNG або WebP.',
+            ],
+            ['logoFile', 'file',
+                'skipOnEmpty' => true,
+                'extensions' => ['png', 'webp', 'jpg', 'jpeg'],
+                'mimeTypes' => ['image/png', 'image/webp', 'image/jpeg'],
+                'maxSize' => 5 * 1024 * 1024,
+                'tooBig' => 'Файл завеликий: до 5 МБ.',
+                'wrongExtension' => 'Лише PNG, WebP або JPG.',
+                'wrongMimeType' => 'Лише PNG, WebP або JPG.',
             ],
         ];
     }
@@ -92,11 +109,13 @@ class HeroForm extends Model
             'overlay' => 'Затемнення фото',
             'position' => 'Яку частину фото тримати в кадрі',
             'text_color' => 'Колір тексту',
-            'accent_color' => 'Колір помаранчевої частини заголовка',
+            'accent_color' => 'Фірмовий колір (помаранчевий)',
             'imageDesktop' => 'Фото для ПК',
             'imageMobile' => 'Фото для телефона',
             'resetDesktop' => 'Повернути стандартне фото',
             'resetMobile' => 'Повернути стандартне фото',
+            'logoFile' => 'Логотип',
+            'resetLogo' => 'Повернути стандартний логотип',
         ];
     }
 
@@ -106,8 +125,9 @@ class HeroForm extends Model
         $loaded = parent::load($data, $formName);
         $this->imageDesktop = UploadedFile::getInstance($this, 'imageDesktop');
         $this->imageMobile = UploadedFile::getInstance($this, 'imageMobile');
+        $this->logoFile = UploadedFile::getInstance($this, 'logoFile');
 
-        return $loaded || $this->imageDesktop || $this->imageMobile;
+        return $loaded || $this->imageDesktop || $this->imageMobile || $this->logoFile;
     }
 
 
@@ -129,24 +149,21 @@ class HeroForm extends Model
             'accent_color' => $this->accent_color,
         ];
 
-        // фото: нове → стискаємо; «стандартне» → порожньо; інакше лишається як було.
-        // Старі фото не видаляємо: на них посилається історія (HeroHistory::prune прибере непотрібні).
+        // файли: новий → стискаємо; «стандартне» → порожньо; інакше лишається як було.
+        // Старі файли не видаляємо: на них посилається історія (HeroHistory::prune прибере непотрібні).
         $created = [];
-        foreach (['desktop' => 'imageDesktop', 'mobile' => 'imageMobile'] as $device => $attr) {
-            $reset = $device === 'desktop' ? $this->resetDesktop : $this->resetMobile;
-
+        foreach (self::UPLOADS as $key => [$attr, $resetAttr, $w, $h, $keepAlpha]) {
             if ($this->$attr instanceof UploadedFile) {
-                [$w, $h] = self::SIZES[$device];
-                $file = ImageOptimizer::save($this->$attr->tempName, HeroSettings::uploadPath(), $w, $h);
+                $file = ImageOptimizer::save($this->$attr->tempName, HeroSettings::uploadPath(), $w, $h, $keepAlpha ? 90 : 80, $keepAlpha);
                 if ($file === null) {
                     $this->addError($attr, ImageOptimizer::$lastError);
                     array_map([HeroSettings::class, 'deleteImage'], $created);
                     return false;
                 }
                 $created[] = $file;
-                $values['image_' . $device] = $file;
-            } elseif ($reset) {
-                $values['image_' . $device] = '';
+                $values[$key] = $file;
+            } elseif ($this->$resetAttr) {
+                $values[$key] = '';
             }
         }
 

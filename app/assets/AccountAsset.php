@@ -16,7 +16,7 @@ class AccountAsset extends AssetBundle
 
     public $css = [
         'css/bootstrap.min.css',
-        'css/site.css?v=10',
+        'css/site.css?v=13',
     ];
 
     public $js = [

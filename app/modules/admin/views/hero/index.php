@@ -32,6 +32,11 @@ $this->registerCss(<<<CSS
 .hero-history .thumb-mobile { width: 30px; height: 42px; margin-left: .25rem; }
 .hero-history .swatch { display: inline-block; width: .9rem; height: .9rem; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); vertical-align: -2px; }
 .hero-history tr.is-current { background: #e8f4fd; }
+.hero-history .thumb-logo { width: 54px; height: 42px; margin-left: .25rem; background-size: contain; background-color: #1f2328; }
+
+/* логотип показуємо на темному, як у шапці */
+.logo-current { display: inline-flex; align-items: center; justify-content: center; min-width: 140px; height: 84px; padding: .5rem 1rem; border-radius: .5rem; background: #0d0f10; }
+.logo-current img { max-height: 64px; max-width: 220px; object-fit: contain; }
 CSS);
 ?>
 <div class="hero-settings">
@@ -42,6 +47,28 @@ CSS);
 
     <div class="row">
         <div class="col-xl-5">
+            <div class="card card-lightblue">
+                <div class="card-header"><h3 class="card-title">Логотип</h3></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="logo-current mr-3">
+                            <?= Html::img(HeroSettings::logoUrl(), ['alt' => 'Поточний логотип', 'id' => 'logo-current']) ?>
+                        </span>
+                        <span class="text-muted small">
+                            <?= HeroSettings::get('logo') === '' ? 'Стандартний логотип' : 'Свій логотип' ?>.
+                            Показується в шапці на головній, у меню й у кабінеті.
+                        </span>
+                    </div>
+                    <?= $form->field($model, 'logoFile', ['options' => ['class' => 'mb-0']])
+                        ->fileInput(['accept' => 'image/png,image/webp,image/jpeg', 'class' => 'form-control-file js-hero-file', 'data-device' => 'logo'])
+                        ->hint('PNG або WebP з прозорим фоном, до 5 МБ. Світлий логотип: шапка темна. Висота на сайті — до 70 px, ширина — до 200 px.') ?>
+                    <?php if (HeroSettings::get('logo') !== ''): ?>
+                        <?= $form->field($model, 'resetLogo', ['options' => ['class' => 'mb-0']])
+                            ->checkbox(['class' => 'js-hero-reset', 'data-device' => 'logo']) ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <div class="card card-lightblue">
                 <div class="card-header"><h3 class="card-title">Фото фону</h3></div>
                 <div class="card-body">
@@ -115,7 +142,9 @@ CSS);
                             'maxlength' => 7,
                             'class' => 'form-control js-pv js-color-value',
                             'placeholder' => 'стандартний',
-                        ]) ?>
+                        ])->hint($attr === 'accent_color'
+                            ? 'Змінює помаранчевий скрізь на сайті: заголовок, ціни, кнопки, підсвітки фону. Логотип — картинка, його колір не змінюється.'
+                            : 'Колір текстів шапки (крім помаранчевої частини заголовка).') ?>
                     <?php endforeach; ?>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
@@ -168,7 +197,7 @@ CSS);
             <?= Html::a('<i class="fas fa-undo mr-1"></i>Скинути все до стандартного', ['reset'], [
                 'class' => 'btn btn-sm btn-outline-danger',
                 'data-method' => 'post',
-                'data-confirm' => 'Повернути стандартні фото, тексти й кольори? Поточний варіант лишиться в історії.',
+                'data-confirm' => 'Повернути стандартні фото, логотип, тексти й кольори? Поточний варіант лишиться в історії.',
             ]) ?>
         </div>
         <div class="card-body p-0">
@@ -183,7 +212,7 @@ CSS);
                         <thead>
                         <tr>
                             <th class="pl-3">Коли</th>
-                            <th>Фото</th>
+                            <th>Фото й логотип</th>
                             <th>Заголовок</th>
                             <th>Кольори</th>
                             <th class="text-right pr-3"></th>
@@ -211,6 +240,9 @@ CSS);
                                               style="background-image: url('<?= Html::encode(HeroSettings::imageUrl($device, $v)) ?>')"
                                               title="<?= $device === 'desktop' ? 'ПК' : 'Телефон' ?>: <?= $file === '' ? 'стандартне' : 'своє фото' ?>"></span>
                                     <?php endforeach; ?>
+                                    <span class="thumb thumb-logo"
+                                          style="background-image: url('<?= Html::encode(HeroSettings::logoUrl($v)) ?>')"
+                                          title="Логотип: <?= $v['logo'] === '' ? 'стандартний' : 'свій' ?>"></span>
                                     <div class="small text-muted">
                                         затемнення <?= (int)$v['overlay'] ?>% · <?= Html::encode(HeroSettings::POSITIONS[$shown('position')] ?? '') ?>
                                     </div>
@@ -258,9 +290,11 @@ CSS);
 $json = static fn ($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $config = $json([
     'defaults' => HeroSettings::DEFAULTS,
+    'standardAccent' => HeroSettings::STANDARD_ACCENT_PALETTE,
     'images' => [
         'desktop' => ['current' => HeroSettings::imageUrl('desktop'), 'standard' => $web . HeroSettings::DEFAULT_IMAGES['desktop']],
         'mobile' => ['current' => HeroSettings::imageUrl('mobile'), 'standard' => $web . HeroSettings::DEFAULT_IMAGES['mobile']],
+        'logo' => ['current' => HeroSettings::logoUrl(), 'standard' => $web . HeroSettings::DEFAULT_LOGO],
     ],
 ]);
 $this->registerJs(<<<JS
@@ -270,6 +304,23 @@ $this->registerJs(<<<JS
     const frames = Array.from(document.querySelectorAll('.pv-frame'));
     const objectUrls = {};
     const isColor = (v) => /^#[0-9a-f]{6}$/i.test(v);
+
+    // та сама формула, що й HeroSettings::accentPalette() у PHP
+    const accentPalette = (hex) => {
+        const rgb = [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16));
+        const mix = (to, t) => rgb.map((c, i) => Math.round(c + (to[i] - c) * t));
+        const toHex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+        const black = [0, 0, 0], white = [255, 255, 255];
+        return {
+            '--accent': toHex(rgb),
+            '--accent-dark': toHex(mix(black, 0.04)),
+            '--accent-rgb': rgb.join(', '),
+            '--accent-light-rgb': mix(white, 0.07).join(', '),
+            '--accent-glow-rgb': mix(white, 0.14).join(', '),
+            '--accent-darker': toHex(mix(black, 0.17)),
+            '--accent-deep': toHex(mix(black, 0.45)),
+        };
+    };
 
     // ---------- стан форми → те, що підставляємо в сторінку ----------
     const imageUrl = (device) => {
@@ -292,6 +343,7 @@ $this->registerJs(<<<JS
             accent: isColor(val('accent_color')) ? val('accent_color') : '',
             desktop: imageUrl('desktop'),
             mobile: imageUrl('mobile'),
+            logo: imageUrl('logo'),
         };
     };
 
@@ -316,10 +368,13 @@ $this->registerJs(<<<JS
         header.style.setProperty('--hero-bg-mobile', 'url("' + s.mobile + '")');
         header.style.setProperty('--hero-overlay', String(s.overlay / 100));
         header.style.setProperty('--hero-position', s.position);
+        doc.querySelectorAll('img[data-hero-logo]').forEach((img) => { if (img.getAttribute('src') !== s.logo) img.src = s.logo; });
         header.classList.toggle('hero-custom-text', !!s.text);
-        header.classList.toggle('hero-custom-accent', !!s.accent);
         if (s.text) header.style.setProperty('--hero-text', s.text);
-        if (s.accent) header.style.setProperty('--hero-accent', s.accent);
+
+        // фірмовий колір — на всю сторінку (ціни, кнопки, підсвітки), як і на сайті
+        const palette = s.accent ? accentPalette(s.accent) : cfg.standardAccent;
+        Object.keys(palette).forEach((name) => doc.documentElement.style.setProperty(name, palette[name]));
 
         doc.querySelectorAll('[data-hero]').forEach((el) => {
             const key = el.dataset.hero;
