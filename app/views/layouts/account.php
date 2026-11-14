@@ -5,6 +5,7 @@
 
 use app\assets\AccountAsset;
 use app\components\HeroSettings;
+use app\components\WeatherEffect;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -48,6 +49,7 @@ $headerButton = function (string $label, string $icon, $url, array $options = []
 </head>
 <body class="account-page">
 <?php $this->beginBody() ?>
+<?= WeatherEffect::render($this) ?>
 
 <?= HeroSettings::headerTag('gradient-hero text-white account-header') ?>
     <div class="container d-flex align-items-center justify-content-between gap-3">

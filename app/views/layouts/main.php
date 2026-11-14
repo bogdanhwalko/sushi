@@ -6,6 +6,7 @@
 
 use app\assets\AppAsset;
 use app\components\HeroSettings;
+use app\components\WeatherEffect;
 use app\models\Categorys;
 use yii\bootstrap5\Html;
 use yii\helpers\Url;
@@ -48,7 +49,7 @@ $currentUser = Yii::$app->user->identity;
     ]) ?>
     <?php $this->beginBody() ?>
 
-    <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
+    <?= WeatherEffect::render($this) ?>
     <?= HeroSettings::headerTag('gradient-hero text-white pb-5') ?>
         <div class="topbar">
             <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">

@@ -106,6 +106,13 @@
                     ],
 
                     [
+                        'label' => 'Сніг і дощ',
+                        'url' => ['/admin-panel/weather/index'],
+                        'icon' => 'nav-icon far fa-snowflake',
+                        'visible' => true,
+                    ],
+
+                    [
                         'label' => 'Мій профіль',
                         'url' => ['/admin-panel/profile/index'],
                         'icon' => 'nav-icon fas fa-user-cog',

@@ -5,6 +5,7 @@
 
 use app\assets\MenuAsset;
 use app\components\HeroSettings;
+use app\components\WeatherEffect;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -33,7 +34,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <body>
 <?php $this->beginBody() ?>
 
-<div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
+<?= WeatherEffect::render($this) ?>
 <?= HeroSettings::headerTag('gradient-hero text-white compact-menu-header') ?>
     <div class="topbar">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">

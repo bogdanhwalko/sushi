@@ -444,7 +444,7 @@ $this->registerJs(<<<JS
     };
 
     // ---------- підстановка в iframe (та сама сторінка сайту, той самий домен) ----------
-    const PREVIEW_CSS = '.modal,.modal-backdrop,.offcanvas,.offcanvas-backdrop,.toast-container,#snowLayer,#yii-debug-toolbar,.compact-menu-scroll-top{display:none!important}'
+    const PREVIEW_CSS = '.modal,.modal-backdrop,.offcanvas,.offcanvas-backdrop,.toast-container,.weather-layer,#yii-debug-toolbar,.compact-menu-scroll-top{display:none!important}'
         + 'html,body{overflow:hidden!important}body{padding-right:0!important}';
 
     const apply = (frame) => {
