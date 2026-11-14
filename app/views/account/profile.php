@@ -53,6 +53,13 @@ JS);
         <h1 class="account-title"><?= Html::encode($fullName) ?></h1>
     </div>
 
+    <?php if ($user->isAdmin()): ?>
+        <div class="alert alert-secondary d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span>Ви адміністратор — так цю сторінку бачать клієнти.</span>
+            <?= Html::a('До адмінки', ['/admin-panel/'], ['class' => 'btn btn-sm btn-dark']) ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Історія замовлень -->
     <section class="account-section" id="orders">
         <div class="account-section-head">

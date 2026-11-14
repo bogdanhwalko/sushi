@@ -103,10 +103,8 @@ class AccountController extends Controller
 
     public function actionProfile()
     {
+        // адмін теж бачить кабінет таким, яким його бачить клієнт (зі своїми даними)
         $user = $this->getCurrentUser();
-        if ($user->isAdmin()) {
-            return $this->redirect(['/admin-panel/profile/index']);
-        }
 
         $profile = new ProfileForm($user);
         $password = new ChangePasswordForm($user);

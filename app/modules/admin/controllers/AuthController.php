@@ -62,6 +62,7 @@ class AuthController extends Controller
     {
         Yii::$app->user->logout();
 
-        return $this->redirect(['/admin-panel/auth/login']);
+        // після виходу — на головну сайту, а не на форму входу в адмінку
+        return $this->redirect(Yii::$app->homeUrl);
     }
 }
