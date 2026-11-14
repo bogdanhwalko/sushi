@@ -14,6 +14,39 @@ $this->title = 'Шапка сайту';
 $this->params['breadcrumbs'][] = $this->title;
 
 $web = Yii::getAlias('@web/');
+$customLogo = HeroSettings::get('logo') !== '';
+$accentNow = HeroSettings::isColor((string)$model->accent_color) ? $model->accent_color : HeroSettings::STANDARD_COLORS['accent_color'];
+
+/**
+ * Поле кольору: палітра + значення #rrggbb + кнопка «стандартний» (очищає поле).
+ * $followsAccent — порожнє поле означає «як фірмовий колір», тож палітра показує фірмовий.
+ */
+$colorField = static function ($form, string $attr, string $standard, string $hint, bool $followsAccent = false) use ($model): string {
+    $id = Html::getInputId($model, $attr);
+
+    return (string)$form->field($model, $attr, [
+        'options' => ['class' => 'form-group color-field'],
+        'inputTemplate' => '<div class="input-group">'
+            . '<div class="input-group-prepend">'
+            . Html::input('color', null, $model->$attr ?: $standard, [
+                'class' => 'form-control form-control-color js-color-picker',
+                'data-target' => $id,
+                'data-follow-accent' => $followsAccent ? 1 : null,
+                'title' => 'Вибрати колір',
+            ])
+            . '</div>{input}<div class="input-group-append">'
+            . Html::button($followsAccent ? 'Як фірмовий' : 'Стандартний', [
+                'class' => 'btn btn-outline-secondary js-color-reset',
+                'data-target' => $id,
+                'data-standard' => $standard,
+            ])
+            . '</div></div>',
+    ])->textInput([
+        'maxlength' => 7,
+        'class' => 'form-control js-pv js-color-value',
+        'placeholder' => $followsAccent ? 'як фірмовий' : 'стандартний',
+    ])->hint($hint);
+};
 
 $this->registerCss(<<<CSS
 /* живий перегляд: справжня сторінка сайту, зменшена до ширини колонки */
@@ -52,20 +85,46 @@ CSS);
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <span class="logo-current mr-3">
-                            <?= Html::img(HeroSettings::logoUrl(), ['alt' => 'Поточний логотип', 'id' => 'logo-current']) ?>
+                            <?= Html::img(HeroSettings::logoUrl(), ['alt' => 'Поточний логотип', 'id' => 'logo-current', 'class' => 'js-logo-preview']) ?>
                         </span>
                         <span class="text-muted small">
-                            <?= HeroSettings::get('logo') === '' ? 'Стандартний логотип' : 'Свій логотип' ?>.
+                            <?= $customLogo ? 'Свій логотип' : 'Стандартний логотип (векторний — кольори змінюються в блоці нижче)' ?>.
                             Показується в шапці на головній, у меню й у кабінеті.
                         </span>
                     </div>
                     <?= $form->field($model, 'logoFile', ['options' => ['class' => 'mb-0']])
                         ->fileInput(['accept' => 'image/png,image/webp,image/jpeg', 'class' => 'form-control-file js-hero-file', 'data-device' => 'logo'])
-                        ->hint('PNG або WebP з прозорим фоном, до 5 МБ. Світлий логотип: шапка темна. Висота на сайті — до 70 px, ширина — до 200 px.') ?>
+                        ->hint('PNG або WebP з прозорим фоном, до 5 МБ. Світлий логотип: шапка темна. Висота на сайті — до 70 px, ширина — до 200 px. Свій логотип не перефарбовується.') ?>
                     <?php if (HeroSettings::get('logo') !== ''): ?>
                         <?= $form->field($model, 'resetLogo', ['options' => ['class' => 'mb-0']])
                             ->checkbox(['class' => 'js-hero-reset', 'data-device' => 'logo']) ?>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card card-lightblue">
+                <div class="card-header"><h3 class="card-title">Кольори логотипу</h3></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="logo-current mr-3">
+                            <?= Html::img(HeroSettings::logoUrl(), ['alt' => 'Логотип з вибраними кольорами', 'class' => 'js-logo-preview']) ?>
+                        </span>
+                        <span class="text-muted small">
+                            Для стандартного логотипа. Порожньо — стандартний колір;
+                            напис і рол без свого кольору фарбуються фірмовим кольором.
+                            Тінь і відблиск на ролі підбираються самі.
+                        </span>
+                    </div>
+                    <?php if ($customLogo): ?>
+                        <div class="alert alert-warning small py-2">
+                            Зараз на сайті свій завантажений логотип — ці кольори почнуть діяти,
+                            коли повернете стандартний (галочка в блоці «Логотип»).
+                        </div>
+                    <?php endif; ?>
+                    <?= $colorField($form, 'logo_digits', HeroSettings::STANDARD_LOGO_COLORS['logo_digits'], 'Шапка темна — світлі кольори читаються найкраще.') ?>
+                    <?= $colorField($form, 'logo_text', $accentNow, 'Порожньо — як фірмовий колір.', true) ?>
+                    <?= $colorField($form, 'logo_roll', $accentNow, 'Порожньо — як фірмовий колір.', true) ?>
+                    <?= $colorField($form, 'logo_outline', HeroSettings::STANDARD_LOGO_COLORS['logo_outline'], 'Обведення і смужки на ролі.') ?>
                 </div>
             </div>
 
@@ -120,32 +179,8 @@ CSS);
                         ]) ?>
                     <?php endforeach; ?>
 
-                    <?php foreach (['text_color', 'accent_color'] as $attr): ?>
-                        <?php $standard = HeroSettings::STANDARD_COLORS[$attr]; ?>
-                        <?= $form->field($model, $attr, [
-                            'options' => ['class' => 'form-group color-field'],
-                            'inputTemplate' => '<div class="input-group">'
-                                . '<div class="input-group-prepend">'
-                                . Html::input('color', null, $model->$attr ?: $standard, [
-                                    'class' => 'form-control form-control-color js-color-picker',
-                                    'data-target' => Html::getInputId($model, $attr),
-                                    'title' => 'Вибрати колір',
-                                ])
-                                . '</div>{input}<div class="input-group-append">'
-                                . Html::button('Стандартний', [
-                                    'class' => 'btn btn-outline-secondary js-color-reset',
-                                    'data-target' => Html::getInputId($model, $attr),
-                                    'data-standard' => $standard,
-                                ])
-                                . '</div></div>',
-                        ])->textInput([
-                            'maxlength' => 7,
-                            'class' => 'form-control js-pv js-color-value',
-                            'placeholder' => 'стандартний',
-                        ])->hint($attr === 'accent_color'
-                            ? 'Змінює помаранчевий скрізь на сайті: заголовок, ціни, кнопки, підсвітки фону. Логотип — картинка, його колір не змінюється.'
-                            : 'Колір текстів шапки (крім помаранчевої частини заголовка).') ?>
-                    <?php endforeach; ?>
+                    <?= $colorField($form, 'text_color', HeroSettings::STANDARD_COLORS['text_color'], 'Колір текстів шапки (крім помаранчевої частини заголовка).') ?>
+                    <?= $colorField($form, 'accent_color', HeroSettings::STANDARD_COLORS['accent_color'], 'Змінює помаранчевий скрізь на сайті: заголовок, ціни, кнопки, підсвітки фону, а також напис і рол на стандартному логотипі (якщо для них не задано свій колір).') ?>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
                     <span class="text-muted small">Зміни видно в перегляді одразу, на сайті — після збереження.</span>
@@ -260,6 +295,15 @@ CSS);
                                         <span class="swatch" style="background: <?= $color ?>"></span>
                                         <span class="mr-2 <?= $v[$key] === '' ? 'text-muted' : '' ?>"><?= $label ?></span>
                                     <?php endforeach; ?>
+                                    <?php $logoColors = array_filter(array_intersect_key($v, HeroSettings::STANDARD_LOGO_COLORS), [HeroSettings::class, 'isColor']); ?>
+                                    <?php if ($logoColors): ?>
+                                        <span class="text-nowrap">
+                                            <?php foreach ($logoColors as $key => $color): ?>
+                                                <span class="swatch" style="background: <?= $color ?>" title="<?= Html::encode($model->getAttributeLabel($key)) ?>"></span>
+                                            <?php endforeach; ?>
+                                            лого
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="align-middle text-right pr-3">
                                     <?php if ($current): ?>
@@ -296,6 +340,8 @@ $config = $json([
         'mobile' => ['current' => HeroSettings::imageUrl('mobile'), 'standard' => $web . HeroSettings::DEFAULT_IMAGES['mobile']],
         'logo' => ['current' => HeroSettings::logoUrl(), 'standard' => $web . HeroSettings::DEFAULT_LOGO],
     ],
+    // свій завантажений логотип не перефарбовується; шаблон — векторний стандартний
+    'logo' => ['custom' => $customLogo, 'template' => $web . HeroSettings::DEFAULT_LOGO],
 ]);
 $this->registerJs(<<<JS
 (function () {
@@ -322,6 +368,53 @@ $this->registerJs(<<<JS
         };
     };
 
+    // колір, зсунутий на частку t до кольору to ([r, g, b]) — як HeroSettings::mix()
+    const mixHex = (hex, to, t) => '#' + [1, 3, 5]
+        .map((i, n) => Math.round(parseInt(hex.substr(i, 2), 16) * (1 - t) + to[n] * t).toString(16).padStart(2, '0'))
+        .join('');
+
+    // та сама логіка, що й HeroSettings::logoVars() у PHP
+    const logoVars = (c, accent) => {
+        const vars = {};
+        if (c.logo_digits) vars['--digits'] = c.logo_digits;
+        if (c.logo_text || accent) vars['--text'] = c.logo_text || accent;
+        const roll = c.logo_roll || accent;
+        if (roll) {
+            vars['--roll'] = roll;
+            vars['--roll-shade'] = mixHex(roll, [0, 0, 0], 0.2);
+            vars['--roll-light'] = mixHex(roll, [255, 255, 255], 0.36);
+        }
+        if (c.logo_outline) vars['--outline'] = c.logo_outline;
+        return vars;
+    };
+
+    // векторний логотип: дописуємо кольори в його <style> і показуємо як blob-картинку
+    let logoTemplate = null;
+    let logoBlob = { rule: '', url: '' };
+    fetch(cfg.logo.template).then((r) => (r.ok ? r.text() : null)).then((text) => {
+        if (text && text.indexOf('<style>') !== -1) { logoTemplate = text; applyAll(); }
+    }).catch(() => {});
+
+    const logoSrc = (colors, accent) => {
+        if (objectUrls.logo) return objectUrls.logo;
+        const reset = form.querySelector('.js-hero-reset[data-device="logo"]');
+        const resetChecked = !!(reset && reset.checked);
+        if (cfg.logo.custom && !resetChecked) return cfg.images.logo.current;
+
+        const vars = logoVars(colors, accent);
+        const keys = Object.keys(vars);
+        if (!keys.length) return cfg.images.logo.standard;
+        if (!logoTemplate) return cfg.logo.custom ? cfg.images.logo.standard : cfg.images.logo.current;
+
+        const rule = 'svg{' + keys.map((k) => k + ':' + vars[k]).join(';') + '}';
+        if (logoBlob.rule !== rule) {
+            if (logoBlob.url) URL.revokeObjectURL(logoBlob.url);
+            const svg = logoTemplate.replace('<style>', '<style>' + rule);
+            logoBlob = { rule: rule, url: URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })) };
+        }
+        return logoBlob.url;
+    };
+
     // ---------- стан форми → те, що підставляємо в сторінку ----------
     const imageUrl = (device) => {
         if (objectUrls[device]) return objectUrls[device];
@@ -331,19 +424,22 @@ $this->registerJs(<<<JS
 
     const state = () => {
         const val = (name) => (form.elements['HeroForm[' + name + ']'] || {}).value || '';
+        const color = (name) => (isColor(val(name)) ? val(name).toLowerCase() : '');
         const texts = {};
         ['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'].forEach((k) => {
             texts[k] = val(k).trim() || cfg.defaults[k];
         });
+        const logoColors = {};
+        ['logo_digits', 'logo_text', 'logo_roll', 'logo_outline'].forEach((k) => { logoColors[k] = color(k); });
         return {
             texts: texts,
             overlay: parseInt(val('overlay') || '0', 10),
             position: val('position') || 'left',
-            text: isColor(val('text_color')) ? val('text_color') : '',
-            accent: isColor(val('accent_color')) ? val('accent_color') : '',
+            text: color('text_color'),
+            accent: color('accent_color'),
             desktop: imageUrl('desktop'),
             mobile: imageUrl('mobile'),
-            logo: imageUrl('logo'),
+            logo: logoSrc(logoColors, color('accent_color')),
         };
     };
 
@@ -389,7 +485,18 @@ $this->registerJs(<<<JS
         }
     };
 
-    const applyAll = () => frames.forEach(apply);
+    const applyAll = () => {
+        frames.forEach(apply);
+
+        // логотип у самій адмінці + палітри «як фірмовий» показують поточний фірмовий колір
+        const s = state();
+        document.querySelectorAll('.js-logo-preview').forEach((img) => { if (img.getAttribute('src') !== s.logo) img.src = s.logo; });
+        document.querySelectorAll('.js-color-picker[data-follow-accent]').forEach((picker) => {
+            if (!isColor(document.getElementById(picker.dataset.target).value)) {
+                picker.value = s.accent || cfg.standardAccent['--accent'];
+            }
+        });
+    };
 
     // ---------- масштаб: сторінка шириною 1440/390 px вписується в колонку ----------
     const fit = () => frames.forEach((frame) => {

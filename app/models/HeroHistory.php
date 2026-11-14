@@ -112,5 +112,10 @@ class HeroHistory extends ActiveRecord
                 HeroSettings::deleteImage($file);
             }
         }
+
+        // перефарбовані копії логотипа: лишаємо лише поточну (для історії вони створяться знову, коли знадобляться)
+        $stored = HeroSettings::stored();
+        $current = $stored['logo'] === '' ? HeroSettings::coloredLogoFile(HeroSettings::logoVars($stored)) : null;
+        HeroSettings::pruneColoredLogos($current !== null ? [$current] : []);
     }
 }

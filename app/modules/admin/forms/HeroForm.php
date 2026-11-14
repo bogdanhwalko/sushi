@@ -25,6 +25,9 @@ class HeroForm extends Model
         'logo' => ['logoFile', 'resetLogo', 800, 400, true],
     ];
 
+    private const TEXT_ATTRS = ['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'];
+    private const COLOR_ATTRS = ['text_color', 'accent_color', 'logo_digits', 'logo_text', 'logo_roll', 'logo_outline'];
+
     public $eyebrow;
     public $title;
     public $title_accent;
@@ -35,6 +38,11 @@ class HeroForm extends Model
     /** #rrggbb або '' — колір як у дизайні сайту */
     public $text_color;
     public $accent_color;
+    /** кольори стандартного (векторного) логотипа, #rrggbb або '' */
+    public $logo_digits;
+    public $logo_text;
+    public $logo_roll;
+    public $logo_outline;
 
     /** @var UploadedFile|null */
     public $imageDesktop;
@@ -53,7 +61,7 @@ class HeroForm extends Model
     {
         parent::init();
 
-        foreach (['eyebrow', 'title', 'title_accent', 'subtitle', 'badge', 'overlay', 'position', 'text_color', 'accent_color'] as $attr) {
+        foreach (array_merge(self::TEXT_ATTRS, self::COLOR_ATTRS, ['overlay', 'position']) as $attr) {
             $this->$attr = HeroSettings::get($attr);
         }
     }
@@ -69,8 +77,8 @@ class HeroForm extends Model
             ['title_accent', 'string', 'max' => 30],
             ['subtitle', 'string', 'max' => 120],
 
-            [['text_color', 'accent_color'], 'filter', 'filter' => static fn ($v) => strtolower(trim((string)$v))],
-            [['text_color', 'accent_color'], 'match', 'pattern' => '/^(#[0-9a-f]{6})?$/', 'message' => 'Колір у форматі #rrggbb.'],
+            [self::COLOR_ATTRS, 'filter', 'filter' => static fn ($v) => strtolower(trim((string)$v))],
+            [self::COLOR_ATTRS, 'match', 'pattern' => '/^(#[0-9a-f]{6})?$/i', 'message' => 'Колір у форматі #rrggbb.'],
 
             ['overlay', 'integer', 'min' => 0, 'max' => 80],
             ['position', 'in', 'range' => array_keys(HeroSettings::POSITIONS)],
@@ -110,6 +118,10 @@ class HeroForm extends Model
             'position' => 'Яку частину фото тримати в кадрі',
             'text_color' => 'Колір тексту',
             'accent_color' => 'Фірмовий колір (помаранчевий)',
+            'logo_digits' => 'Цифри «107» і палички',
+            'logo_text' => 'Напис «SUSHI»',
+            'logo_roll' => 'Рол',
+            'logo_outline' => 'Обведення рола',
             'imageDesktop' => 'Фото для ПК',
             'imageMobile' => 'Фото для телефона',
             'resetDesktop' => 'Повернути стандартне фото',
@@ -138,16 +150,12 @@ class HeroForm extends Model
         }
 
         $values = [
-            'eyebrow' => $this->eyebrow,
-            'title' => $this->title,
-            'title_accent' => $this->title_accent,
-            'subtitle' => $this->subtitle,
-            'badge' => $this->badge,
             'overlay' => (string)(int)$this->overlay,
             'position' => $this->position,
-            'text_color' => $this->text_color,
-            'accent_color' => $this->accent_color,
         ];
+        foreach (array_merge(self::TEXT_ATTRS, self::COLOR_ATTRS) as $attr) {
+            $values[$attr] = (string)$this->$attr;
+        }
 
         // файли: новий → стискаємо; «стандартне» → порожньо; інакше лишається як було.
         // Старі файли не видаляємо: на них посилається історія (HeroHistory::prune прибере непотрібні).

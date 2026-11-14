@@ -28,8 +28,23 @@ final class HeroSettings
         'mobile' => 'images/header-mobile.webp',
     ];
 
-    /** стандартний логотип — у репозиторії (стиснена копія logo.png) */
-    public const DEFAULT_LOGO = 'images/icons/logo.webp';
+    /**
+     * стандартний логотип — векторний (перемальований з logo.png). Кольори частин — CSS-змінні
+     * всередині SVG (--digits, --text, --roll, --roll-shade, --roll-light, --outline) зі стандартними
+     * значеннями за замовчуванням, тож перефарбувати = дописати одне правило svg{--roll:…}.
+     */
+    public const DEFAULT_LOGO = 'images/icons/logo.svg';
+
+    /** підпапка UPLOAD_DIR для перефарбованих копій стандартного логотипа (створюються автоматично) */
+    public const LOGO_COLORS_DIR = 'logo';
+
+    /** кольори частин стандартного логотипа (як у самому SVG) — для палітри в адмінці */
+    public const STANDARD_LOGO_COLORS = [
+        'logo_digits' => '#fdfcfb',
+        'logo_text' => '#dd4c2a',
+        'logo_roll' => '#dd4c2a',
+        'logo_outline' => '#0a0302',
+    ];
 
     /** ключі налаштувань, що зберігають ім'я завантаженого файлу (для історії та прибирання) */
     public const FILE_KEYS = ['image_desktop', 'image_mobile', 'logo'];
@@ -73,6 +88,10 @@ final class HeroSettings
         'image_desktop' => '',   // ім'я файлу в UPLOAD_DIR; порожньо — стандартне фото
         'image_mobile' => '',
         'logo' => '',            // ім'я файлу в UPLOAD_DIR; порожньо — стандартний логотип
+        'logo_digits' => '',     // кольори стандартного логотипа, #rrggbb; порожньо — стандартний,
+        'logo_text' => '',       // а напис і рол — фірмовий колір (accent_color), якщо його задано
+        'logo_roll' => '',
+        'logo_outline' => '',
         'overlay' => '0',        // затемнення фото, %
         'position' => 'left',    // яка частина фото лишається в кадрі
     ];
@@ -178,12 +197,106 @@ final class HeroSettings
     }
 
 
-    /** URL логотипа (свій або стандартний) */
+    /** URL логотипа: свій завантажений, або стандартний (перефарбований, якщо задано кольори) */
     public static function logoUrl(?array $values = null): string
     {
-        $file = $values === null ? self::get('logo') : ($values['logo'] ?? '');
+        $values = $values ?? self::all();
+        $file = $values['logo'] ?? '';
+        if ($file !== '') {
+            return Yii::getAlias('@web/') . self::UPLOAD_DIR . '/' . $file;
+        }
 
-        return Yii::getAlias('@web/') . ($file !== '' ? self::UPLOAD_DIR . '/' . $file : self::DEFAULT_LOGO);
+        $colored = self::coloredLogoFile(self::logoVars($values));
+
+        return Yii::getAlias('@web/') . ($colored !== null
+            ? self::UPLOAD_DIR . '/' . self::LOGO_COLORS_DIR . '/' . $colored
+            : self::DEFAULT_LOGO);
+    }
+
+
+    /**
+     * Кольори частин стандартного логотипа, що відрізняються від стандартних.
+     * Напис і рол без власного кольору беруть фірмовий; тінь і відблиск рола — відтінки його кольору.
+     * Та сама логіка є в JS перегляду адмінки (views/hero/index.php → logoVars).
+     *
+     * @return array<string, string> CSS-змінна SVG → колір
+     */
+    public static function logoVars(array $values): array
+    {
+        $pick = static fn (string $key): string => self::isColor($values[$key] ?? '') ? strtolower($values[$key]) : '';
+        $accent = $pick('accent_color');
+
+        $vars = [];
+        if (($c = $pick('logo_digits')) !== '') {
+            $vars['--digits'] = $c;
+        }
+        if (($c = $pick('logo_text') ?: $accent) !== '') {
+            $vars['--text'] = $c;
+        }
+        if (($c = $pick('logo_roll') ?: $accent) !== '') {
+            $vars['--roll'] = $c;
+            $vars['--roll-shade'] = self::mix($c, [0, 0, 0], 0.2);
+            $vars['--roll-light'] = self::mix($c, [255, 255, 255], 0.36);
+        }
+        if (($c = $pick('logo_outline')) !== '') {
+            $vars['--outline'] = $c;
+        }
+
+        return $vars;
+    }
+
+
+    /**
+     * Перефарбована копія стандартного логотипа. Ім'я файлу — від кольорів, тож однакові кольори
+     * дають той самий файл, а браузер може кешувати його, як звичайну картинку.
+     *
+     * @return string|null ім'я файлу в UPLOAD_DIR/LOGO_COLORS_DIR; null — кольорів немає або не вдалося записати
+     */
+    public static function coloredLogoFile(array $vars): ?string
+    {
+        if (!$vars) {
+            return null;
+        }
+
+        $rule = 'svg{' . implode(';', array_map(static fn ($k, $v) => "$k:$v", array_keys($vars), $vars)) . '}';
+        $name = 'logo-' . substr(md5($rule), 0, 12) . '.svg';
+        $dir = self::uploadPath() . '/' . self::LOGO_COLORS_DIR;
+        $path = "$dir/$name";
+        if (is_file($path)) {
+            return $name;
+        }
+
+        $svg = @file_get_contents(Yii::getAlias('@webroot/' . self::DEFAULT_LOGO));
+        if ($svg === false || strpos($svg, '<style>') === false) {
+            Yii::warning('Не знайдено шаблон логотипа ' . self::DEFAULT_LOGO, __METHOD__);
+            return null;
+        }
+        $svg = preg_replace('/<style>/', '<style>' . $rule, $svg, 1);
+
+        // пишемо в тимчасовий файл і перейменовуємо — паралельний запит не побачить недописаний SVG
+        $tmp = $path . '.' . uniqid('', true) . '.tmp';
+        if ((!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir))
+            || @file_put_contents($tmp, $svg) === false
+            || !@rename($tmp, $path)) {
+            @unlink($tmp);
+            Yii::warning("Не вдалося записати перефарбований логотип: $path", __METHOD__);
+            return null;
+        }
+
+        return $name;
+    }
+
+
+    /** Видаляє перефарбовані копії логотипа, крім потрібних (імена файлів) */
+    public static function pruneColoredLogos(array $keep): void
+    {
+        $dir = self::uploadPath() . '/' . self::LOGO_COLORS_DIR;
+        $keep = array_flip($keep);
+        foreach (is_dir($dir) ? scandir($dir) : [] as $file) {
+            if ($file[0] !== '.' && !isset($keep[$file]) && is_file("$dir/$file") && !@unlink("$dir/$file")) {
+                Yii::warning("Не вдалося видалити $dir/$file", __METHOD__);
+            }
+        }
     }
 
 
@@ -292,23 +405,30 @@ final class HeroSettings
      */
     public static function accentPalette(string $hex): array
     {
-        $rgb = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
-        $mix = static fn (array $to, float $t): array => array_map(
-            static fn ($c, $target) => (int)round($c + ($target - $c) * $t), $rgb, $to
-        );
         $black = [0, 0, 0];
         $white = [255, 255, 255];
-        $toHex = static fn (array $c): string => sprintf('#%02x%02x%02x', ...$c);
+        $rgb = static fn (string $c): string => implode(', ', array_map('hexdec', str_split(ltrim($c, '#'), 2)));
 
         return [
-            '--accent' => $toHex($rgb),
-            '--accent-dark' => $toHex($mix($black, 0.04)),
-            '--accent-rgb' => implode(', ', $rgb),
-            '--accent-light-rgb' => implode(', ', $mix($white, 0.07)),
-            '--accent-glow-rgb' => implode(', ', $mix($white, 0.14)),
-            '--accent-darker' => $toHex($mix($black, 0.17)),
-            '--accent-deep' => $toHex($mix($black, 0.45)),
+            '--accent' => strtolower($hex),
+            '--accent-dark' => self::mix($hex, $black, 0.04),
+            '--accent-rgb' => $rgb($hex),
+            '--accent-light-rgb' => $rgb(self::mix($hex, $white, 0.07)),
+            '--accent-glow-rgb' => $rgb(self::mix($hex, $white, 0.14)),
+            '--accent-darker' => self::mix($hex, $black, 0.17),
+            '--accent-deep' => self::mix($hex, $black, 0.45),
         ];
+    }
+
+
+    /** Колір $hex, зсунутий на частку $t до кольору $to ([r, g, b]) */
+    private static function mix(string $hex, array $to, float $t): string
+    {
+        $rgb = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
+
+        return vsprintf('#%02x%02x%02x', array_map(
+            static fn ($c, $target) => (int)round($c + ($target - $c) * $t), $rgb, $to
+        ));
     }
 
 
