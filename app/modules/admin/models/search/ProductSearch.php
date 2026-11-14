@@ -42,9 +42,12 @@ class ProductSearch extends Product
      */
     public function search($params, $formName = null)
     {
+        // у категорії теж є id, name, status… — тож колонки товару завжди з префіксом p.,
+        // інакше фільтр падає з "Column ... is ambiguous"
         $query = Product::find()
+            ->alias('p')
             ->joinWith(['category'])
-            ->orderBy(['id' => SORT_DESC]);
+            ->orderBy(['p.id' => SORT_DESC]);
 
         // add conditions that should always apply here
 
@@ -62,25 +65,25 @@ class ProductSearch extends Product
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
-            'category_id' => $this->category_id,
-            'price' => $this->price,
-            'old_price' => $this->old_price,
-            'weight' => $this->weight,
-            'status' => $this->status,
-            'sort_order' => $this->sort_order,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'p.id' => $this->id,
+            'p.category_id' => $this->category_id,
+            'p.price' => $this->price,
+            'p.old_price' => $this->old_price,
+            'p.weight' => $this->weight,
+            'p.status' => $this->status,
+            'p.sort_order' => $this->sort_order,
+            'p.created_at' => $this->created_at,
+            'p.updated_at' => $this->updated_at,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'slug', $this->slug])
-            ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'short_description', $this->short_description])
-            ->andFilterWhere(['like', 'currency', $this->currency])
-            ->andFilterWhere(['like', 'image', $this->image])
-            ->andFilterWhere(['like', 'meta_title', $this->meta_title])
-            ->andFilterWhere(['like', 'meta_description', $this->meta_description]);
+        $query->andFilterWhere(['like', 'p.name', $this->name])
+            ->andFilterWhere(['like', 'p.slug', $this->slug])
+            ->andFilterWhere(['like', 'p.description', $this->description])
+            ->andFilterWhere(['like', 'p.short_description', $this->short_description])
+            ->andFilterWhere(['like', 'p.currency', $this->currency])
+            ->andFilterWhere(['like', 'p.image', $this->image])
+            ->andFilterWhere(['like', 'p.meta_title', $this->meta_title])
+            ->andFilterWhere(['like', 'p.meta_description', $this->meta_description]);
 
         return $dataProvider;
     }
