@@ -31,8 +31,10 @@ $this->registerCss(<<<CSS
 .product-card-actions .btn-light { border: 1px solid #dee2e6; color: #495057; width: 2.1rem; }
 .product-card-actions .btn-light:hover { background: #e9ecef; }
 .product-card-actions .btn-delete:hover { background: #dc3545; border-color: #dc3545; color: #fff; }
-.product-card-img { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; overflow: hidden; background: #f4f6f9; color: #ced4da; font-size: 2.5rem; border-radius: .25rem .25rem 0 0; }
-.product-card-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* фото — менше й усередині картки: з відступами, власною рамкою й заокругленням */
+.product-card-img { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; margin: .75rem .75rem 0; overflow: hidden; background: #fff; border: 1px solid #edf0f3; border-radius: .5rem; color: #ced4da; font-size: 2rem; }
+.product-card-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .2s ease; }
+.product-card-img:hover img { transform: scale(1.04); }
 .product-admin-card.is-inactive .product-card-img { opacity: .45; }
 .product-admin-card .card-title { font-size: 1rem; line-height: 1.3; }
 CSS);
