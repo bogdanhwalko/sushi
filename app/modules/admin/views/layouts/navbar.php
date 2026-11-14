@@ -24,6 +24,14 @@ use app\models\Notification;
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
+        <!-- перехід на сайт у новій вкладці, щоб адмінка лишалась відкритою -->
+        <li class="nav-item">
+            <?= Html::a(
+                '<i class="fas fa-external-link-alt"></i><span class="d-none d-sm-inline ml-1">На сайт</span>',
+                Yii::$app->homeUrl,
+                ['class' => 'nav-link', 'target' => '_blank', 'rel' => 'noopener', 'title' => 'Відкрити сайт у новій вкладці']
+            ) ?>
+        </li>
 <!--         Notifications Dropdown Menu-->
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
