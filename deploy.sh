@@ -65,6 +65,8 @@ usage() {
     exit 0
 }
 
+ORIG_ARGS=("$@")   # для перезапуску з логуванням (див. нижче)
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -b|--branch)      BRANCH="${2:?Вкажіть назву гілки після $1}"; shift 2 ;;
@@ -86,13 +88,24 @@ LOCK_DIR="$RUNTIME/deploy.lock"
 MAINT_FLAG="$RUNTIME/maintenance.flag"
 
 mkdir -p "$RUNTIME/logs"
-LOG_FILE="$RUNTIME/logs/deploy-$(date +%Y%m%d-%H%M%S).log"
-exec > >(tee -a "$LOG_FILE") 2>&1
+
+# Вивід дублюється в лог: скрипт перезапускає сам себе через "| tee".
+# Не через exec > >(tee ...) — на частині хостингів немає /dev/fd, і так падає.
+if [[ -z "${DEPLOY_LOG_FILE:-}" ]]; then
+    export DEPLOY_LOG_FILE="$RUNTIME/logs/deploy-$(date +%Y%m%d-%H%M%S).log"
+    [[ -t 1 ]] && export DEPLOY_COLOR=1
+    set +e
+    # tee ігнорує Ctrl+C, щоб у лог потрапило повідомлення про скасування
+    bash "$ROOT/$(basename "${BASH_SOURCE[0]}")" ${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"} 2>&1 \
+        | (trap '' INT TERM; tee -a "$DEPLOY_LOG_FILE")
+    exit "${PIPESTATUS[0]}"
+fi
+LOG_FILE="$DEPLOY_LOG_FILE"
 
 # ----------------------------------------------------------------------------
 # Вивід
 # ----------------------------------------------------------------------------
-if [[ -t 1 ]]; then
+if [[ -n "${DEPLOY_COLOR:-}" ]]; then
     C_BLUE=$'\e[1;34m'; C_GREEN=$'\e[32m'; C_YELLOW=$'\e[33m'; C_RED=$'\e[1;31m'; C_RESET=$'\e[0m'
 else
     C_BLUE=''; C_GREEN=''; C_YELLOW=''; C_RED=''; C_RESET=''
@@ -336,7 +349,7 @@ else
   Встановіть клієнт MySQL або запустіть з --no-backup, якщо бекап зроблено іншим способом."
 
         # параметри підключення беремо з того самого конфігу, що й сайт
-        mapfile -t db < <(php_run -r '
+        db_info="$(php_run -r '
             $c = require $argv[1];
             $dsn = $c["dsn"] ?? "";
             preg_match("/host=([^;]+)/", $dsn, $h);
@@ -344,8 +357,9 @@ else
             preg_match("/dbname=([^;]+)/", $dsn, $d);
             echo ($h[1] ?? "localhost"), "\n", ($p[1] ?? "3306"), "\n", ($d[1] ?? ""), "\n",
                  ($c["username"] ?? ""), "\n", ($c["password"] ?? ""), "\n";
-        ' "$APP/config/db.php")
-        db_host="${db[0]}"; db_port="${db[1]}"; db_name="${db[2]}"; db_user="${db[3]}"; db_pass="${db[4]:-}"
+        ' "$APP/config/db.php")" || die "Не вдалося прочитати налаштування БД з app/config/db-local.php."
+        mapfile -t db <<< "$db_info"
+        db_host="${db[0]:-localhost}"; db_port="${db[1]:-3306}"; db_name="${db[2]:-}"; db_user="${db[3]:-}"; db_pass="${db[4]:-}"
         [[ -n "$db_name" ]] || die "Не вдалося визначити назву БД з dsn у db-local.php."
 
         mkdir -p "$BACKUP_DIR"
@@ -366,11 +380,15 @@ else
         ok "бекап: $(du -h "$BACKUP_FILE" | cut -f1)"
 
         # залишаємо лише KEEP_BACKUPS останніх бекапів
-        mapfile -t old_backups < <(ls -1t "$BACKUP_DIR"/sushi-*.sql.gz 2>/dev/null | tail -n +$((KEEP_BACKUPS + 1)))
-        for old in "${old_backups[@]}"; do
-            [[ -f "$old" && "$old" == "$BACKUP_DIR"/sushi-*.sql.gz ]] && rm -f "$old"
-        done
-        [[ ${#old_backups[@]} -eq 0 ]] || info "видалено старих бекапів: ${#old_backups[@]} (зберігаю $KEEP_BACKUPS)"
+        old_list="$(ls -1t "$BACKUP_DIR"/sushi-*.sql.gz 2>/dev/null | tail -n +$((KEEP_BACKUPS + 1)) || true)"
+        removed=0
+        while IFS= read -r old; do
+            if [[ -n "$old" && -f "$old" && "$old" == "$BACKUP_DIR"/sushi-*.sql.gz ]]; then
+                rm -f "$old"
+                removed=$((removed + 1))
+            fi
+        done <<< "$old_list"
+        [[ $removed -eq 0 ]] || info "видалено старих бекапів: $removed (зберігаю $KEEP_BACKUPS)"
     else
         warn "бекап БД перед міграціями пропущено (--no-backup)"
     fi
