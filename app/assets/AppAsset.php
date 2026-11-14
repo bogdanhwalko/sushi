@@ -21,7 +21,7 @@ class AppAsset extends AssetBundle
 
     public $css = [
         'css/bootstrap.min.css',
-        'css/site.css?v=5',
+        'css/site.css?v=6',
     ];
 
     public $cssOptions = [
