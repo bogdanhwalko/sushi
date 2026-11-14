@@ -2,6 +2,7 @@
 
 namespace app\modules\admin\controllers;
 
+use app\models\Cities;
 use app\models\Orders;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -26,15 +27,40 @@ class OrderController extends AbstractController
     }
 
 
-    public function actionIndex($status = null)
+    /** значення фільтра «місто» для замовлень без міста (або місто з них видалили) */
+    public const CITY_NONE = 'none';
+
+
+    /**
+     * @param string|null $status статус замовлення
+     * @param string|null $city   id міста або CITY_NONE
+     */
+    public function actionIndex($status = null, $city = null)
     {
+        $status = $status !== null && $status !== '' && isset(Orders::statusLabels()[(int)$status]) ? (string)(int)$status : null;
+        $city = $city === self::CITY_NONE || ctype_digit((string)$city) ? (string)$city : null;
+
+        $statusCondition = $status === null ? [] : ['status' => (int)$status];
+        $cityCondition = match (true) {
+            $city === null => [],
+            $city === self::CITY_NONE => ['city_id' => null],
+            default => ['city_id' => (int)$city],
+        };
+
         $query = Orders::find()
             ->with(['user'])
+            ->where($statusCondition)
+            ->andWhere($cityCondition)
             ->orderBy(['id' => SORT_DESC]);
 
-        if ($status !== null && $status !== '' && isset(Orders::statusLabels()[(int)$status])) {
-            $query->andWhere(['status' => (int)$status]);
-        }
+        // скільки замовлень у кожному місті (з урахуванням вибраного статусу) — для списку міст
+        $cityCounts = Orders::find()
+            ->select(['cnt' => 'COUNT(*)', 'city_id'])
+            ->where($statusCondition)
+            ->groupBy('city_id')
+            ->indexBy(static fn ($row) => $row['city_id'] ?? self::CITY_NONE)
+            ->asArray()
+            ->column();
 
         return $this->render('index', [
             'dataProvider' => new ActiveDataProvider([
@@ -42,6 +68,9 @@ class OrderController extends AbstractController
                 'pagination' => ['pageSize' => 30],
             ]),
             'status' => $status,
+            'city' => $city,
+            'cities' => Cities::find()->select(['name', 'id'])->orderBy(['sort_order' => SORT_ASC, 'name' => SORT_ASC])->indexBy('id')->column(),
+            'cityCounts' => array_map('intval', $cityCounts),
         ]);
     }
 
