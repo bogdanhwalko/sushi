@@ -1913,3 +1913,17 @@ footer {
 .navbar .order-button {
   border-radius: 0.5rem;
 }
+
+/* на мобільному крайні кнопки впритул до країв екрана — зовнішній бік без заокруглення
+   («Замовити» тут схована, тож кошик — крайній праворуч) */
+@media (max-width: 991.98px) {
+  .navbar .navbar-toggler {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .navbar .cart-button {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
