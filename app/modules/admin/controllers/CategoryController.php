@@ -108,7 +108,16 @@ class CategoryController extends AbstractController
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+
+        $blocker = $model->getDeleteBlocker();
+        if ($blocker !== null) {
+            \Yii::$app->session->setFlash('error', $blocker);
+            return $this->redirect(['view', 'id' => $model->id]);
+        }
+
+        $model->delete();
+        \Yii::$app->session->setFlash('success', 'Категорію видалено.');
 
         return $this->redirect(['index']);
     }

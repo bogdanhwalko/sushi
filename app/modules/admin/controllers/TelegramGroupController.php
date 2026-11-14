@@ -4,14 +4,13 @@ namespace app\modules\admin\controllers;
 
 use app\modules\admin\models\TelegramGroup;
 use app\modules\admin\models\search\TelegramGroupSearch;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
  * TelegramGroupController implements the CRUD actions for TelegramGroup model.
  */
-class TelegramGroupController extends Controller
+class TelegramGroupController extends AbstractController
 {
     /**
      * @inheritDoc

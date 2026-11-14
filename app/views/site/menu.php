@@ -29,7 +29,7 @@ $this->title = 'Повне меню | 107 Sushi';
                 <div class="filter-scroll" id="categoryFilters" aria-label="Фільтр за категоріями">
                     <?php foreach ($categories as $index => $category): ?>
                         <a class="btn btn-outline-dark btn-sm" href="#category-<?= $category->id ?>">
-                            <?= $category->name ?>
+                            <?= Html::encode($category->name) ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
@@ -46,7 +46,7 @@ $this->title = 'Повне меню | 107 Sushi';
                 <div class="compact-menu-section-head">
                     <div>
                         <p class="eyebrow text-muted mb-1">Категорія</p>
-                        <h2 class="compact-menu-section-title mb-0"><?= $category->name ?></h2>
+                        <h2 class="compact-menu-section-title mb-0"><?= Html::encode($category->name) ?></h2>
                     </div>
                     <span class="compact-menu-section-count"><?= count($category->products) ?> позицій</span>
                 </div>
@@ -66,17 +66,17 @@ $this->title = 'Повне меню | 107 Sushi';
                                         <div class="compact-menu-card-title-wrap">
                                             <h3 class="compact-menu-card-title"><?= Html::encode($product->name) ?></h3>
                                             <?php if (is_numeric($product->weight)): ?>
-                                                <p class="compact-menu-card-lead">Загальна вага: <?= $product->weight ?>гр.</p>
+                                                <p class="compact-menu-card-lead">Загальна вага: <?= Html::encode($product->weight) ?>гр.</p>
                                             <?php endif; ?>
                                         </div>
 
                                         <div class="compact-menu-card-price">
-                                            <strong><?= $product->price ?></strong>
-                                            <span><?= $product->currency ?></span>
+                                            <strong><?= (int)$product->price ?></strong>
+                                            <span><?= Html::encode($product->currency) ?></span>
                                         </div>
                                     </div>
 
-                                    <p class="compact-menu-card-description"><?= $product->description ?></p>
+                                    <p class="compact-menu-card-description"><?= nl2br(Html::encode($product->description)) ?></p>
                                 </div>
                             </article>
                         <?php endforeach; ?>

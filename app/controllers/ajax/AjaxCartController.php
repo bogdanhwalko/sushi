@@ -3,18 +3,33 @@
 namespace app\controllers\ajax;
 
 use app\forms\CartUpdateForm;
-use app\models\Cities;
+use app\forms\OrderForm;
 use Yii;
-use app\models\Carts;
 use yii\web\Response;
 use yii\rest\Controller;
-use app\models\Products;
 use app\models\CartItems;
 use yii\filters\ContentNegotiator;
 
 
 class AjaxCartController extends Controller
 {
+    /** усі дії, що змінюють кошик, — лише POST з CSRF-токеном */
+    public $enableCsrfValidation = true;
+
+
+    protected function verbs(): array
+    {
+        return [
+            'cart' => ['GET'],
+            'add-product' => ['POST'],
+            'change-qty' => ['POST'],
+            'delete-item' => ['POST'],
+            'clear-cart' => ['POST'],
+            'confirm' => ['POST'],
+        ];
+    }
+
+
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
@@ -37,16 +52,7 @@ class AjaxCartController extends Controller
             return false;
         }
 
-        if (Yii::$app->session->get('session_id')) {
-            return true;
-        }
-
-        GENERATE_SESSION_ID: $session_id = Yii::$app->security->generateRandomString();
-        if (Carts::findOne(['session_id' => $session_id])) {
-            goto GENERATE_SESSION_ID;
-        }
-
-        Yii::$app->session->set('session_id', $session_id);
+        CartItems::ensureSessionId();
 
         return true;
     }
@@ -56,8 +62,9 @@ class AjaxCartController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_HTML;
 
-        $cartItems = CartItems::find()
-            ->where(['session_id' => Yii::$app->session->get('session_id')])
+        $cartItems = CartItems::findCurrent()
+            ->with('product')
+            ->orderBy(['id' => SORT_ASC])
             ->all();
 
         return $this->renderPartial('cart', [
@@ -67,11 +74,13 @@ class AjaxCartController extends Controller
 
 
 
-    public function actionAddProduct(int $product_id, bool $qtyStatus = true)
+    public function actionAddProduct()
     {
+        $request = Yii::$app->request;
+
         $form = new CartUpdateForm();
-        $form->product_id = $product_id;
-        $form->qtyStatus = $qtyStatus;
+        $form->product_id = $this->postInt('product_id');
+        $form->qtyStatus = filter_var($request->post('qtyStatus', true), FILTER_VALIDATE_BOOLEAN);
 
         $form->validate() && $form->cartItemUpdate();
 
@@ -79,17 +88,36 @@ class AjaxCartController extends Controller
     }
 
 
-    public function actionChangeQty(int $item_id, int $qty)
+    /**
+     * Змінює кількість лише в кошику поточного відвідувача.
+     * @return int кількість оновлених рядків (0 — позицію не знайдено або кількість поза межами)
+     */
+    public function actionChangeQty()
     {
-        return CartItems::updateAll(['qty' => $qty], ['id' => $item_id]);
+        $itemId = $this->postInt('item_id');
+        $qty = $this->postInt('qty');
+
+        if ($itemId === null || $qty === null || $qty < 1 || $qty > CartItems::MAX_QTY) {
+            return 0;
+        }
+
+        return CartItems::updateAll(
+            ['qty' => $qty, 'updated_at' => new \yii\db\Expression('CURRENT_TIMESTAMP')],
+            ['and', ['id' => $itemId], CartItems::ownerCondition()]
+        );
     }
 
 
-    public function actionDeleteItem(int $item_id)
+    public function actionDeleteItem()
     {
         $result = ['status' => false];
 
-        $cartItem = CartItems::findOne(['id' => $item_id, 'session_id' => Yii::$app->session->get('session_id')]);
+        $itemId = $this->postInt('item_id');
+        if ($itemId === null) {
+            return $result;
+        }
+
+        $cartItem = CartItems::findCurrent()->andWhere(['id' => $itemId])->one();
         if ($cartItem !== null) {
             $result['qty'] = $cartItem->qty;
             $result['status'] = $cartItem->delete();
@@ -101,37 +129,29 @@ class AjaxCartController extends Controller
 
     public function actionClearCart()
     {
-        return CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
+        return CartItems::clearCurrent();
     }
 
 
-    public function actionConfirm($phone, $name, $city)
+    public function actionConfirm()
     {
-        $items = CartItems::findAll(['session_id' => Yii::$app->session->get('session_id')]);
-        $city = Cities::findOne(['id' => (int)$city]);
+        $form = new OrderForm();
+        $form->load(Yii::$app->request->post(), '');
 
-        $total = 0;
-        $message = "\xe2\x98\x8e <b>$phone</b> ($name)";
-        if (isset($city->name) && !isset($city->telegramGroup->telegram_id)) {
-            $message .= "\n \xf0\x9f\x97\xba <b>{$city->name}</b>";
-        }
-        $message .= "\n\n";
-
-
-        foreach ($items as $item) {
-            $total += ($item->price * $item->qty);
-            $message .= "\xf0\x9f\x8d\xa3 {$item->product->name} {$item->qty}шт. <b>{$item->price}</b>₴ \n";
+        $order = $form->place();
+        if ($order === null) {
+            return ['success' => false, 'errors' => $form->getErrorSummary(true)];
         }
 
-        $message .= "\n \xf0\x9f\x92\xb3 Загальна сума замовлення: <b>{$total}</b>₴";
+        return ['success' => true, 'orderId' => $order->id];
+    }
 
-        CartItems::deleteAll(['session_id' => Yii::$app->session->get('session_id')]);
 
-        if (! empty($city->telegramGroup->bot_id)) {
-            Yii::$app->ts->changeToken($city->telegramGroup->bot_id);
-        }
+    /** Ціле число з тіла POST-запиту або null, якщо його немає чи це не число */
+    private function postInt(string $name): ?int
+    {
+        $value = filter_var(Yii::$app->request->post($name), FILTER_VALIDATE_INT);
 
-        $chat_id = $city->telegramGroup->telegram_id ?? null;
-        return Yii::$app->ts->sendMessage($message, $chat_id);
+        return $value === false ? null : $value;
     }
 }

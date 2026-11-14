@@ -70,14 +70,13 @@ class ProductController extends AbstractController
         $model = new Product();
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+            if ($model->load($this->request->post())) {
                 $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
 
-                if (!$model->uploadImage() || !$model->save(false, ['image'])) {
-                    $model->addError('imageFile', 'Не вдалось завантажити зображення!');
+                // при помилці (зокрема з фото) форма відкривається знову з повідомленням
+                if ($model->saveWithImage()) {
+                    return $this->redirect(['view', 'id' => $model->id]);
                 }
-
-                return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -99,14 +98,12 @@ class ProductController extends AbstractController
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        if ($this->request->isPost && $model->load($this->request->post())) {
             $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
 
-            if (!$model->uploadImage() || !$model->save(false, ['image'])) {
-                $model->addError('imageFile', 'Не вдалось завантажити зображення!');
+            if ($model->saveWithImage()) {
+                return $this->redirect(['view', 'id' => $model->id]);
             }
-
-            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [

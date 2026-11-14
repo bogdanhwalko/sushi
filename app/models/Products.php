@@ -45,6 +45,8 @@ class Products extends ActiveRecord
             [['sort_order'], 'default', 'value' => 100],
             [['category_id', 'name', 'price'], 'required'],
             [['category_id', 'price', 'status', 'sort_order'], 'integer'],
+            ['category_id', 'exist', 'targetClass' => Categorys::class, 'targetAttribute' => ['category_id' => 'id'],
+                'message' => 'Оберіть категорію зі списку.'],
             [['description'], 'string'],
             [['old_price', 'weight'], 'number'],
             [['created_at', 'updated_at'], 'safe'],
@@ -112,7 +114,7 @@ class Products extends ActiveRecord
     {
         $query = static::find()
             ->where(['status' => 1])
-            ->orderBy(['sort_order' => SORT_ASC]);
+            ->orderBy(['sort_order' => SORT_ASC, 'id' => SORT_ASC]);
 
         if ($categoryId) {
             $query->andWhere(['category_id' => $categoryId]);

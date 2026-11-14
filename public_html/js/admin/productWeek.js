@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const select2 = $('#select2-product-week');
-    const refreshButton = $('#refresh-product-week-button');
+    const content = $('#card-refresh-content');
 
     select2.select2({
         dropdownAutoWidth: true,
@@ -16,15 +16,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    loadProductWeek();
-    $('#product-week-button').on('click', loadProductWeek);
+    // поточний товар тижня — лише читання
+    $.get('/admin-panel/ajax/product/product-week', function (html) {
+        content.html(html);
+    });
 
-    function loadProductWeek(e) {
+    // зміна товару тижня — POST з CSRF-токеном
+    $('#product-week-button').on('click', function () {
+        const productId = select2.val();
+        if (!productId) {
+            return;
+        }
 
-        let product_id = e ? select2.val() : null;
+        const button = $(this).prop('disabled', true);
 
-        $.get('/admin-panel/ajax/product/product-week', { product_id: product_id }, function (html) {
-            $('#card-refresh-content').html(html);
+        $.ajax({
+            url: '/admin-panel/ajax/product/set-product-week',
+            method: 'POST',
+            dataType: 'html',
+            headers: {'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')},
+            data: {product_id: productId},
+            success: function (html) {
+                content.html(html);
+            },
+            error: function (xhr) {
+                alert(xhr.status === 400 ? 'Оберіть активний товар.' : 'Не вдалося зберегти товар тижня.');
+            },
+            complete: function () {
+                button.prop('disabled', false);
+            }
         });
-    }
+    });
 });

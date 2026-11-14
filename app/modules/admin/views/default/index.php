@@ -6,7 +6,7 @@ $this->title = 'Головна';
 
 \app\assets\Select2Asset::register($this);
 
-$this->registerJsFile("@web/js/admin/productWeek.js", [\yii\web\View::POS_BEGIN]);
+$this->registerJsFile("@web/js/admin/productWeek.js?v=2", [\yii\web\View::POS_BEGIN]);
 
 ?>
 

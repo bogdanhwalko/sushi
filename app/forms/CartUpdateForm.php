@@ -5,8 +5,6 @@ namespace app\forms;
 use app\models\CartItems;
 use app\models\Products;
 use yii\base\Model;
-use yii\db\Expression;
-use yii\db\Query;
 
 class CartUpdateForm extends Model
 {
@@ -52,15 +50,13 @@ class CartUpdateForm extends Model
 
     public function cartItemUpdate(): bool
     {
-        $this->cartItem = CartItems::findOne([
-            'session_id' => \Yii::$app->session->get('session_id'),
-            'product_id' => $this->product->id,
-        ]);
+        $this->cartItem = CartItems::findCurrent()
+            ->andWhere(['product_id' => $this->product->id])
+            ->one();
 
         if (empty($this->cartItem)) {
-            $this->cartItem = new CartItems();
+            $this->cartItem = CartItems::newForCurrent();
             $this->cartItem->product_id = $this->product->id;
-            $this->cartItem->session_id = \Yii::$app->session->get('session_id');
         }
 
         $this->cartItem->price = $this->product->price;
@@ -69,15 +65,6 @@ class CartUpdateForm extends Model
         $this->cartItem->populateRelation('product', $this->product);
 
         return $this->cartItem->save();
-    }
-
-
-    public static function getTotalPrice(): int
-    {
-        return (new Query())
-            ->from(CartItems::tableName())
-            ->where(['session_id' => \Yii::$app->session->get('session_id')])
-            ->sum(new Expression('price * qty'));
     }
 
 

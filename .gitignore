@@ -38,5 +38,15 @@ tests/_support/_generated
 
 /public_html/uploads/
 
-/app/composer.lock
+# composer.lock комітиться: на сервері мають ставитися ті самі версії пакетів, що й локально
 /public_html/images/products/original
+
+
+# локальні змінні оточення (режим dev тощо)
+/.env
+
+# локальні налаштування сервера (БД, секрети) — див. app/config/*-local.example.php
+/app/config/*-local.php
+
+# прапорець режиму обслуговування, який ставить deploy.sh
+/app/runtime/maintenance.flag

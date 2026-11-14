@@ -23,6 +23,9 @@ $this->title = '107 Sushi';
 
 $cartTotal = 0;
 
+/** @var \app\models\User|null $currentUser */
+$currentUser = Yii::$app->user->identity;
+
 ?>
 
 
@@ -35,7 +38,10 @@ $cartTotal = 0;
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
 </head>
-    <body>
+    <?= Html::beginTag('body', [
+        // місто з профілю — якщо відвідувач ще не обирав місто на цьому пристрої
+        'data-user-city' => $currentUser->city_id ?? null,
+    ]) ?>
     <?php $this->beginBody() ?>
 
     <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
@@ -68,6 +74,17 @@ $cartTotal = 0;
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#about">Про нас</a>
                 <a class="nav-link fw-semibold px-2 d-none d-lg-inline" href="#contact">Контакти</a>
 
+                <?= Html::a(
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>'
+                    . '<span class="d-none d-md-inline">' . ($currentUser ? 'Кабінет' : 'Увійти') . '</span>',
+                    [$currentUser ? '/account/profile' : '/account/login'],
+                    [
+                        'class' => 'account-button btn btn-outline-light d-flex align-items-center gap-2',
+                        'aria-label' => $currentUser ? 'Особистий кабінет' : 'Увійти',
+                        'title' => $currentUser ? 'Особистий кабінет' : 'Увійти',
+                    ]
+                ) ?>
+
                 <button class="cart-button btn btn-outline-light position-relative d-flex align-items-center gap-2" id="cart-button" type="button" aria-label="Open cart">
                     <span class="bg-accent cart-badge">
                         <span id="cartCount"><?= $this->params['totalCount'] ?> </span>
@@ -89,14 +106,17 @@ $cartTotal = 0;
 
     <main>
         <section id="menu" class="container py-5">
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
                 <div>
                     <p class="eyebrow text-muted mb-1">Меню</p>
-                    <h2 class="fw-bold">Роли та сети</h2>
-                    <p class="text-muted mb-0">
-                        Товари по категоріях:
-                    </p>
+                    <h2 class="fw-bold mb-0">Роли та сети</h2>
                 </div>
+            </div>
+
+            <div class="menu-sticky-bar mb-4" id="menuStickyBar">
+                <p class="text-muted mb-1">
+                    Товари по категоріях:
+                </p>
 
                 <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center menu-filters">
                     <div class="category-nav" aria-label="Category navigation">
@@ -120,9 +140,9 @@ $cartTotal = 0;
                         </button>
                     </div>
                 </div>
-
-                <!--Продукти-->
             </div>
+
+            <!--Продукти-->
             <div class="row g-4" id="productGrid"></div>
         </section>
 

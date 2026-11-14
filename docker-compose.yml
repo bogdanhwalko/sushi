@@ -7,6 +7,9 @@ services:
     container_name: php-sushi
     working_dir: /var/html/sushi/
     restart: unless-stopped
+    environment:
+      # dev | prod. Локально задається у файлі .env (див. .env.example), без нього — prod
+      YII_ENV: ${YII_ENV:-prod}
     networks:
       - custom-network
     volumes:

@@ -14,11 +14,11 @@ use yii\helpers\Html;
         <div class="flex-grow-1">
             <div class="d-flex justify-content-between">
                 <div>
-                    <div class="font-weight-bold"><?= $productWeek->name ?></div>
-                    <div class="text-muted small"><?= $productWeek->description ?></div>
+                    <div class="font-weight-bold"><?= Html::encode($productWeek->name) ?></div>
+                    <div class="text-muted small"><?= Html::encode($productWeek->description) ?></div>
                 </div>
                 <div class="text-right">
-                    <div class="font-weight-bold text-nowrap"><?= $productWeek->price ?> ₴</div>
+                    <div class="font-weight-bold text-nowrap"><?= (int)$productWeek->price ?> ₴</div>
                 </div>
             </div>
         </div>

@@ -13,7 +13,11 @@
                 <img src="<?= $assetDir ?>/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a href="#" class="d-block">Admin</a>
+                <?= \yii\helpers\Html::a(
+                    \yii\helpers\Html::encode(Yii::$app->user->identity->username ?? 'Admin'),
+                    ['/admin-panel/profile/index'],
+                    ['class' => 'd-block']
+                ) ?>
             </div>
         </div>
 
@@ -39,6 +43,27 @@
                         'label' => 'Головна',
                         'url' => ['/admin-panel/'],
                         'iconStyle' => 'nav-icon fas fa-home'
+                    ],
+
+                    [
+                        'label' => 'Замовлення',
+                        'url' => ['/admin-panel/order/index'],
+                        'icon' => 'nav-icon fas fa-receipt',
+                        'visible' => true,
+                    ],
+
+                    [
+                        'label' => 'Клієнти',
+                        'url' => ['/admin-panel/customer/index'],
+                        'icon' => 'nav-icon fas fa-user-friends',
+                        'visible' => true,
+                    ],
+
+                    [
+                        'label' => 'Кошики клієнтів',
+                        'url' => ['/admin-panel/cart/index'],
+                        'icon' => 'nav-icon fas fa-shopping-basket',
+                        'visible' => true,
                     ],
 
                     [
@@ -70,6 +95,13 @@
                         'url' => ['/admin-panel/telegram-group/index'],
                         //'iconStyle' => 'far',
                         'icon' => 'nav-icon fas fa-users',
+                        'visible' => true,
+                    ],
+
+                    [
+                        'label' => 'Мій профіль',
+                        'url' => ['/admin-panel/profile/index'],
+                        'icon' => 'nav-icon fas fa-user-cog',
                         'visible' => true,
                     ],
                 ],

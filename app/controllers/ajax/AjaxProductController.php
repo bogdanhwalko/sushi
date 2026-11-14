@@ -6,6 +6,7 @@ use app\models\Categorys;
 use app\models\Products;
 use yii\filters\ContentNegotiator;
 use yii\rest\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class AjaxProductController extends Controller
@@ -40,8 +41,14 @@ class AjaxProductController extends Controller
 
     public function actionDetail(int $productId)
     {
+        // вимкнені й видалені товари відвідувачам не показуємо
+        $product = Products::findOne(['id' => $productId, 'status' => 1]);
+        if ($product === null) {
+            throw new NotFoundHttpException('Товар не знайдено або він більше не доступний.');
+        }
+
         return $this->renderPartial('detail', [
-            'product' => Products::findOne($productId),
+            'product' => $product,
         ]);
     }
 }

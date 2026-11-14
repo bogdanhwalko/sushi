@@ -4,14 +4,13 @@ namespace app\modules\admin\controllers;
 
 use app\modules\admin\models\City;
 use app\modules\admin\models\search\CitySearch;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
  * CityController implements the CRUD actions for City model.
  */
-class CityController extends Controller
+class CityController extends AbstractController
 {
     /**
      * @inheritDoc

@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 use app\models\CartItems;
-use app\models\Carts;
 use app\models\Categorys;
 use app\models\Cities;
 use app\models\Configs;
@@ -25,27 +24,6 @@ class SiteController extends Controller
         ];
     }
 
-
-    public function beforeAction($action): bool
-    {
-
-        if (! parent::beforeAction($action)) {
-            return false;
-        }
-
-        if (Yii::$app->session->get('session_id')) {
-            return true;
-        }
-
-        GENERATE_SESSION_ID: $session_id = Yii::$app->security->generateRandomString();
-        if (Carts::findOne(['session_id' => $session_id])) {
-            goto GENERATE_SESSION_ID;
-        }
-
-        Yii::$app->session->set('session_id', $session_id);
-
-        return true;
-    }
 
     /**
      * Displays homepage.
@@ -73,12 +51,12 @@ class SiteController extends Controller
 
     private function prepareCommonViewParams(bool $withProductOfWeek = false): void
     {
-        $this->view->params['totalCount'] = (int) CartItems::find()
-            ->where(['session_id' => Yii::$app->session->get('session_id')])
-            ->sum('qty');
+        $this->view->params['totalCount'] = CartItems::getTotalCount();
 
-        if ($withProductOfWeek && Configs::get('product_week_id')) {
-            $this->view->params['productOfWeek'] = Products::findOne(Configs::get('product_week_id'));
+        // вимкнений товар тижня не показуємо — його все одно не можна додати в кошик
+        $productWeekId = $withProductOfWeek ? Configs::get('product_week_id') : null;
+        if ($productWeekId) {
+            $this->view->params['productOfWeek'] = Products::findOne(['id' => $productWeekId, 'status' => 1]);
         }
 
         $this->view->params['cities'] = Cities::getCitiesInSelect();

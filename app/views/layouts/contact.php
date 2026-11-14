@@ -29,7 +29,7 @@
                         <p class="contact-copy mb-4">Обирайте місто, рол або сет — ми покажемо актуальну наявність і доставимо без запізнень.</p>
                         <div class="contact-actions d-flex flex-wrap gap-3">
                             <a class="btn btn-dark px-4 contact-btn-primary" href="#menu">Відкрити меню</a>
-                            <button class="btn btn-outline-dark px-4 contact-btn-secondary" type="button" id="consultBtn">Консультація</button>
+                            <button class="btn btn-outline-dark px-4 contact-btn-secondary" type="button" id="consultBtn" data-bs-toggle="modal" data-bs-target="#consultModal">Консультація</button>
                         </div>
                     </div>
                 </div>

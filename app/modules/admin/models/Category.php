@@ -27,6 +27,32 @@ class Category extends Categorys
         return parent::rules();
     }
 
+    /**
+     * Причина, з якої категорію не можна видалити, або null.
+     * Товари й підкатегорії інакше лишились би з посиланням на неіснуючу категорію.
+     */
+    public function getDeleteBlocker(): ?string
+    {
+        $products = Product::find()->where(['category_id' => $this->id])->count();
+        if ($products > 0) {
+            return "У категорії є товари ($products). Перенесіть їх в іншу категорію або вимкніть категорію замість видалення.";
+        }
+
+        $children = static::find()->where(['parent_id' => $this->id])->count();
+        if ($children > 0) {
+            return "У категорії є підкатегорії ($children). Спершу перенесіть або видаліть їх.";
+        }
+
+        return null;
+    }
+
+
+    public function beforeDelete(): bool
+    {
+        return parent::beforeDelete() && $this->getDeleteBlocker() === null;
+    }
+
+
     public static function getBySelect(): array
     {
         return ArrayHelper::map(

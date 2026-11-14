@@ -41,10 +41,10 @@ use yii\helpers\Html;
                             'class' => 'rounded-3 hero-img',
                         ]) ?>
                         <div class="hero-content">
-                            <h4 class="hero-title fw-semibold mb-1"><?= $this->params['productOfWeek']->name ?></h4>
-                            <p class="hero-description text-muted small mb-2"><?= $this->params['productOfWeek']->description ?></p>
+                            <h4 class="hero-title fw-semibold mb-1"><?= Html::encode($this->params['productOfWeek']->name) ?></h4>
+                            <p class="hero-description text-muted small mb-2"><?= Html::encode($this->params['productOfWeek']->description) ?></p>
                             <div class="d-flex align-items-end text-right gap-2 flex-wrap">
-                                <span class="hero-price badge bg-primary-soft text-primary fw-bold"><?= $this->params['productOfWeek']->price ?> UAH</span>
+                                <span class="hero-price badge bg-primary-soft text-primary fw-bold"><?= (int)$this->params['productOfWeek']->price ?> UAH</span>
                             </div>
                             <div class="hero-actions d-flex align-items-center gap-2 flex-wrap">
                                 <button class="btn btn-sm btn-dark view-details btn-block">Детальніше</button>

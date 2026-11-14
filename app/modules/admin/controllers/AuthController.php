@@ -41,13 +41,14 @@ class AuthController extends Controller
 
     public function actionLogin()
     {
-        if (! Yii::$app->user->isGuest) {
+        $identity = Yii::$app->user->identity;
+        if ($identity !== null && $identity->isAdmin()) {
             return $this->redirect(['/admin-panel/']);
         }
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->redirect(['/admin-panel/']);
+            return $this->goBack(['/admin-panel/']);
         }
 
         $model->password = '';

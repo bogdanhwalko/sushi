@@ -21,6 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     var cartUpdateStatus = true;
 
+    // CSRF-токен для всіх запитів, що змінюють дані (POST)
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (settings.type && settings.type.toUpperCase() !== 'GET') {
+                xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'));
+            }
+        }
+    });
+
 
     let cartModal = bootstrap.Offcanvas.getOrCreateInstance(drawer[0]);
     let checkoutModal = bootstrap.Modal.getOrCreateInstance(checkoutModalEl[0]);
@@ -83,9 +92,31 @@ document.addEventListener('DOMContentLoaded', () => {
         categoryButtons.removeClass('active');
         clicked.addClass('active');
 
+        // Якщо панель категорій "прилипла" — повертаємось до початку списку товарів
+        if (menuStickyBar.length && menuStickyBar.hasClass('is-stuck')) {
+            const gridTop = productGridContainer[0].getBoundingClientRect().top + window.scrollY;
+            const barSpace = menuStickyBar.outerHeight(true);
+            window.scrollTo({top: Math.max(0, gridTop - barSpace), behavior: 'smooth'});
+        }
+
         loadProducts(clicked.data('id'));
     });
     /* ---END [Зміна категорії] END--- */
+
+
+    /* ---BEGIN [Липка панель категорій] BEGIN--- */
+    const menuStickyBar = $('#menuStickyBar');
+
+    if (menuStickyBar.length) {
+        const updateStuckState = () => {
+            const top = menuStickyBar[0].getBoundingClientRect().top;
+            menuStickyBar.toggleClass('is-stuck', top <= 0.5 && window.scrollY > 0);
+        };
+
+        $(window).on('scroll.menuSticky resize.menuSticky', updateStuckState);
+        updateStuckState();
+    }
+    /* ---END [Липка панель категорій] END--- */
 
 
     /* ---BEGIN [завантаження товарів] BEGIN--- */
@@ -94,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showPreloader(productGridContainer);
 
         $.ajax({
-            url: 'ajax/ajax-product/get-by-filters',
+            url: '/ajax/ajax-product/get-by-filters',
             method: 'GET',
             dataType: 'html',
             data: {
@@ -126,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function cartUpdate(product_id, qtyStatus = true)
     {
         $.ajax({
-            url: 'ajax/ajax-cart/add-product',
-            method: 'GET',
+            url: '/ajax/ajax-cart/add-product',
+            method: 'POST',
             dataType: 'json',
             data: {product_id: product_id, qtyStatus: qtyStatus},
             success: function(res) {
@@ -158,8 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el.remove();
 
         $.ajax({
-            url: 'ajax/ajax-cart/delete-item',
-            method: 'GET',
+            url: '/ajax/ajax-cart/delete-item',
+            method: 'POST',
             dataType: 'json',
             data: {item_id: parentBlock.data('item_id')},
             success: function(res) {
@@ -206,8 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
             el.prop('disabled', true);
 
             $.ajax({
-                url: 'ajax/ajax-cart/change-qty',
-                method: 'GET',
+                url: '/ajax/ajax-cart/change-qty',
+                method: 'POST',
                 dataType: 'html',
                 data: {item_id: parentBlock.data('item_id'), qty: qty},
                 success: function(res) {
@@ -246,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showPreloader(productDetailModalContent)
 
         $.ajax({
-            url: 'ajax/ajax-product/detail',
+            url: '/ajax/ajax-product/detail',
             method: 'GET',
             dataType: 'html',
             data: {productId: parentBlock.data('product')},
@@ -256,7 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             error: function(xhr) {
-                console.log('Трапилась помилка при завантаженні детальної інформації про товар.')
+                const msg = xhr.status === 404
+                    ? 'Цей товар зараз недоступний.'
+                    : 'Не вдалося завантажити інформацію про товар. Спробуйте ще раз.';
+                productDetailModalContent.empty().append($('<p class="text-center text-muted py-4 mb-0">').text(msg));
             }
         });
 
@@ -272,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showPreloader(cartContent);
 
             $.ajax({
-                url: 'ajax/ajax-cart/cart',
+                url: '/ajax/ajax-cart/cart',
                 method: 'GET',
                 dataType: 'html',
                 success: function(res) {
@@ -296,8 +330,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el.prop('disabled', true);
 
         $.ajax({
-            url: 'ajax/ajax-cart/clear-cart',
-            method: 'GET',
+            url: '/ajax/ajax-cart/clear-cart',
+            method: 'POST',
             dataType: 'json',
             success: function(res) {
                 cartContent.find('#cartItems').empty();
@@ -320,11 +354,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        if (localStorage.getItem('phone')) {
+        // у залогіненого клієнта ім'я й телефон уже підставлені з профілю
+        const hasProfile = checkoutModalEl.data('profile') == 1;
+
+        if (!hasProfile && localStorage.getItem('phone')) {
             checkoutPhoneInput.val(localStorage.getItem('phone'))
         }
 
-        if (localStorage.getItem('name')) {
+        if (!hasProfile && localStorage.getItem('name')) {
             checkoutNameInput.val(localStorage.getItem('name'))
         }
 
@@ -355,28 +392,113 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('city', city);
 
         let el = $(this);
+        const errorsBlock = $('#checkoutErrors');
         el.prop('disabled', true);
+        errorsBlock.addClass('d-none').empty();
+
+        const showErrors = (errors) => {
+            errorsBlock.empty();
+            errors.forEach((msg) => errorsBlock.append($('<div>').text(msg)));
+            errorsBlock.removeClass('d-none');
+        };
 
         $.ajax({
-            url: 'ajax/ajax-cart/confirm',
-            method: 'GET',
+            url: '/ajax/ajax-cart/confirm',
+            method: 'POST',
             dataType: 'json',
+            headers: {'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')},
             data: {phone: phone, name: name, city: city},
             success: function(res) {
+                el.prop('disabled', false);
+
+                if (!res || !res.success) {
+                    showErrors(res && res.errors && res.errors.length ? res.errors : ['Не вдалося оформити замовлення. Спробуйте ще раз.']);
+                    return;
+                }
+
                 cartContent.find('#cartItems').remove();
                 cartContent.find('#cartTotal').text(0);
                 cartCountSpan.text(0);
-                el.prop('disabled', false);
+                cartUpdateStatus = true;
                 checkoutModal.hide();
-                showToast('Замовлення успішно підтверджено!');
+                showToast('Замовлення №' + res.orderId + ' успішно оформлено!');
             },
             error: function(xhr) {
-                console.log('Помилка при спробі підтвердити замовлення!')
+                el.prop('disabled', false);
+                showErrors(['Помилка з’єднання. Спробуйте ще раз.']);
             }
         });
     })
 
     /* ---END [Вікно замовлення] END--- */
+
+
+    /* ---BEGIN [Консультація] BEGIN--- */
+
+    const consultModalEl = $('#consultModal');
+    const consultForm = $('#consultForm');
+    const consultPhoneInput = $('#consultPhone');
+    const consultErrors = $('#consultErrors');
+    const consultSubmit = $('#consultSubmit');
+
+    consultModalEl.on('show.bs.modal', function () {
+        consultErrors.addClass('d-none').empty();
+        consultPhoneInput.removeClass('is-invalid');
+
+        // номер з профілю вже підставлено; інакше — той, що вводили раніше
+        if (!consultPhoneInput.val() && localStorage.getItem('phone')) {
+            consultPhoneInput.val(localStorage.getItem('phone'));
+        }
+    });
+
+    consultModalEl.on('shown.bs.modal', function () {
+        consultPhoneInput.trigger('focus');
+    });
+
+    consultForm.on('submit', function (e) {
+        e.preventDefault();
+
+        const phone = phoneValidator(consultPhoneInput);
+        if (phone === false) {
+            return;
+        }
+
+        localStorage.setItem('phone', phone);
+
+        consultSubmit.prop('disabled', true);
+        consultErrors.addClass('d-none').empty();
+
+        const showConsultErrors = (errors) => {
+            consultErrors.empty();
+            errors.forEach((msg) => consultErrors.append($('<div>').text(msg)));
+            consultErrors.removeClass('d-none');
+        };
+
+        $.ajax({
+            url: '/ajax/ajax-consultation/send',
+            method: 'POST',
+            dataType: 'json',
+            headers: {'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')},
+            data: {phone: phone, city: localStorage.getItem('city') || document.body.dataset.userCity || ''},
+            success: function (res) {
+                consultSubmit.prop('disabled', false);
+
+                if (!res || !res.success) {
+                    showConsultErrors(res && res.errors && res.errors.length ? res.errors : ['Не вдалося надіслати заявку. Спробуйте ще раз.']);
+                    return;
+                }
+
+                bootstrap.Modal.getOrCreateInstance(consultModalEl[0]).hide();
+                showToast('Дякуємо! Ми передзвонимо вам найближчим часом.');
+            },
+            error: function () {
+                consultSubmit.prop('disabled', false);
+                showConsultErrors(['Помилка з’єднання. Спробуйте ще раз.']);
+            }
+        });
+    });
+
+    /* ---END [Консультація] END--- */
 
     function nameValidator(nameInput)
     {

@@ -27,6 +27,15 @@ $navItems = $this->params['sideMenuLinks'] ?? [
                 ]
             ) ?>
         <?php endforeach; ?>
+        <div class="border-top pt-3 d-flex flex-column gap-3">
+            <?php if (Yii::$app->user->isGuest): ?>
+                <?= Html::a('Увійти', ['/account/login'], ['class' => 'text-white text-decoration-none fw-semibold']) ?>
+                <?= Html::a('Реєстрація', ['/account/signup'], ['class' => 'text-white-50 text-decoration-none']) ?>
+            <?php else: ?>
+                <?= Html::a('Особистий кабінет', ['/account/profile'], ['class' => 'text-white text-decoration-none fw-semibold']) ?>
+                <?= Html::a('Мої замовлення', ['/account/profile', '#' => 'orders'], ['class' => 'text-white-50 text-decoration-none']) ?>
+            <?php endif; ?>
+        </div>
         <div class="border-top pt-3">
             <label for="cityWelcomeSelect" class="form-label">Локація</label>
             <?= Html::dropDownList('city', null, $this->params['cities'], [

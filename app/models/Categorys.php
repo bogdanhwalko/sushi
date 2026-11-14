@@ -76,7 +76,7 @@ class Categorys extends ActiveRecord
         return $this->hasMany(Product::class, ['category_id' => 'id'])
             ->alias('p')
             ->andOnCondition(['p.status' => 1])
-            ->orderBy(['p.sort_order' => SORT_DESC]);
+            ->orderBy(['p.sort_order' => SORT_ASC, 'p.id' => SORT_ASC]); // як на головній (Products::findActive)
     }
 
 
@@ -93,7 +93,7 @@ class Categorys extends ActiveRecord
             ->alias('t1')
             ->select(['t1.slug', 't1.name', 't1.id'])
             ->andWhere(['t1.status' => 1])
-            ->orderBy(['t1.sort_order' => SORT_DESC]);
+            ->orderBy(['t1.sort_order' => SORT_DESC, 't1.id' => SORT_ASC]);
 
         if ($withProducts) {
             $query->joinWith('products');
@@ -103,12 +103,16 @@ class Categorys extends ActiveRecord
     }
 
 
-    public static function getActiveFirstId(): int
+    /** ID першої активної категорії або null, якщо активних категорій немає */
+    public static function getActiveFirstId(): ?int
     {
-        return static::find()
+        $id = static::find()
+            ->select('id')
             ->andWhere(['status' => 1])
-            ->orderBy(['sort_order' => SORT_DESC])
+            ->orderBy(['sort_order' => SORT_DESC, 'id' => SORT_ASC])
             ->limit(1)
             ->scalar();
+
+        return $id === false ? null : (int)$id;
     }
 }

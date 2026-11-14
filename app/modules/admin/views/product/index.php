@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
             [
                 'attribute' => 'category_id',
-                'value' => fn ($ml) => $ml->category->name,
+                'value' => fn ($ml) => $ml->category->name ?? '—',
                 'filter' => Html::activeDropDownList(
                     $searchModel,
                     'category_id',

@@ -17,6 +17,7 @@ $this->params['breadcrumbs'][] = 'Оновлення';
     <?php $form = ActiveForm::begin([
         'options' => ['enctype' => 'multipart/form-data'],
     ]); ?>
+    <?= $form->errorSummary($model, ['class' => 'alert alert-danger', 'header' => '<strong>Не вдалося зберегти товар:</strong>']) ?>
     <div class="row">
         <div class="col-md-6">
             <div class="card card-lightblue">

@@ -21,13 +21,13 @@ $cartTotal = 0;
                 ]) ?>
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between align-items-start gap-2">
-                        <h6 class="fw-semibold mb-1"><?= $cartItem->product->name ?></h6>
+                        <h6 class="fw-semibold mb-1"><?= Html::encode($cartItem->product->name) ?></h6>
                         <button class="btn btn-link text-danger text-decoration-none p-0 small remove-item" type="button">
                             <?= Html::img('@web/images/icons/delete.png', ['alt' => 'Видалити', 'class' => 'cart-remove']) ?>
                         </button>
                     </div>
                     <div class="text-muted small">
-                        <span class="item-price"><?= $cartItem->product->price ?></span> ₴ • <?= $cartItem->product->weight ?> г
+                        <span class="item-price"><?= (int)$cartItem->product->price ?></span> ₴ • <?= Html::encode($cartItem->product->weight) ?> г
                     </div>
                     <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                         <div class="qty-control" aria-label="Кількість">

@@ -1,3 +1,12 @@
+<?php
+
+use yii\helpers\Html;
+
+/** @var \app\models\User|null $user */
+$user = Yii::$app->user->identity;
+// номер з профілю клієнта підставляється одразу
+$profilePhone = ($user !== null && !$user->isAdmin() && $user->phone) ? '+' . $user->phone : '';
+?>
 <div class="modal fade" id="consultModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4">
@@ -9,10 +18,19 @@
                 <form id="consultForm" novalidate>
                     <div class="mb-3">
                         <label for="consultPhone" class="form-label">Номер телефону</label>
-                        <input type="tel" class="form-control" id="consultPhone" placeholder="+38 (0XX) XXX-XX-XX" autocomplete="tel" required>
+                        <?= Html::input('tel', 'phone', $profilePhone, [
+                            'class' => 'form-control',
+                            'id' => 'consultPhone',
+                            'placeholder' => '+38 (0XX) XXX-XX-XX',
+                            'autocomplete' => 'tel',
+                            'inputmode' => 'tel',
+                            'maxlength' => 20,
+                            'required' => true,
+                        ]) ?>
                         <div class="invalid-feedback">Вкажіть коректний номер телефону.</div>
                     </div>
-                    <button class="btn btn-dark w-100" type="submit">Замовити дзвінок</button>
+                    <div class="alert alert-danger small py-2 d-none" id="consultErrors" role="alert"></div>
+                    <button class="btn btn-dark w-100" type="submit" id="consultSubmit">Замовити дзвінок</button>
                     <p class="text-muted small mt-2 mb-0">Передзвонимо протягом 15 хвилин.</p>
                 </form>
             </div>

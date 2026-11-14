@@ -60,45 +60,46 @@ class Configs extends \yii\db\ActiveRecord
     }
 
 
+    /**
+     * Значення активного налаштування (або null). Кешується саме значення,
+     * а не рядок таблиці, — однаково і при читанні з БД, і при set().
+     */
     public static function get(string $name)
     {
-        if (! isset(self::$models[$name])) {
-            if (\Yii::$app->cache->exists($name)) {
-                self::$models[$name] = [
-                    'value' => \Yii::$app->cache->get($name),
-                    'status' => 1
-                ];
-            }
-            else {
-                self::$models[$name] = self::find()
-                    ->select(['value', 'status'])
+        if (! array_key_exists($name, self::$models)) {
+            self::$models[$name] = \Yii::$app->cache->getOrSet(self::cacheKey($name), static function () use ($name) {
+                $value = self::find()
+                    ->select('value')
                     ->where(['name' => $name, 'status' => 1])
-                    ->asArray()
-                    ->one();
+                    ->scalar();
 
-                if (isset(self::$models[$name]['status']) && self::$models[$name]['status']) {
-                    \Yii::$app->cache->set($name, self::$models[$name]);
-                }
-            }
+                // false = рядка немає; кешуємо null, щоб не ходити в БД щоразу
+                return $value === false ? null : $value;
+            });
         }
 
-        return self::$models[$name]['value'] ?? null;
+        return self::$models[$name];
     }
 
 
-    public static function set(string $name, $value)
+    public static function set(string $name, $value): void
     {
-        self::get($name);
+        $db = \Yii::$app->db;
+        $exists = self::find()->where(['name' => $name])->exists();
 
-        if (empty(self::$models[$name])) {
-            self::$models[$name] = ['name' => $name, 'status' => 1, 'value' => $value];
-            \Yii::$app->db->createCommand()->insert(self::tableName(), self::$models[$name])->execute();
-        }
-        else {
-            \Yii::$app->db->createCommand()->update(self::tableName(), self::$models[$name], ['name' => $name])->execute();
-            self::$models[$name]['value'] = $value;
+        if ($exists) {
+            $db->createCommand()->update(self::tableName(), ['value' => $value, 'status' => 1], ['name' => $name])->execute();
+        } else {
+            $db->createCommand()->insert(self::tableName(), ['name' => $name, 'value' => $value, 'status' => 1])->execute();
         }
 
-        \Yii::$app->cache->set($name, $value);
+        \Yii::$app->cache->delete(self::cacheKey($name));
+        self::$models[$name] = $value;
+    }
+
+
+    private static function cacheKey(string $name): array
+    {
+        return [self::class, 'v2', $name];
     }
 }
