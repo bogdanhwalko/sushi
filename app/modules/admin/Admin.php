@@ -22,6 +22,7 @@ class Admin extends \yii\base\Module
     {
         parent::init();
 
-        // custom initialization code goes here
+        // помилки в адмінці показуємо в оформленні адмінки, а не сайту
+        \Yii::$app->errorHandler->errorAction = $this->id . '/error/index';
     }
 }

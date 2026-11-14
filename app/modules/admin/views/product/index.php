@@ -1,75 +1,140 @@
 <?php
 
+use app\modules\admin\models\Category;
 use app\modules\admin\models\Product;
-use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\widgets\ListView;
 
 /** @var yii\web\View $this */
 /** @var app\modules\admin\models\search\ProductSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
+/** @var string $viewMode table | cards */
 
 $this->title = 'Товари';
 $this->params['breadcrumbs'][] = $this->title;
+
+\yii\web\YiiAsset::register($this); // data-method / data-confirm для кнопки видалення в картках
+$this->registerJsFile('@web/js/admin/productInline.js?v=1', ['depends' => \yii\web\JqueryAsset::class]);
+$this->registerCss(<<<CSS
+.js-inline-edit { cursor: pointer; border-bottom: 1px dashed transparent; white-space: nowrap; }
+.js-inline-edit:hover { border-bottom-color: #adb5bd; }
+.js-inline-edit.is-saved { background: #d4edda; transition: background .2s; }
+.js-inline-edit .form-control { width: 7rem; display: inline-block; }
+.product-admin-card .card-img-top { aspect-ratio: 1 / 1; object-fit: cover; background: #f4f6f9; }
+.product-admin-card .no-image { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; background: #f4f6f9; color: #adb5bd; font-size: 2rem; }
+.product-admin-card.is-inactive .card-img-top, .product-admin-card.is-inactive .no-image { opacity: .45; }
+.product-admin-card .card-title { font-size: 1rem; line-height: 1.3; }
+CSS);
+
+/** Значення, яке змінюється подвійним кліком (ціна, вага) */
+$inline = static fn (Product $model, string $field): string => Html::tag('span', Html::encode($model->inlineText($field)), [
+    'class' => 'js-inline-edit',
+    'data-id' => $model->id,
+    'data-field' => $field,
+    'data-value' => $model->$field === null ? '' : (int)$model->$field,
+    'title' => 'Двічі клацніть, щоб змінити',
+]);
+
+$categories = Category::getBySelect();
+$statuses = ['Не активний', 'Активний'];
 ?>
 <div class="product-index">
 
-    <p>
-        <?= Html::a('Додати товар', ['create'], ['class' => 'btn btn-info']) ?>
-    </p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <?= Html::a('Додати товар', ['create'], ['class' => 'btn btn-info mb-2']) ?>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+        <div class="btn-group mb-2" role="group" aria-label="Вигляд списку">
+            <?= Html::a('<i class="fas fa-list mr-1"></i>Таблиця', Url::current(['view' => 'table']), [
+                'class' => 'btn btn-sm ' . ($viewMode === 'table' ? 'btn-secondary' : 'btn-outline-secondary'),
+            ]) ?>
+            <?= Html::a('<i class="fas fa-th-large mr-1"></i>Картки', Url::current(['view' => 'cards']), [
+                'class' => 'btn btn-sm ' . ($viewMode === 'cards' ? 'btn-secondary' : 'btn-outline-secondary'),
+            ]) ?>
+        </div>
+    </div>
 
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'pager' => ['class' => \yii\bootstrap4\LinkPager::class],
-        'columns' => [
+    <p class="text-muted small mb-2">Ціну та вагу можна змінити подвійним кліком по значенню.</p>
 
-            'id',
-            'name',
-            [
-                'attribute' => 'category_id',
-                'value' => fn ($ml) => $ml->category->name ?? '—',
-                'filter' => Html::activeDropDownList(
-                    $searchModel,
-                    'category_id',
-                    \app\modules\admin\models\Category::getBySelect(),
-                    ['class'=>'form-control', 'prompt' => 'Всі Категорії']
-                ),
+    <?php if ($viewMode === 'cards'): ?>
+
+        <!-- фільтр для карток (у таблиці фільтри в заголовку) -->
+        <form method="get" action="<?= Url::to(['index']) ?>" class="form-row align-items-end mb-3">
+            <div class="col-sm-5 col-md-4 mb-2">
+                <?= Html::activeTextInput($searchModel, 'name', ['class' => 'form-control', 'placeholder' => 'Назва товару']) ?>
+            </div>
+            <div class="col-sm-4 col-md-3 mb-2">
+                <?= Html::activeDropDownList($searchModel, 'category_id', $categories, ['class' => 'form-control', 'prompt' => 'Всі категорії']) ?>
+            </div>
+            <div class="col-sm-3 col-md-2 mb-2">
+                <?= Html::activeDropDownList($searchModel, 'status', $statuses, ['class' => 'form-control', 'prompt' => 'Всі статуси']) ?>
+            </div>
+            <div class="col-md-3 mb-2">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search mr-1"></i>Знайти</button>
+                <?= Html::a('Скинути', ['index'], ['class' => 'btn btn-link']) ?>
+            </div>
+        </form>
+
+        <?= ListView::widget([
+            'dataProvider' => $dataProvider,
+            'itemView' => '_card',
+            'viewParams' => ['inline' => $inline],
+            'options' => ['class' => 'product-cards'],
+            'itemOptions' => ['class' => 'col-6 col-md-4 col-xl-3 mb-4'],
+            'layout' => "<div class=\"text-muted small mb-2\">{summary}</div>\n<div class=\"row\">{items}</div>\n{pager}",
+            'emptyText' => 'Товарів не знайдено.',
+            'pager' => ['class' => \yii\bootstrap4\LinkPager::class],
+        ]) ?>
+
+    <?php else: ?>
+
+        <?= GridView::widget([
+            'dataProvider' => $dataProvider,
+            'filterModel' => $searchModel,
+            'pager' => ['class' => \yii\bootstrap4\LinkPager::class],
+            'columns' => [
+                'id',
+                'name',
+                [
+                    'attribute' => 'category_id',
+                    'value' => fn ($ml) => $ml->category->name ?? '—',
+                    'filter' => Html::activeDropDownList($searchModel, 'category_id', $categories, [
+                        'class' => 'form-control',
+                        'prompt' => 'Всі Категорії',
+                    ]),
+                ],
+                [
+                    'attribute' => 'price',
+                    'format' => 'raw',
+                    'value' => fn (Product $ml) => $inline($ml, 'price'),
+                    'filter' => false,
+                ],
+                [
+                    'attribute' => 'weight',
+                    'format' => 'raw',
+                    'value' => fn (Product $ml) => $inline($ml, 'weight'),
+                    'filter' => false,
+                ],
+                [
+                    'attribute' => 'status',
+                    'value' => fn ($ml) => $ml->status
+                        ? '<span class="badge bg-success">Активний</span>'
+                        : '<span class="badge bg-danger">Не активний</span>',
+                    'format' => 'html',
+                    'filter' => Html::activeDropDownList($searchModel, 'status', $statuses, [
+                        'class' => 'form-control',
+                        'prompt' => 'Всі статуси',
+                    ]),
+                ],
+                [
+                    'class' => ActionColumn::class,
+                    'urlCreator' => fn ($action, Product $model) => Url::toRoute([$action, 'id' => $model->id]),
+                ],
             ],
-            'description:ntext',
-            //'short_description',
-            //'price',
-            //'old_price',
-            //'currency',
-            //'weight',
-            //'image',
-            //'meta_title',
-            //'meta_description',
-            [
-                'attribute' => 'status',
-                'value' => fn ($ml) => $ml->status ? '<span class="badge bg-success">Активний</span>' : '<span class="badge bg-danger">Не активний</span>',
-                'format' => 'html',
-                'filter' => Html::activeDropDownList(
-                    $searchModel,
-                    'status',
-                    ['Не активний', 'Активний'],
-                    ['class'=>'form-control', 'prompt' => 'Всі статуси']
-                ),
-            ],
-            //'sort_order',
-            //'created_at',
-            //'updated_at',
-            [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Product $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                 }
-            ],
-        ],
-    ]); ?>
+        ]); ?>
 
+    <?php endif; ?>
 
 </div>

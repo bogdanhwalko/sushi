@@ -120,6 +120,49 @@ class Product extends Products
     }
 
 
+    /** поля, які можна змінювати прямо зі списку товарів (подвійним кліком) */
+    public const INLINE_FIELDS = ['price', 'weight'];
+
+
+    /**
+     * Зберігає одне поле зі списку товарів. Порожнє значення ваги — «не вказано».
+     * Помилка — у $this->errors[$field].
+     */
+    public function saveInlineField(string $field, string $raw): bool
+    {
+        $raw = trim($raw);
+
+        if ($raw === '') {
+            if ($field === 'price') {
+                $this->addError($field, 'Вкажіть ціну.');
+                return false;
+            }
+            $value = null;
+        } elseif (preg_match('/^\d{1,7}$/', $raw)) {
+            $value = (int)$raw;
+        } else {
+            $this->addError($field, 'Введіть ціле число від 0 до 9 999 999.');
+            return false;
+        }
+
+        $this->$field = $value;
+
+        return $this->save(true, [$field, 'updated_at']);
+    }
+
+
+    /** Як поле показується в списку: «309 грн», «350 г», «—» */
+    public function inlineText(string $field): string
+    {
+        $value = $this->$field;
+        if ($value === null || $value === '') {
+            return '—';
+        }
+
+        return (int)$value . ($field === 'price' ? ' грн' : ' г');
+    }
+
+
     public function afterDelete(): void
     {
         parent::afterDelete();

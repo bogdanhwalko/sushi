@@ -13,6 +13,9 @@ use yii\web\UploadedFile;
  */
 class ProductController extends AbstractController
 {
+    /** варіанти вигляду списку товарів; перший — за замовчуванням */
+    private const VIEW_MODES = ['table', 'cards'];
+
     /**
      * @inheritDoc
      */
@@ -41,9 +44,23 @@ class ProductController extends AbstractController
         $searchModel = new ProductSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
+        // вигляд списку (таблиця / картки) запам'ятовується в сесії
+        $session = \Yii::$app->session;
+        $viewMode = $this->request->get('view');
+        if (in_array($viewMode, self::VIEW_MODES, true)) {
+            $session->set('admin.product.view', $viewMode);
+        } else {
+            $viewMode = $session->get('admin.product.view', self::VIEW_MODES[0]);
+        }
+
+        if ($viewMode === 'cards') {
+            $dataProvider->pagination->pageSize = 24;
+        }
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'viewMode' => $viewMode,
         ]);
     }
 

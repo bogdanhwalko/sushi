@@ -8,6 +8,8 @@ use app\modules\admin\models\Product;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class ProductController extends AbstractController
 {
@@ -20,9 +22,45 @@ class ProductController extends AbstractController
                     'product-week' => ['GET'],
                     // зміна лише POST-запитом: для нього Yii перевіряє CSRF-токен
                     'set-product-week' => ['POST'],
+                    'update-field' => ['POST'],
                 ],
             ],
         ]);
+    }
+
+
+    /**
+     * Зміна ціни або ваги прямо зі списку товарів (подвійний клік по значенню).
+     * POST id, field (price|weight), value → {success, value, text} або {success: false, error}.
+     */
+    public function actionUpdateField(): array
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+
+        $field = $request->post('field');
+        if (!in_array($field, Product::INLINE_FIELDS, true)) {
+            throw new BadRequestHttpException('Це поле не можна змінювати зі списку.');
+        }
+
+        $id = filter_var($request->post('id'), FILTER_VALIDATE_INT);
+        $product = $id ? Product::findOne($id) : null;
+        if ($product === null) {
+            throw new NotFoundHttpException('Товар не знайдено.');
+        }
+
+        if (!$product->saveInlineField($field, (string)$request->post('value', ''))) {
+            return [
+                'success' => false,
+                'error' => $product->getFirstError($field) ?: 'Не вдалося зберегти.',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'value' => $product->$field === null ? '' : (string)(int)$product->$field,
+            'text' => $product->inlineText($field),
+        ];
     }
 
 
