@@ -1,15 +1,15 @@
 <?php
 
-use yii\db\Migration;
+use app\migrations\BaseMigration;
 
 /**
  * Видалення товару більше не блокується позиціями в кошиках:
- * cart_item.product_id → product.id тепер ON DELETE CASCADE (було RESTRICT).
+ * cart_item.product_id → product.id тепер ON DELETE CASCADE (було RESTRICT або ключа не було).
  *
  * Таблиця cart_item створена не міграцією, тож назву старого ключа
  * шукаємо в information_schema — на сервері вона може відрізнятись.
  */
-class m261114_300000_cart_item_product_cascade extends Migration
+class m261114_300000_cart_item_product_cascade extends BaseMigration
 {
     /** у межах одного ALTER нова назва має відрізнятись від старої */
     private const FK_CASCADE = 'fk_cart_item_product_cascade';
@@ -17,6 +17,11 @@ class m261114_300000_cart_item_product_cascade extends Migration
 
     public function up()
     {
+        if ($this->foreignKeyExists('{{%cart_item}}', self::FK_CASCADE)) {
+            echo "    > ключ " . self::FK_CASCADE . " уже є — пропускаю\n";
+            return;
+        }
+
         $this->replaceProductForeignKey(self::FK_CASCADE, 'CASCADE');
     }
 
@@ -31,11 +36,35 @@ class m261114_300000_cart_item_product_cascade extends Migration
      */
     private function replaceProductForeignKey(string $newName, string $onDelete): void
     {
+        foreach (['{{%cart_item}}', '{{%product}}'] as $t) {
+            if (!$this->isInnoDb($t)) {
+                echo "    ! таблиця {$this->rawName($t)} не InnoDB — зовнішній ключ неможливий, пропускаю\n";
+                return;
+            }
+        }
+
         $db = $this->db;
         $parts = [];
+        $oldKeys = $this->findProductForeignKeys();
 
-        foreach ($this->findProductForeignKeys() as $name) {
+        foreach ($oldKeys as $name) {
             $parts[] = 'DROP FOREIGN KEY ' . $db->quoteColumnName($name);
+        }
+
+        if (empty($oldKeys)) {
+            // ключа не було — у кошиках можуть бути рядки з товарами, яких уже немає; ключ їх не прийме
+            $deleted = $db->createCommand(
+                'DELETE ci FROM ' . $db->quoteTableName('{{%cart_item}}') . ' ci
+                 LEFT JOIN ' . $db->quoteTableName('{{%product}}') . ' p ON p.id = ci.product_id
+                 WHERE p.id IS NULL'
+            )->execute();
+            echo "    > видалено позицій кошика з неіснуючими товарами: $deleted\n";
+
+            // і тип колонки має збігатися з product.id
+            $want = $this->columnType('{{%product}}', 'id');
+            if (self::normalizeType($this->columnType('{{%cart_item}}', 'product_id')) !== self::normalizeType($want)) {
+                $parts[] = 'MODIFY ' . $db->quoteColumnName('product_id') . ' ' . $want . ' NOT NULL';
+            }
         }
 
         $parts[] = 'ADD CONSTRAINT ' . $db->quoteColumnName($newName)
