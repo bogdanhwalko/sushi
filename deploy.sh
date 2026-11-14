@@ -25,7 +25,8 @@
 #   PHP_BIN             шлях до PHP CLI (за замовчуванням: php), напр. /opt/php81/bin/php
 #   COMPOSER_BIN        команда composer (за замовчуванням: composer або ./composer.phar)
 #   REMOTE              git remote (за замовчуванням: upstream гілки або origin)
-#   BACKUP_DIR          куди класти бекапи БД (за замовчуванням: ../sushi-backups поруч із проєктом)
+#   BACKUP_DIR          куди класти бекапи БД (за замовчуванням: ../sushi-backups поруч із проєктом,
+#                       а якщо туди писати не можна — app/runtime/backups)
 #   KEEP_BACKUPS        скільки останніх бекапів зберігати (за замовчуванням: 10)
 #   SITE_URL            адреса сайту для перевірки після деплою, напр. https://sushi.ua
 #   PHP_FPM_RELOAD_CMD  команда перезапуску PHP-FPM, якщо opcache не бачить змін,
@@ -82,7 +83,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="$ROOT/app"
 WEB="$ROOT/public_html"
 RUNTIME="$APP/runtime"
-BACKUP_DIR="${BACKUP_DIR:-$(dirname "$ROOT")/sushi-backups}"
+# Бекапи — поза public_html. Спершу поруч із проєктом (../sushi-backups); якщо туди
+# писати не можна (на хостингу проєкт часто лежить прямо в домашній папці) — app/runtime/backups,
+# яка недоступна з вебу і не потрапляє в git.
+if [[ -z "${BACKUP_DIR:-}" ]]; then
+    backup_parent="$(dirname "$ROOT")"
+    if [[ -d "$backup_parent/sushi-backups" && -w "$backup_parent/sushi-backups" ]] \
+        || [[ ! -e "$backup_parent/sushi-backups" && -w "$backup_parent" ]]; then
+        BACKUP_DIR="$backup_parent/sushi-backups"
+    else
+        BACKUP_DIR="$RUNTIME/backups"
+    fi
+fi
 
 LOCK_DIR="$RUNTIME/deploy.lock"
 MAINT_FLAG="$RUNTIME/maintenance.flag"
@@ -125,6 +137,7 @@ PREV_COMMIT=""
 NEW_COMMIT=""
 BACKUP_FILE=""
 MIGRATIONS_APPLIED=0
+SITE_INCONSISTENT=0
 
 php_run() { "$PHP_BIN" "$@"; }
 yii()     { "$PHP_BIN" "$APP/yii" "$@"; }
@@ -132,7 +145,13 @@ git_()    { git -C "$ROOT" "$@"; }
 
 cleanup() {
     local code=$?
-    if [[ $MAINT_CREATED -eq 1 ]]; then
+    local keep_maintenance=0
+
+    # Впало після оновлення коду — сайт може бути напівоновленим (новий код без міграцій тощо).
+    # Відвідувачам краще бачити "Оновлюємо сайт", ніж помилки й неробочі замовлення.
+    if [[ $code -ne 0 && $MAINT_CREATED -eq 1 && $SITE_INCONSISTENT -eq 1 ]]; then
+        keep_maintenance=1
+    elif [[ $MAINT_CREATED -eq 1 ]]; then
         rm -f "$MAINT_FLAG"
         echo "    режим обслуговування вимкнено"
     fi
@@ -143,10 +162,17 @@ cleanup() {
     if [[ $code -ne 0 ]]; then
         echo
         echo "${C_RED}Деплой НЕ завершено (код $code).${C_RESET} Лог: $LOG_FILE"
+        if [[ $keep_maintenance -eq 1 ]]; then
+            echo
+            echo "${C_YELLOW}Сайт ЗАЛИШЕНО в режимі обслуговування${C_RESET} — оновлення обірвалось посередині."
+            echo "  • виправте причину і запустіть:  bash deploy.sh"
+            echo "  • відкрити сайт як є (на свій ризик):  rm \"$MAINT_FLAG\""
+        fi
         if [[ -n "$PREV_COMMIT" && -n "$NEW_COMMIT" && "$PREV_COMMIT" != "$NEW_COMMIT" ]]; then
-            echo "Код уже оновлено до ${NEW_COMMIT:0:8}. Щоб повернути попередню версію:"
-            echo "    git -C \"$ROOT\" reset --hard $PREV_COMMIT"
-            echo "    bash deploy.sh --skip-pull"
+            echo "  • повернути попередню версію коду:"
+            echo "        git -C \"$ROOT\" reset --hard $PREV_COMMIT"
+            echo "        bash deploy.sh --skip-pull"
+            [[ $MIGRATIONS_APPLIED -eq 1 ]] && echo "    (міграції вже застосовано — відкат коду їх не скасує)"
         fi
         if [[ -n "$BACKUP_FILE" ]]; then
             echo "Бекап БД перед міграціями: $BACKUP_FILE"
@@ -243,6 +269,16 @@ return [
 fi
 ok "налаштування БД: app/config/db-local.php"
 
+# папку для бекапів перевіряємо одразу, а не посеред деплою
+if [[ $DO_BACKUP -eq 1 ]]; then
+    if ! mkdir -p "$BACKUP_DIR" 2>/dev/null || [[ ! -w "$BACKUP_DIR" ]]; then
+        die "Немає прав на запис у папку для бекапів БД: $BACKUP_DIR
+  Вкажіть іншу:  BACKUP_DIR=/шлях/до/папки bash deploy.sh"
+    fi
+    chmod 700 "$BACKUP_DIR" 2>/dev/null || true
+    ok "бекапи БД: $BACKUP_DIR"
+fi
+
 # Режим dev на продакшні вмикає детальні помилки — попереджаємо.
 cli_env="$(php_run -r "require '$APP/config/env.php'; echo YII_ENV;")"
 if [[ "$cli_env" != "prod" ]]; then
@@ -305,6 +341,10 @@ else
     info "пропущено (--no-maintenance)"
 fi
 
+# Звідси сайт може бути в проміжному стані (новий код, старі залежності чи схема БД).
+# Якщо деплой далі впаде, сторінка обслуговування лишиться — див. cleanup().
+SITE_INCONSISTENT=1
+
 if [[ $DO_PULL -eq 1 && -n "$incoming" ]]; then
     git_ merge --ff-only "$REMOTE/$BRANCH" \
         || die "Не вдалося оновити код без злиття (fast-forward): гілка на сервері розійшлася з $REMOTE/$BRANCH.
@@ -362,8 +402,6 @@ else
         db_host="${db[0]:-localhost}"; db_port="${db[1]:-3306}"; db_name="${db[2]:-}"; db_user="${db[3]:-}"; db_pass="${db[4]:-}"
         [[ -n "$db_name" ]] || die "Не вдалося визначити назву БД з dsn у db-local.php."
 
-        mkdir -p "$BACKUP_DIR"
-        chmod 700 "$BACKUP_DIR" 2>/dev/null || true
         BACKUP_FILE="$BACKUP_DIR/sushi-$(date +%Y%m%d-%H%M%S)-${PREV_COMMIT:0:8}.sql.gz"
 
         info "бекап БД $db_name → $BACKUP_FILE"
