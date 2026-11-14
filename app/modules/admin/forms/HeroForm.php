@@ -4,6 +4,7 @@ namespace app\modules\admin\forms;
 
 use app\components\HeroSettings;
 use app\components\ImageOptimizer;
+use app\models\HeroHistory;
 use Yii;
 use yii\base\Model;
 use yii\web\UploadedFile;
@@ -26,6 +27,9 @@ class HeroForm extends Model
     public $badge;
     public $overlay;
     public $position;
+    /** #rrggbb або '' — колір як у дизайні сайту */
+    public $text_color;
+    public $accent_color;
 
     /** @var UploadedFile|null */
     public $imageDesktop;
@@ -41,7 +45,7 @@ class HeroForm extends Model
     {
         parent::init();
 
-        foreach (['eyebrow', 'title', 'title_accent', 'subtitle', 'badge', 'overlay', 'position'] as $attr) {
+        foreach (['eyebrow', 'title', 'title_accent', 'subtitle', 'badge', 'overlay', 'position', 'text_color', 'accent_color'] as $attr) {
             $this->$attr = HeroSettings::get($attr);
         }
     }
@@ -56,6 +60,9 @@ class HeroForm extends Model
             ['title', 'string', 'max' => 80],
             ['title_accent', 'string', 'max' => 30],
             ['subtitle', 'string', 'max' => 120],
+
+            [['text_color', 'accent_color'], 'filter', 'filter' => static fn ($v) => strtolower(trim((string)$v))],
+            [['text_color', 'accent_color'], 'match', 'pattern' => '/^(#[0-9a-f]{6})?$/', 'message' => 'Колір у форматі #rrggbb.'],
 
             ['overlay', 'integer', 'min' => 0, 'max' => 80],
             ['position', 'in', 'range' => array_keys(HeroSettings::POSITIONS)],
@@ -84,6 +91,8 @@ class HeroForm extends Model
             'badge' => 'Бейдж',
             'overlay' => 'Затемнення фото',
             'position' => 'Яку частину фото тримати в кадрі',
+            'text_color' => 'Колір тексту',
+            'accent_color' => 'Колір помаранчевої частини заголовка',
             'imageDesktop' => 'Фото для ПК',
             'imageMobile' => 'Фото для телефона',
             'resetDesktop' => 'Повернути стандартне фото',
@@ -116,13 +125,14 @@ class HeroForm extends Model
             'badge' => $this->badge,
             'overlay' => (string)(int)$this->overlay,
             'position' => $this->position,
+            'text_color' => $this->text_color,
+            'accent_color' => $this->accent_color,
         ];
 
-        // фото: нове → стискаємо; «стандартне» → порожньо; інакше лишається як було
+        // фото: нове → стискаємо; «стандартне» → порожньо; інакше лишається як було.
+        // Старі фото не видаляємо: на них посилається історія (HeroHistory::prune прибере непотрібні).
         $created = [];
-        $replaced = [];
         foreach (['desktop' => 'imageDesktop', 'mobile' => 'imageMobile'] as $device => $attr) {
-            $old = HeroSettings::get('image_' . $device);
             $reset = $device === 'desktop' ? $this->resetDesktop : $this->resetMobile;
 
             if ($this->$attr instanceof UploadedFile) {
@@ -137,19 +147,10 @@ class HeroForm extends Model
                 $values['image_' . $device] = $file;
             } elseif ($reset) {
                 $values['image_' . $device] = '';
-            } else {
-                continue;
-            }
-
-            if ($old !== '') {
-                $replaced[] = $old;
             }
         }
 
-        HeroSettings::save($values);
-
-        // старі файли видаляємо лише після успішного збереження
-        array_map([HeroSettings::class, 'deleteImage'], $replaced);
+        HeroHistory::apply($values);
 
         Yii::info('Змінено налаштування шапки сайту', __METHOD__);
 

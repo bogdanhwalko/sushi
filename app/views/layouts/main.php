@@ -48,7 +48,7 @@ $currentUser = Yii::$app->user->identity;
     <?php $this->beginBody() ?>
 
     <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
-    <header class="gradient-hero text-white pb-5" style="<?= Html::encode(HeroSettings::headerStyle()) ?>">
+    <?= HeroSettings::headerTag('gradient-hero text-white pb-5') ?>
         <div class="topbar">
             <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">
                 <div class="d-flex gap-3 align-items-center">

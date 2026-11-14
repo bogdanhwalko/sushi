@@ -8,11 +8,14 @@ use yii\helpers\Html;
 use yii\web\View;
 
 /**
- * Налаштування шапки сайту (фон і тексти), які змінюються в адмінці → «Шапка сайту».
+ * Налаштування шапки сайту (фон, тексти, кольори), які змінюються в адмінці → «Шапка сайту».
  *
  * Зберігаються в таблиці config з префіксом "hero.". Усі читаються одним запитом
- * і кешуються одним записом. Що не задано — береться зі значень за замовчуванням,
+ * і кешуються одним записом. Що не задано (порожньо) — береться зі значень за замовчуванням,
  * тож без налаштувань сайт виглядає як раніше.
+ *
+ * Тексти виводяться з атрибутом data-hero="<ключ>": за ним адмінка підставляє зміни
+ * в живий перегляд, а CSS фарбує їх у вибраний колір.
  */
 final class HeroSettings
 {
@@ -34,12 +37,22 @@ final class HeroSettings
         'right' => 'Праворуч',
     ];
 
+    /** кольори, якими текст показується без налаштувань (для палітри в адмінці) */
+    public const STANDARD_COLORS = [
+        'text_color' => '#ffffff',
+        'accent_color' => '#dd4c2a',
+    ];
+
+    public const TEXT_KEYS = ['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'];
+
     public const DEFAULTS = [
         'eyebrow' => 'Забери сам та отримай знижку -5%',
         'title' => 'Доставка японської кухні у твоєму місті',
         'title_accent' => '"107 SUSHI"',
         'subtitle' => 'Обирайте страви. Про все інше подбає наша команда.',
         'badge' => 'Доставка від 800 грн БЕЗКОШТОВНА',
+        'text_color' => '',      // #rrggbb; порожньо — як у дизайні сайту
+        'accent_color' => '',
         'image_desktop' => '',   // ім'я файлу в UPLOAD_DIR; порожньо — стандартне фото
         'image_mobile' => '',
         'overlay' => '0',        // затемнення фото, %
@@ -47,16 +60,22 @@ final class HeroSettings
     ];
 
     private const PREFIX = 'hero.';
-    private const CACHE_KEY = [self::class, 'v1'];
+    private const CACHE_KEY = [self::class, 'v2'];
 
+    private static ?array $stored = null;
     private static ?array $current = null;
 
 
-    /** @return array<string, string> усі значення (задані в адмінці або стандартні) */
-    public static function all(): array
+    /**
+     * Те, що збережено в адмінці, по всіх ключах ('' — не задано, тобто стандартне).
+     * Саме це записується в історію і відновлюється з неї.
+     *
+     * @return array<string, string>
+     */
+    public static function stored(): array
     {
-        if (self::$current === null) {
-            $stored = Yii::$app->cache->getOrSet(self::CACHE_KEY, static function () {
+        if (self::$stored === null) {
+            $rows = Yii::$app->cache->getOrSet(self::CACHE_KEY, static function () {
                 $rows = Configs::find()
                     ->select(['value', 'name'])
                     ->where(['like', 'name', self::PREFIX . '%', false])
@@ -72,10 +91,20 @@ final class HeroSettings
                 return $values;
             });
 
+            self::$stored = self::normalize($rows);
+        }
+
+        return self::$stored;
+    }
+
+
+    /** @return array<string, string> усі значення для показу (задані в адмінці або стандартні) */
+    public static function all(): array
+    {
+        if (self::$current === null) {
             $values = self::DEFAULTS;
-            foreach ($stored as $key => $value) {
-                // порожній текст = «як було» (стандартний)
-                if (array_key_exists($key, $values) && $value !== '') {
+            foreach (self::stored() as $key => $value) {
+                if ($value !== '') {
                     $values[$key] = $value;
                 }
             }
@@ -92,6 +121,22 @@ final class HeroSettings
     }
 
 
+    /**
+     * Лише відомі ключі, усі — рядки; невідомі відкидаються, відсутні стають ''.
+     *
+     * @return array<string, string>
+     */
+    public static function normalize(array $values): array
+    {
+        $result = [];
+        foreach (array_keys(self::DEFAULTS) as $key) {
+            $result[$key] = isset($values[$key]) && is_scalar($values[$key]) ? (string)$values[$key] : '';
+        }
+
+        return $result;
+    }
+
+
     /** @param array<string, string|null> $values */
     public static function save(array $values): void
     {
@@ -102,14 +147,14 @@ final class HeroSettings
         }
 
         Yii::$app->cache->delete(self::CACHE_KEY);
-        self::$current = null;
+        self::$stored = self::$current = null;
     }
 
 
     /** URL фото шапки: 'desktop' | 'mobile' */
-    public static function imageUrl(string $device): string
+    public static function imageUrl(string $device, ?array $values = null): string
     {
-        $file = self::get('image_' . $device);
+        $file = $values === null ? self::get('image_' . $device) : ($values['image_' . $device] ?? '');
 
         return Yii::getAlias('@web/') . ($file !== '' ? self::UPLOAD_DIR . '/' . $file : self::DEFAULT_IMAGES[$device]);
     }
@@ -129,6 +174,13 @@ final class HeroSettings
     }
 
 
+    /** чи файл завантаженого фото є на диску */
+    public static function imageExists(string $file): bool
+    {
+        return $file !== '' && $file === basename($file) && is_file(self::uploadPath() . '/' . $file);
+    }
+
+
     /** Видаляє завантажене фото шапки (лише ім'я файлу в UPLOAD_DIR, без шляхів) */
     public static function deleteImage(?string $file): void
     {
@@ -144,21 +196,43 @@ final class HeroSettings
 
 
     /**
-     * CSS-змінні для <header class="gradient-hero">: фото, затемнення, позиція.
-     * Самі правила фону — у site.css (.gradient-hero).
+     * Відкривальний тег шапки: класи + CSS-змінні (фото, затемнення, позиція, кольори).
+     * Самі правила — у site.css (.gradient-hero).
      */
+    public static function headerTag(string $class): string
+    {
+        $classes = [$class];
+        if (self::get('text_color') !== '') {
+            $classes[] = 'hero-custom-text';
+        }
+        if (self::get('accent_color') !== '') {
+            $classes[] = 'hero-custom-accent';
+        }
+
+        return Html::beginTag('header', ['class' => implode(' ', $classes), 'style' => self::headerStyle()]);
+    }
+
+
     public static function headerStyle(): string
     {
         $overlay = max(0, min(80, (int)self::get('overlay'))) / 100;
         $position = array_key_exists(self::get('position'), self::POSITIONS) ? self::get('position') : 'left';
 
-        return sprintf(
+        $style = sprintf(
             "--hero-bg: url('%s'); --hero-bg-mobile: url('%s'); --hero-overlay: %s; --hero-position: %s;",
             self::cssUrl(self::imageUrl('desktop')),
             self::cssUrl(self::imageUrl('mobile')),
             rtrim(rtrim(number_format($overlay, 2, '.', ''), '0'), '.') ?: '0',
             $position
         );
+
+        foreach (['text_color' => '--hero-text', 'accent_color' => '--hero-accent'] as $key => $var) {
+            if (self::isColor(self::get($key))) {
+                $style .= " $var: " . self::get($key) . ';';
+            }
+        }
+
+        return $style;
     }
 
 
@@ -174,13 +248,24 @@ final class HeroSettings
     }
 
 
-    /** Заголовок: біла частина + помаранчева (обидві екрановані) */
+    /** Текст шапки (екранований), позначений для перегляду й кольору */
+    public static function text(string $key): string
+    {
+        return Html::tag('span', Html::encode(self::get($key)), ['data-hero' => $key]);
+    }
+
+
+    /** Заголовок: біла частина + помаранчева */
     public static function titleHtml(string $accentClass): string
     {
-        $accent = self::get('title_accent');
+        return self::text('title') . ' '
+            . Html::tag('span', Html::encode(self::get('title_accent')), ['class' => $accentClass, 'data-hero' => 'title_accent']);
+    }
 
-        return Html::encode(self::get('title'))
-            . ($accent !== '' ? ' ' . Html::tag('span', Html::encode($accent), ['class' => $accentClass]) : '');
+
+    public static function isColor(string $value): bool
+    {
+        return (bool)preg_match('/^#[0-9a-f]{6}$/i', $value);
     }
 
 

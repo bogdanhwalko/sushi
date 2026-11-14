@@ -8,16 +8,16 @@ use yii\helpers\Html;
 <div class="container pt-4">
     <div class="row align-items-center gy-4">
         <div class="col-lg-6">
-            <p class="eyebrow mb-2"><?= Html::encode(HeroSettings::get('eyebrow')) ?></p>
+            <p class="eyebrow mb-2"><?= HeroSettings::text('eyebrow') ?></p>
             <h1 class="display-4 fw-bold lh-1 mb-3">
                 <?= HeroSettings::titleHtml('highlight text-sushi') ?>
             </h1>
-            <p class="lead mb-4 fs-6 fw-medium"><?= Html::encode(HeroSettings::get('subtitle')) ?></p>
+            <p class="lead mb-4 fs-6 fw-medium"><?= HeroSettings::text('subtitle') ?></p>
             <div class="d-flex gap-3 flex-wrap">
                 <div class="d-flex align-items-center gap-2 flex-wrap" id="happyHours">
                     <div class="pill-pill d-inline-flex align-items-center gap-2 is-active">
                         <span class="happy-dot is-active" id="happyDot" aria-hidden="true"></span>
-                        <span><?= Html::encode(HeroSettings::get('badge')) ?></span>
+                        <span><?= HeroSettings::text('badge') ?></span>
                     </div>
                 </div>
             </div>

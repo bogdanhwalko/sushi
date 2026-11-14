@@ -1,61 +1,38 @@
 <?php
 
 use app\components\HeroSettings;
+use app\models\HeroHistory;
 use yii\bootstrap4\ActiveForm;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 /** @var yii\web\View $this */
 /** @var app\modules\admin\forms\HeroForm $model */
+/** @var HeroHistory[] $history */
 
 $this->title = 'Шапка сайту';
 $this->params['breadcrumbs'][] = $this->title;
 
-$defaultUrl = [
-    'desktop' => Yii::getAlias('@web/') . HeroSettings::DEFAULT_IMAGES['desktop'],
-    'mobile' => Yii::getAlias('@web/') . HeroSettings::DEFAULT_IMAGES['mobile'],
-];
+$web = Yii::getAlias('@web/');
 
 $this->registerCss(<<<CSS
-.hero-preview { position: relative; overflow: hidden; border-radius: .5rem; background-color: #0d0f10; background-repeat: no-repeat; background-size: cover; color: #fff; }
-.hero-preview::before { content: ""; position: absolute; inset: 0; background: rgba(13, 15, 16, var(--overlay, 0)); }
-.hero-preview > * { position: relative; }
-.hero-preview-desktop { aspect-ratio: 16 / 7; padding: 6% 5%; }
-.hero-preview-mobile { width: 210px; aspect-ratio: 9 / 16; padding: 30% 8% 6%; flex-shrink: 0; }
-.hero-preview-mobile .pv-eyebrow { font-size: .55rem; }
-.hero-preview-mobile .pv-subtitle { font-size: .6rem; }
-.hero-preview .pv-eyebrow { text-transform: uppercase; letter-spacing: .06em; font-size: .62rem; margin-bottom: .35rem; }
-.hero-preview .pv-title { font-weight: 700; line-height: 1.05; font-size: 1.45rem; margin-bottom: .45rem; max-width: 62%; }
-.hero-preview-mobile .pv-title { font-size: .95rem; max-width: none; }
-.hero-preview .pv-accent { color: #f05d23; }
-.hero-preview .pv-subtitle { font-size: .68rem; font-weight: 500; margin-bottom: .55rem; max-width: 62%; }
-.hero-preview-mobile .pv-subtitle { max-width: none; }
-.hero-preview .pv-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .6rem; padding: .25rem .6rem; border-radius: 999px; border: 1px solid rgba(25, 135, 84, .7); background: rgba(25, 135, 84, .25); }
-.hero-preview .pv-badge::before { content: ""; width: .4rem; height: .4rem; border-radius: 50%; background: #2ecc71; }
-.hero-image-field .custom-control { margin-top: .35rem; }
+/* живий перегляд: справжня сторінка сайту, зменшена до ширини колонки */
+.pv-frame { position: relative; overflow: hidden; border-radius: .5rem; border: 1px solid #dee2e6; background: #0d0f10; }
+.pv-frame iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; pointer-events: none; }
+.pv-frame.is-loading::after { content: "Завантаження…"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #adb5bd; background: #0d0f10; font-size: .85rem; }
+.pv-mobile { width: 250px; flex-shrink: 0; border-radius: 1.25rem; border-width: 6px; border-color: #343a40; }
+.pv-label { font-size: .8rem; color: #6c757d; margin-bottom: .35rem; }
 @media (min-width: 1200px) { .hero-preview-sticky { position: sticky; top: 1rem; } }
+
+.color-field .form-control-color { width: 3rem; padding: .2rem; height: calc(1.5em + .75rem + 2px); }
+.color-field .input-group { max-width: 320px; }
+
+.hero-history .thumb { display: inline-block; border-radius: .25rem; border: 1px solid #dee2e6; background: #0d0f10 center / cover no-repeat; vertical-align: middle; }
+.hero-history .thumb-desktop { width: 96px; height: 42px; }
+.hero-history .thumb-mobile { width: 30px; height: 42px; margin-left: .25rem; }
+.hero-history .swatch { display: inline-block; width: .9rem; height: .9rem; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); vertical-align: -2px; }
+.hero-history tr.is-current { background: #e8f4fd; }
 CSS);
-
-$preview = static function (string $device) use ($model, $defaultUrl): string {
-    $title = Html::tag('span', Html::encode($model->title), ['data-pv' => 'title'])
-        . ' ' . Html::tag('span', Html::encode($model->title_accent), ['class' => 'pv-accent', 'data-pv' => 'title_accent']);
-
-    return Html::tag('div',
-        Html::tag('div',
-            Html::tag('div', Html::encode($model->eyebrow), ['class' => 'pv-eyebrow', 'data-pv' => 'eyebrow'])
-            . Html::tag('div', $title, ['class' => 'pv-title'])
-            . Html::tag('div', Html::encode($model->subtitle), ['class' => 'pv-subtitle', 'data-pv' => 'subtitle'])
-            . Html::tag('span', Html::encode($model->badge), ['class' => 'pv-badge', 'data-pv' => 'badge'])
-        ),
-        [
-            'class' => "hero-preview hero-preview-$device",
-            'id' => "hero-preview-$device",
-            'data-default' => $defaultUrl[$device],
-            'data-current' => HeroSettings::imageUrl($device),
-            'style' => sprintf("background-image: url('%s'); background-position: %s center; --overlay: %s;",
-                HeroSettings::imageUrl($device), $model->position, (int)$model->overlay / 100),
-        ]
-    );
-};
 ?>
 <div class="hero-settings">
     <?php $form = ActiveForm::begin([
@@ -70,10 +47,10 @@ $preview = static function (string $device) use ($model, $defaultUrl): string {
                 <div class="card-body">
                     <p class="text-muted small">
                         JPG, PNG або WebP до 15 МБ. Фото автоматично зменшується і стискається,
-                        тож можна завантажувати оригінал. Краще темні фото: текст шапки білий.
+                        тож можна завантажувати оригінал. Попередні фото лишаються в історії.
                     </p>
 
-                    <div class="hero-image-field mb-3">
+                    <div class="mb-3">
                         <?= $form->field($model, 'imageDesktop', ['options' => ['class' => 'mb-0']])
                             ->fileInput(['accept' => 'image/jpeg,image/png,image/webp', 'class' => 'form-control-file js-hero-file', 'data-device' => 'desktop'])
                             ->hint('Рекомендовано ~1920×800, горизонтальне. Показується на екранах від 768 px.') ?>
@@ -83,7 +60,7 @@ $preview = static function (string $device) use ($model, $defaultUrl): string {
                         <?php endif; ?>
                     </div>
 
-                    <div class="hero-image-field mb-3">
+                    <div class="mb-3">
                         <?= $form->field($model, 'imageMobile', ['options' => ['class' => 'mb-0']])
                             ->fileInput(['accept' => 'image/jpeg,image/png,image/webp', 'class' => 'form-control-file js-hero-file', 'data-device' => 'mobile'])
                             ->hint('Рекомендовано ~1080×1400, вертикальне. Показується на телефонах.') ?>
@@ -95,25 +72,54 @@ $preview = static function (string $device) use ($model, $defaultUrl): string {
 
                     <?= $form->field($model, 'overlay', [
                         'template' => "{label} <span class=\"badge badge-secondary\" id=\"overlay-value\">" . (int)$model->overlay . "%</span>\n{input}\n{hint}\n{error}",
-                    ])->input('range', ['min' => 0, 'max' => 80, 'step' => 5, 'class' => 'custom-range'])
+                    ])->input('range', ['min' => 0, 'max' => 80, 'step' => 5, 'class' => 'custom-range js-pv'])
                         ->hint('Якщо текст погано видно на світлому фото — збільште.') ?>
 
-                    <?= $form->field($model, 'position')->dropDownList(HeroSettings::POSITIONS)
+                    <?= $form->field($model, 'position')->dropDownList(HeroSettings::POSITIONS, ['class' => 'form-control js-pv'])
                         ->hint('Фото заповнює шапку й обрізається з боків; ця частина завжди буде видна.') ?>
                 </div>
             </div>
 
             <div class="card card-lightblue">
-                <div class="card-header"><h3 class="card-title">Тексти</h3></div>
+                <div class="card-header"><h3 class="card-title">Тексти та кольори</h3></div>
                 <div class="card-body">
                     <p class="text-muted small">Порожнє поле — показується стандартний текст.</p>
-                    <?= $form->field($model, 'eyebrow')->textInput(['maxlength' => 60, 'data-pv-input' => 'eyebrow', 'placeholder' => HeroSettings::DEFAULTS['eyebrow']]) ?>
-                    <?= $form->field($model, 'title')->textInput(['maxlength' => 80, 'data-pv-input' => 'title', 'placeholder' => HeroSettings::DEFAULTS['title']]) ?>
-                    <?= $form->field($model, 'title_accent')->textInput(['maxlength' => 30, 'data-pv-input' => 'title_accent', 'placeholder' => HeroSettings::DEFAULTS['title_accent']]) ?>
-                    <?= $form->field($model, 'subtitle')->textInput(['maxlength' => 120, 'data-pv-input' => 'subtitle', 'placeholder' => HeroSettings::DEFAULTS['subtitle']]) ?>
-                    <?= $form->field($model, 'badge')->textInput(['maxlength' => 60, 'data-pv-input' => 'badge', 'placeholder' => HeroSettings::DEFAULTS['badge']]) ?>
+                    <?php foreach (['eyebrow' => 60, 'title' => 80, 'title_accent' => 30, 'subtitle' => 120, 'badge' => 60] as $attr => $max): ?>
+                        <?= $form->field($model, $attr)->textInput([
+                            'maxlength' => $max,
+                            'class' => 'form-control js-pv',
+                            'data-pv-text' => $attr,
+                            'placeholder' => HeroSettings::DEFAULTS[$attr],
+                        ]) ?>
+                    <?php endforeach; ?>
+
+                    <?php foreach (['text_color', 'accent_color'] as $attr): ?>
+                        <?php $standard = HeroSettings::STANDARD_COLORS[$attr]; ?>
+                        <?= $form->field($model, $attr, [
+                            'options' => ['class' => 'form-group color-field'],
+                            'inputTemplate' => '<div class="input-group">'
+                                . '<div class="input-group-prepend">'
+                                . Html::input('color', null, $model->$attr ?: $standard, [
+                                    'class' => 'form-control form-control-color js-color-picker',
+                                    'data-target' => Html::getInputId($model, $attr),
+                                    'title' => 'Вибрати колір',
+                                ])
+                                . '</div>{input}<div class="input-group-append">'
+                                . Html::button('Стандартний', [
+                                    'class' => 'btn btn-outline-secondary js-color-reset',
+                                    'data-target' => Html::getInputId($model, $attr),
+                                    'data-standard' => $standard,
+                                ])
+                                . '</div></div>',
+                        ])->textInput([
+                            'maxlength' => 7,
+                            'class' => 'form-control js-pv js-color-value',
+                            'placeholder' => 'стандартний',
+                        ]) ?>
+                    <?php endforeach; ?>
                 </div>
-                <div class="card-footer text-right">
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Зміни видно в перегляді одразу, на сайті — після збереження.</span>
                     <?= Html::submitButton('<i class="fas fa-save mr-1"></i>Зберегти', ['class' => 'btn btn-info']) ?>
                 </div>
             </div>
@@ -121,22 +127,31 @@ $preview = static function (string $device) use ($model, $defaultUrl): string {
 
         <div class="col-xl-7">
             <div class="card hero-preview-sticky">
-                <div class="card-header">
-                    <h3 class="card-title">Перегляд</h3>
-                    <div class="card-tools">
-                        <?= Html::a('<i class="fas fa-external-link-alt mr-1"></i>Відкрити сайт', Yii::$app->homeUrl, ['target' => '_blank', 'rel' => 'noopener', 'class' => 'btn btn-tool']) ?>
+                <div class="card-header d-flex align-items-center">
+                    <h3 class="card-title mr-auto">Перегляд</h3>
+                    <div class="btn-group btn-group-sm mr-2" role="group" aria-label="Сторінка для перегляду">
+                        <button type="button" class="btn btn-secondary js-pv-page" data-url="<?= Html::encode(Url::to(['/site/index'])) ?>">Головна</button>
+                        <button type="button" class="btn btn-outline-secondary js-pv-page" data-url="<?= Html::encode(Url::to(['/site/menu'])) ?>">Меню</button>
                     </div>
+                    <?= Html::a('<i class="fas fa-external-link-alt"></i>', Yii::$app->homeUrl, ['target' => '_blank', 'rel' => 'noopener', 'class' => 'btn btn-tool', 'title' => 'Відкрити сайт']) ?>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-2">ПК</p>
-                    <?= $preview('desktop') ?>
+                    <div class="pv-label">ПК (1440 px)</div>
+                    <div class="pv-frame pv-desktop is-loading" data-width="1440" data-height="640">
+                        <iframe title="Перегляд шапки на ПК" tabindex="-1"></iframe>
+                    </div>
 
-                    <p class="text-muted small mt-3 mb-2">Телефон</p>
-                    <div class="d-flex align-items-start">
-                        <?= $preview('mobile') ?>
-                        <p class="text-muted small ml-3 mb-0">
-                            Перегляд приблизний: на сайті шапка підлаштовується під екран, тож межі обрізання фото можуть трохи відрізнятись.
-                            Зміни з'являться на сайті після натискання «Зберегти».
+                    <div class="d-flex align-items-start mt-3">
+                        <div>
+                            <div class="pv-label">Телефон (390 px)</div>
+                            <div class="pv-frame pv-mobile is-loading" data-width="390" data-height="720" data-max-height="780">
+                                <iframe title="Перегляд шапки на телефоні" tabindex="-1"></iframe>
+                            </div>
+                        </div>
+                        <p class="text-muted small ml-3 mt-4 mb-0">
+                            Це справжня сторінка сайту, зменшена до розміру колонки:
+                            нові тексти, кольори, затемнення й вибрані фото підставляються в неї одразу.
+                            Відвідувачі побачать зміни лише після натискання «Зберегти».
                         </p>
                     </div>
                 </div>
@@ -145,65 +160,267 @@ $preview = static function (string $device) use ($model, $defaultUrl): string {
     </div>
 
     <?php ActiveForm::end(); ?>
+
+    <!-- Історія -->
+    <div class="card hero-history">
+        <div class="card-header d-flex align-items-center">
+            <h3 class="card-title mr-auto"><i class="fas fa-history mr-1"></i>Історія змін</h3>
+            <?= Html::a('<i class="fas fa-undo mr-1"></i>Скинути все до стандартного', ['reset'], [
+                'class' => 'btn btn-sm btn-outline-danger',
+                'data-method' => 'post',
+                'data-confirm' => 'Повернути стандартні фото, тексти й кольори? Поточний варіант лишиться в історії.',
+            ]) ?>
+        </div>
+        <div class="card-body p-0">
+            <?php if (!$history): ?>
+                <p class="text-muted p-3 mb-0">
+                    Ще нічого не змінювали. Після першого збереження тут з'являться попередній і новий варіанти,
+                    і до будь-якого з них можна буде повернутись.
+                </p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                        <tr>
+                            <th class="pl-3">Коли</th>
+                            <th>Фото</th>
+                            <th>Заголовок</th>
+                            <th>Кольори</th>
+                            <th class="text-right pr-3"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php $currentFound = false; ?>
+                        <?php foreach ($history as $row): ?>
+                            <?php
+                            $v = $row->getValues();
+                            $shown = static fn (string $key) => $v[$key] !== '' ? $v[$key] : HeroSettings::DEFAULTS[$key];
+                            // однакові варіанти можуть повторюватись (після відновлення) — «поточний» лише найновіший
+                            $current = !$currentFound && $row->isCurrent();
+                            $currentFound = $currentFound || $current;
+                            ?>
+                            <tr class="<?= $current ? 'is-current' : '' ?>">
+                                <td class="pl-3 align-middle text-nowrap">
+                                    <?= Html::encode(Yii::$app->formatter->asDatetime($row->created_at, 'php:d.m.Y H:i')) ?>
+                                    <div class="small text-muted"><?= Html::encode($row->user->username ?? '—') ?></div>
+                                </td>
+                                <td class="align-middle text-nowrap">
+                                    <?php foreach (['desktop', 'mobile'] as $device): ?>
+                                        <?php $file = $v['image_' . $device]; ?>
+                                        <span class="thumb thumb-<?= $device ?>"
+                                              style="background-image: url('<?= Html::encode(HeroSettings::imageUrl($device, $v)) ?>')"
+                                              title="<?= $device === 'desktop' ? 'ПК' : 'Телефон' ?>: <?= $file === '' ? 'стандартне' : 'своє фото' ?>"></span>
+                                    <?php endforeach; ?>
+                                    <div class="small text-muted">
+                                        затемнення <?= (int)$v['overlay'] ?>% · <?= Html::encode(HeroSettings::POSITIONS[$shown('position')] ?? '') ?>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <?= Html::encode($shown('title')) ?>
+                                    <strong style="color: <?= HeroSettings::isColor($v['accent_color']) ? $v['accent_color'] : HeroSettings::STANDARD_COLORS['accent_color'] ?>">
+                                        <?= Html::encode($shown('title_accent')) ?>
+                                    </strong>
+                                    <div class="small text-muted text-truncate" style="max-width: 420px"><?= Html::encode($shown('eyebrow') . ' · ' . $shown('badge')) ?></div>
+                                </td>
+                                <td class="align-middle text-nowrap small">
+                                    <?php foreach (['text_color' => 'текст', 'accent_color' => 'акцент'] as $key => $label): ?>
+                                        <?php $color = HeroSettings::isColor($v[$key]) ? $v[$key] : HeroSettings::STANDARD_COLORS[$key]; ?>
+                                        <span class="swatch" style="background: <?= $color ?>"></span>
+                                        <span class="mr-2 <?= $v[$key] === '' ? 'text-muted' : '' ?>"><?= $label ?></span>
+                                    <?php endforeach; ?>
+                                </td>
+                                <td class="align-middle text-right pr-3">
+                                    <?php if ($current): ?>
+                                        <span class="badge badge-primary">Зараз на сайті</span>
+                                    <?php else: ?>
+                                        <?= Html::a('<i class="fas fa-undo mr-1"></i>Відновити', ['restore', 'id' => $row->id], [
+                                            'class' => 'btn btn-sm btn-outline-primary',
+                                            'data-method' => 'post',
+                                            'data-confirm' => 'Повернути шапку до варіанта від '
+                                                . Yii::$app->formatter->asDatetime($row->created_at, 'php:d.m.Y H:i') . '?',
+                                        ]) ?>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small px-3 py-2 mb-0 border-top">
+                    Зберігаються останні <?= HeroHistory::KEEP ?> варіантів разом із фото.
+                </p>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
 <?php
-$defaults = json_encode(HeroSettings::DEFAULTS, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$json = static fn ($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$config = $json([
+    'defaults' => HeroSettings::DEFAULTS,
+    'images' => [
+        'desktop' => ['current' => HeroSettings::imageUrl('desktop'), 'standard' => $web . HeroSettings::DEFAULT_IMAGES['desktop']],
+        'mobile' => ['current' => HeroSettings::imageUrl('mobile'), 'standard' => $web . HeroSettings::DEFAULT_IMAGES['mobile']],
+    ],
+]);
 $this->registerJs(<<<JS
 (function () {
-    const defaults = $defaults;
-    const previews = document.querySelectorAll('.hero-preview');
+    const cfg = $config;
+    const form = document.getElementById('hero-form');
+    const frames = Array.from(document.querySelectorAll('.pv-frame'));
     const objectUrls = {};
+    const isColor = (v) => /^#[0-9a-f]{6}$/i.test(v);
 
-    // тексти: порожнє поле — стандартний текст, як і на сайті
-    document.querySelectorAll('[data-pv-input]').forEach((input) => {
-        const key = input.dataset.pvInput;
-        input.addEventListener('input', () => {
-            const text = input.value.trim() || defaults[key];
-            document.querySelectorAll('[data-pv="' + key + '"]').forEach((el) => { el.textContent = text; });
+    // ---------- стан форми → те, що підставляємо в сторінку ----------
+    const imageUrl = (device) => {
+        if (objectUrls[device]) return objectUrls[device];
+        const reset = form.querySelector('.js-hero-reset[data-device="' + device + '"]');
+        return reset && reset.checked ? cfg.images[device].standard : cfg.images[device].current;
+    };
+
+    const state = () => {
+        const val = (name) => (form.elements['HeroForm[' + name + ']'] || {}).value || '';
+        const texts = {};
+        ['eyebrow', 'title', 'title_accent', 'subtitle', 'badge'].forEach((k) => {
+            texts[k] = val(k).trim() || cfg.defaults[k];
+        });
+        return {
+            texts: texts,
+            overlay: parseInt(val('overlay') || '0', 10),
+            position: val('position') || 'left',
+            text: isColor(val('text_color')) ? val('text_color') : '',
+            accent: isColor(val('accent_color')) ? val('accent_color') : '',
+            desktop: imageUrl('desktop'),
+            mobile: imageUrl('mobile'),
+        };
+    };
+
+    // ---------- підстановка в iframe (та сама сторінка сайту, той самий домен) ----------
+    const PREVIEW_CSS = '.modal,.modal-backdrop,.offcanvas,.offcanvas-backdrop,.toast-container,#snowLayer,#yii-debug-toolbar,.compact-menu-scroll-top{display:none!important}'
+        + 'html,body{overflow:hidden!important}body{padding-right:0!important}';
+
+    const apply = (frame) => {
+        const doc = frame.querySelector('iframe').contentDocument;
+        const header = doc && doc.querySelector('header.gradient-hero');
+        if (!header) return;
+
+        if (!doc.getElementById('hero-preview-css')) {
+            const style = doc.createElement('style');
+            style.id = 'hero-preview-css';
+            style.textContent = PREVIEW_CSS;
+            doc.head.appendChild(style);
+        }
+
+        const s = state();
+        header.style.setProperty('--hero-bg', 'url("' + s.desktop + '")');
+        header.style.setProperty('--hero-bg-mobile', 'url("' + s.mobile + '")');
+        header.style.setProperty('--hero-overlay', String(s.overlay / 100));
+        header.style.setProperty('--hero-position', s.position);
+        header.classList.toggle('hero-custom-text', !!s.text);
+        header.classList.toggle('hero-custom-accent', !!s.accent);
+        if (s.text) header.style.setProperty('--hero-text', s.text);
+        if (s.accent) header.style.setProperty('--hero-accent', s.accent);
+
+        doc.querySelectorAll('[data-hero]').forEach((el) => {
+            const key = el.dataset.hero;
+            if (key in s.texts) el.textContent = s.texts[key];
+        });
+
+        // показуємо рівно шапку (на телефоні — не вище за ~2 екрани)
+        const height = Math.min(header.offsetHeight, +frame.dataset.maxHeight || Infinity);
+        if (height > 0 && String(height) !== frame.dataset.height) {
+            frame.dataset.height = height;
+            fit();
+        }
+    };
+
+    const applyAll = () => frames.forEach(apply);
+
+    // ---------- масштаб: сторінка шириною 1440/390 px вписується в колонку ----------
+    const fit = () => frames.forEach((frame) => {
+        const iframe = frame.querySelector('iframe');
+        const w = +frame.dataset.width, h = +frame.dataset.height;
+        const scale = frame.clientWidth / w;
+        iframe.style.width = w + 'px';
+        iframe.style.height = h + 'px';
+        iframe.style.transform = 'scale(' + scale + ')';
+        frame.style.height = Math.round(h * scale) + 'px';
+    });
+
+    const load = (url) => frames.forEach((frame) => {
+        frame.classList.add('is-loading');
+        frame.querySelector('iframe').src = url;
+    });
+
+    frames.forEach((frame) => {
+        const iframe = frame.querySelector('iframe');
+        iframe.addEventListener('load', () => {
+            if (!iframe.getAttribute('src')) return; // порожній iframe до першого завантаження
+            apply(frame);
+            frame.classList.remove('is-loading');
+            // скрипти сторінки можуть дописати щось після load — ще раз через мить
+            setTimeout(() => apply(frame), 400);
         });
     });
 
-    const overlay = document.getElementById('heroform-overlay');
-    overlay.addEventListener('input', () => {
-        document.getElementById('overlay-value').textContent = overlay.value + '%';
-        previews.forEach((p) => p.style.setProperty('--overlay', overlay.value / 100));
+    document.querySelectorAll('.js-pv-page').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.js-pv-page').forEach((b) => {
+                b.classList.toggle('btn-secondary', b === btn);
+                b.classList.toggle('btn-outline-secondary', b !== btn);
+            });
+            load(btn.dataset.url);
+        });
     });
 
-    const position = document.getElementById('heroform-position');
-    position.addEventListener('change', () => {
-        previews.forEach((p) => { p.style.backgroundPosition = position.value + ' center'; });
+    window.addEventListener('resize', fit);
+    fit();
+    load(document.querySelector('.js-pv-page').dataset.url);
+
+    // ---------- поля форми ----------
+    form.addEventListener('input', (e) => {
+        if (e.target.id === 'heroform-overlay') {
+            document.getElementById('overlay-value').textContent = e.target.value + '%';
+        }
+        applyAll();
     });
+    form.addEventListener('change', applyAll);
 
-    const setImage = (device, url) => {
-        document.getElementById('hero-preview-' + device).style.backgroundImage = "url('" + url + "')";
-    };
-
-    // нове фото — одразу в перегляді (ще до збереження)
     document.querySelectorAll('.js-hero-file').forEach((input) => {
         input.addEventListener('change', () => {
             const device = input.dataset.device;
-            const preview = document.getElementById('hero-preview-' + device);
             if (objectUrls[device]) URL.revokeObjectURL(objectUrls[device]);
-            const file = input.files[0];
-            if (file) {
-                objectUrls[device] = URL.createObjectURL(file);
-                setImage(device, objectUrls[device]);
-                const reset = document.querySelector('.js-hero-reset[data-device="' + device + '"]');
-                if (reset) reset.checked = false;
-            } else {
-                setImage(device, preview.dataset.current);
-            }
+            objectUrls[device] = input.files[0] ? URL.createObjectURL(input.files[0]) : null;
+            const reset = form.querySelector('.js-hero-reset[data-device="' + device + '"]');
+            if (reset && input.files[0]) reset.checked = false;
+            applyAll();
         });
     });
 
     document.querySelectorAll('.js-hero-reset').forEach((box) => {
         box.addEventListener('change', () => {
-            const device = box.dataset.device;
-            const preview = document.getElementById('hero-preview-' + device);
-            const file = document.querySelector('.js-hero-file[data-device="' + device + '"]');
-            if (box.checked && file) file.value = '';
-            setImage(device, box.checked ? preview.dataset.default : preview.dataset.current);
+            const file = form.querySelector('.js-hero-file[data-device="' + box.dataset.device + '"]');
+            if (box.checked && file && file.value) {
+                file.value = '';
+                if (objectUrls[box.dataset.device]) URL.revokeObjectURL(objectUrls[box.dataset.device]);
+                objectUrls[box.dataset.device] = null;
+            }
+            applyAll();
+        });
+    });
+
+    // кольори: палітра ↔ поле зі значенням ↔ «Стандартний»
+    document.querySelectorAll('.js-color-picker').forEach((picker) => {
+        const input = document.getElementById(picker.dataset.target);
+        picker.addEventListener('input', () => { input.value = picker.value; applyAll(); });
+        input.addEventListener('input', () => { if (isColor(input.value)) picker.value = input.value.toLowerCase(); });
+    });
+    document.querySelectorAll('.js-color-reset').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const input = document.getElementById(btn.dataset.target);
+            input.value = '';
+            document.querySelector('.js-color-picker[data-target="' + btn.dataset.target + '"]').value = btn.dataset.standard;
+            applyAll();
         });
     });
 })();

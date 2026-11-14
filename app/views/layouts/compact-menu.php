@@ -33,14 +33,14 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <?php $this->beginBody() ?>
 
 <div id="snowLayer" class="snow-layer" aria-hidden="true"></div>
-<header class="gradient-hero text-white compact-menu-header" style="<?= Html::encode(HeroSettings::headerStyle()) ?>">
+<?= HeroSettings::headerTag('gradient-hero text-white compact-menu-header') ?>
     <div class="topbar">
         <div class="container d-flex flex-wrap align-items-center justify-content-between py-2 small text-white-50">
             <div class="d-flex gap-3 align-items-center">
                 <span>Графік: <?= Yii::$app->params['schedule'] ?></span>
             </div>
             <span class="text-white-50 text-decoration-none small d-none d-md-inline">
-                <?= Html::encode(HeroSettings::get('subtitle')) ?>
+                <?= HeroSettings::text('subtitle') ?>
             </span>
         </div>
     </div>
@@ -54,7 +54,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
         <div class="compact-menu-hero-copy d-none d-lg-grid" aria-label="Переваги доставки">
             <div class="compact-menu-hero-item compact-menu-hero-item-eyebrow">
-                <p class="compact-menu-hero-eyebrow mb-0"><?= Html::encode(HeroSettings::get('eyebrow')) ?></p>
+                <p class="compact-menu-hero-eyebrow mb-0"><?= HeroSettings::text('eyebrow') ?></p>
             </div>
             <div class="compact-menu-hero-item compact-menu-hero-item-title">
                 <p class="compact-menu-hero-title mb-0">
@@ -64,7 +64,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <div class="compact-menu-hero-item compact-menu-hero-item-pill">
                 <p class="compact-menu-hero-pill mb-0">
                     <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                    <?= Html::encode(HeroSettings::get('badge')) ?>
+                    <?= HeroSettings::text('badge') ?>
                 </p>
             </div>
         </div>
@@ -72,13 +72,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
     <div class="container compact-menu-mobile-hero d-lg-none">
         <div class="compact-menu-mobile-hero-card" aria-label="Переваги доставки">
-            <p class="compact-menu-mobile-eyebrow mb-1"><?= Html::encode(HeroSettings::get('eyebrow')) ?></p>
+            <p class="compact-menu-mobile-eyebrow mb-1"><?= HeroSettings::text('eyebrow') ?></p>
             <p class="compact-menu-mobile-title mb-2">
                 <?= HeroSettings::titleHtml('compact-menu-hero-brand') ?>
             </p>
             <p class="compact-menu-mobile-pill mb-0">
                 <span class="compact-menu-hero-pill-dot" aria-hidden="true"></span>
-                <?= Html::encode(HeroSettings::get('badge')) ?>
+                <?= HeroSettings::text('badge') ?>
             </p>
         </div>
     </div>

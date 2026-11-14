@@ -48,7 +48,7 @@ $headerButton = function (string $label, string $icon, $url, array $options = []
 <body class="account-page">
 <?php $this->beginBody() ?>
 
-<header class="gradient-hero text-white account-header" style="<?= Html::encode(HeroSettings::headerStyle()) ?>">
+<?= HeroSettings::headerTag('gradient-hero text-white account-header') ?>
     <div class="container d-flex align-items-center justify-content-between gap-3">
         <a class="account-logo" href="<?= Url::home() ?>" aria-label="107 Sushi — на головну">
             <?= Html::img('@web/images/icons/logo.png', ['alt' => '107sushi']) ?>
