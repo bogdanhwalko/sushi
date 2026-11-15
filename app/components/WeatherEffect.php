@@ -8,7 +8,8 @@ use yii\helpers\Html;
 use yii\web\View;
 
 /**
- * Сніг або дощ на сайті — вмикається в адмінці → «Сніг і дощ».
+ * Погодні та святкові ефекти на сайті (сніг, сніжинки, дощ, листя, сакура, конфеті) —
+ * вмикаються в адмінці → «Сніг і дощ».
  *
  * Налаштування — один рядок config "weather" (JSON). Коли ефект вимкнено, на сторінку
  * нічого не додається (ні полотна, ні скрипта). Коли увімкнено — одне <canvas> поверх сторінки
@@ -20,7 +21,21 @@ final class WeatherEffect
     public const MODES = [
         'off' => 'Вимкнено',
         'snow' => 'Сніг',
+        'flakes' => 'Сніжинки',
         'rain' => 'Дощ',
+        'leaves' => 'Осіннє листя',
+        'sakura' => 'Сакура',
+        'confetti' => 'Конфеті',
+    ];
+
+    /**
+     * Режими, для яких можна вибрати колір, і їхні стандартні кольори (як DEFAULT_COLORS у js/weather.js).
+     * Листя, сакура й конфеті мають власну палітру.
+     */
+    public const DEFAULT_COLORS = [
+        'snow' => '#ffffff',
+        'flakes' => '#ffffff',
+        'rain' => '#8caad7',
     ];
 
     public const INTENSITIES = [
@@ -33,15 +48,16 @@ final class WeatherEffect
         'mode' => 'off',
         'intensity' => 2,
         'mobile' => true,   // показувати на телефонах
+        'color' => '',      // #rrggbb для DEFAULT_COLORS-режимів; порожньо — стандартний
     ];
 
     /** версія скрипта — змінювати разом із js/weather.js */
-    public const SCRIPT = 'js/weather.js?v=2';
+    public const SCRIPT = 'js/weather.js?v=3';
 
     private const CONFIG = 'weather';
 
 
-    /** @return array{mode: string, intensity: int, mobile: bool} */
+    /** @return array{mode: string, intensity: int, mobile: bool, color: string} */
     public static function settings(): array
     {
         $data = json_decode((string)Configs::get(self::CONFIG), true);
@@ -50,16 +66,18 @@ final class WeatherEffect
     }
 
 
-    /** @return array{mode: string, intensity: int, mobile: bool} */
+    /** @return array{mode: string, intensity: int, mobile: bool, color: string} */
     public static function normalize(array $data): array
     {
         $mode = (string)($data['mode'] ?? self::DEFAULTS['mode']);
         $intensity = (int)($data['intensity'] ?? self::DEFAULTS['intensity']);
+        $color = strtolower((string)($data['color'] ?? ''));
 
         return [
             'mode' => array_key_exists($mode, self::MODES) ? $mode : self::DEFAULTS['mode'],
             'intensity' => array_key_exists($intensity, self::INTENSITIES) ? $intensity : self::DEFAULTS['intensity'],
             'mobile' => (bool)($data['mobile'] ?? self::DEFAULTS['mobile']),
+            'color' => preg_match('/^#[0-9a-f]{6}$/', $color) ? $color : '',
         ];
     }
 
@@ -96,6 +114,7 @@ final class WeatherEffect
             'data-mode' => $s['mode'],
             'data-intensity' => $s['intensity'],
             'data-mobile' => $s['mobile'] ? '1' : '0',
+            'data-color' => isset(self::DEFAULT_COLORS[$s['mode']]) && $s['color'] !== '' ? $s['color'] : null,
         ]);
     }
 }

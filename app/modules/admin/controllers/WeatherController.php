@@ -7,7 +7,7 @@ use app\modules\admin\forms\WeatherForm;
 use Yii;
 
 /**
- * Сніг або дощ на сайті.
+ * Погодні та святкові ефекти на сайті: сніг, сніжинки, дощ, листя, сакура, конфеті.
  */
 class WeatherController extends AbstractController
 {
@@ -18,7 +18,7 @@ class WeatherController extends AbstractController
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             Yii::$app->session->setFlash('success', $model->mode === 'off'
                 ? 'Ефект вимкнено.'
-                : WeatherEffect::MODES[$model->mode] . ' увімкнено на сайті.');
+                : 'Ефект «' . WeatherEffect::MODES[$model->mode] . '» увімкнено на сайті.');
 
             return $this->refresh();
         }

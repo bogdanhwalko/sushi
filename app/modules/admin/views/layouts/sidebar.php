@@ -106,7 +106,7 @@
                     ],
 
                     [
-                        'label' => 'Сніг і дощ',
+                        'label' => 'Ефекти на сайті',
                         'url' => ['/admin-panel/weather/index'],
                         'icon' => 'nav-icon far fa-snowflake',
                         'visible' => true,
