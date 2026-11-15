@@ -28,7 +28,7 @@
 #   BACKUP_DIR          куди класти бекапи БД (за замовчуванням: ../sushi-backups поруч із проєктом,
 #                       а якщо туди писати не можна — app/runtime/backups)
 #   KEEP_BACKUPS        скільки останніх бекапів зберігати (за замовчуванням: 10)
-#   SITE_URL            адреса сайту для перевірки після деплою, напр. https://sushi.ua
+#   SITE_URL            адреса сайту, напр. https://sushi.ua (або один раз у .env: SITE_URL=…)
 #   PHP_FPM_RELOAD_CMD  команда перезапуску PHP-FPM, якщо opcache не бачить змін,
 #                       напр. "sudo systemctl reload php8.1-fpm"
 #
@@ -52,6 +52,16 @@ COMPOSER_BIN="${COMPOSER_BIN:-}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-10}"
 SITE_URL="${SITE_URL:-}"
 PHP_FPM_RELOAD_CMD="${PHP_FPM_RELOAD_CMD:-}"
+
+# SITE_URL можна задати один раз у .env у корені проєкту (він не в git): SITE_URL=https://sushi.ua
+# Значення з команди запуску важливіше. Файл не виконується — береться лише цей рядок.
+if [[ -z "$SITE_URL" ]]; then
+    env_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.env"
+    if [[ -r "$env_file" ]]; then
+        SITE_URL="$(sed -n 's/^[[:space:]]*SITE_URL[[:space:]]*=[[:space:]]*//p' "$env_file" | tail -n 1 \
+            | tr -d '\r' | sed 's/[[:space:]]*$//; s/^"\(.*\)"$/\1/; s/^'"'"'\(.*\)'"'"'$/\1/; s#/*$##')"
+    fi
+fi
 
 DO_BACKUP=1
 DO_PULL=1
