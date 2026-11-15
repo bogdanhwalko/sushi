@@ -88,17 +88,13 @@ $config = [
             'rules' => [
                 '' => 'site/index',
                 'menu' => 'site/menu',
+                'POST telegram/webhook/<key:[0-9a-f]{24}>' => 'telegram/webhook',
                 'admin-panel/<controller>/<action>' => 'admin-panel/<controller>/<action>',
                 'admin-panel/<controller>' => 'admin-panel/<controller>/index',
                 'admin-panel' => 'admin-panel/default/index',
             ],
         ],
-        'ts' => [
-            'class' => \app\components\TelegramSender::class,
-            'token' => '8561039078:AAGfsid4_ACKpiCLMe5z86IzAubQUPEbelI',
-            'chatId' => '-5169754991',
-            'sending' => true
-        ],
+        'ts' => require __DIR__ . '/telegram.php',
     ],
     'modules' => [
         'admin-panel' => [

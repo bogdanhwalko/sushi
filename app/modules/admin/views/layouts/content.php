@@ -59,6 +59,16 @@ use yii\bootstrap4\Breadcrumbs;
         </div>
     <?php endif; ?>
 
+    <?php if (Yii::$app->session->hasFlash('warning')): ?>
+        <div class="card-body">
+            <div class="alert alert-warning alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-exclamation-triangle"></i> Увага!</h5>
+                <?= Yii::$app->session->getFlash('warning')?>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Main content -->
     <div class="content">
         <?= $content ?><!-- /.container-fluid -->

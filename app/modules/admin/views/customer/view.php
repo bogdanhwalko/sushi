@@ -21,11 +21,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
 $isActive = (int)$model->status === Customer::STATUS_ACTIVE;
 
-$statusBadge = [
-    Orders::STATUS_NEW => 'badge-warning',
-    Orders::STATUS_DONE => 'badge-success',
-    Orders::STATUS_CANCELED => 'badge-secondary',
-];
 ?>
 <div class="customer-view">
     <div class="row">
@@ -202,7 +197,7 @@ $statusBadge = [
                                 'attribute' => 'status',
                                 'format' => 'raw',
                                 'value' => fn(Orders $o) => Html::tag('span', Html::encode($o->getStatusLabel()), [
-                                    'class' => 'badge ' . ($statusBadge[$o->status] ?? 'badge-light'),
+                                    'class' => 'badge badge-' . Orders::statusColor((int)$o->status),
                                 ]),
                             ],
                         ],

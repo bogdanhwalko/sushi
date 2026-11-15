@@ -46,11 +46,24 @@ $this->params['breadcrumbs'][] = '№' . $model->id;
                             ],
                             [
                                 'attribute' => 'telegram_sent',
-                                'value' => $model->telegram_sent ? 'Так' : 'Ні',
+                                'value' => match (true) {
+                                    !$model->telegram_sent => 'Ні',
+                                    !empty($model->telegram_message_id) => 'Так — статус у групі оновлюється разом із сайтом',
+                                    default => 'Так',
+                                },
                             ],
                             [
                                 'attribute' => 'status',
-                                'value' => $model->getStatusLabel(),
+                                'format' => 'raw',
+                                'value' => Html::tag('span', Html::encode($model->getStatusLabel()), [
+                                    'class' => 'badge badge-' . Orders::statusColor((int)$model->status),
+                                ]),
+                            ],
+                            [
+                                'label' => 'Прийняв',
+                                'visible' => (bool)$model->accepted_by,
+                                'value' => $model->accepted_by
+                                    . ($model->accepted_at ? ', ' . date('d.m.Y H:i', strtotime($model->accepted_at)) : ''),
                             ],
                         ],
                     ]) ?>

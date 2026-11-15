@@ -6,11 +6,6 @@
 use app\models\Orders;
 use yii\helpers\Html;
 
-$statusClass = [
-    Orders::STATUS_NEW => 'text-bg-warning',
-    Orders::STATUS_DONE => 'text-bg-success',
-    Orders::STATUS_CANCELED => 'text-bg-secondary',
-];
 ?>
 <article class="account-order">
     <div class="account-order-head">
@@ -18,7 +13,7 @@ $statusClass = [
             <div class="fw-bold">Замовлення №<?= (int)$order->id ?></div>
             <div class="text-muted small"><?= date('d.m.Y, H:i', strtotime($order->created_at)) ?></div>
         </div>
-        <span class="badge rounded-pill <?= $statusClass[$order->status] ?? 'text-bg-light' ?>">
+        <span class="badge rounded-pill text-bg-<?= Orders::statusColor((int)$order->status) ?>">
             <?= Html::encode($order->getStatusLabel()) ?>
         </span>
     </div>

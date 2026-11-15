@@ -15,9 +15,18 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="telegram-group-index">
 
-    <p>
+    <div class="d-flex flex-wrap align-items-center mb-3" style="gap: .5rem 1rem">
         <?= Html::a('Додати групу', ['create'], ['class' => 'btn btn-info']) ?>
-    </p>
+        <?= Html::a('<i class="fab fa-telegram-plane mr-1"></i>Підключити кнопки', ['webhook'], [
+            'class' => 'btn btn-outline-primary',
+            'data-method' => 'post',
+            'title' => 'Щоб у групах працювала кнопка «Прийняте» під новими замовленнями',
+        ]) ?>
+        <span class="text-muted small">
+            Кнопка «Прийняте» під замовленнями працює, коли боти підключені до сайту.
+            Натисніть після додавання групи з новим ботом (при деплої з SITE_URL підключається само).
+        </span>
+    </div>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 

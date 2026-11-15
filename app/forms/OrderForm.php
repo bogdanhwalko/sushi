@@ -2,6 +2,7 @@
 
 namespace app\forms;
 
+use app\components\OrderTelegram;
 use app\components\RateLimiter;
 use app\models\CartItems;
 use app\models\Cities;
@@ -10,7 +11,6 @@ use app\models\Orders;
 use app\validators\PhoneValidator;
 use Yii;
 use yii\base\Model;
-use yii\helpers\Html;
 
 /**
  * Оформлення замовлення з поточного кошика:
@@ -127,50 +127,9 @@ class OrderForm extends Model
         $order->populateRelation('city', $city);
 
         RateLimiter::hit('order', self::RATE_WINDOW);
-        $this->notifyTelegram($order);
+        // збій Telegram замовлення не губить — воно лишається в адмінці з позначкою «не надіслано»
+        OrderTelegram::send($order);
 
         return $order;
-    }
-
-
-    /**
-     * Замовлення вже збережене в БД, тож збій Telegram його не губить —
-     * воно лишається в адмін-панелі з позначкою "не надіслано".
-     */
-    private function notifyTelegram(Orders $order): void
-    {
-        $city = $order->city;
-        $group = $city?->telegramGroup;
-
-        $message = "\xf0\x9f\x93\x9d Замовлення <b>№{$order->id}</b>\n";
-        $message .= "\xe2\x98\x8e <b>+" . Html::encode($order->phone) . '</b> (' . Html::encode($order->customer_name) . ')';
-        if ($order->user_id) {
-            $message .= "\n\xf0\x9f\x91\xa4 Зареєстрований клієнт";
-        }
-        if ($city !== null && empty($group->telegram_id)) {
-            $message .= "\n \xf0\x9f\x97\xba <b>" . Html::encode($city->name) . '</b>';
-        }
-        $message .= "\n\n";
-
-        foreach ($order->items as $item) {
-            $message .= "\xf0\x9f\x8d\xa3 " . Html::encode($item->product_name) . " {$item->qty}шт. <b>{$item->price}</b>₴ \n";
-        }
-
-        $message .= "\n \xf0\x9f\x92\xb3 Загальна сума замовлення: <b>{$order->total}</b>₴";
-
-        try {
-            $sender = Yii::$app->ts;
-            if (!empty($group->bot_id)) {
-                $sender->changeToken($group->bot_id);
-            }
-
-            if ($sender->sendMessage($message, $group->telegram_id ?? null)) {
-                $order->updateAttributes(['telegram_sent' => 1]);
-            } else {
-                Yii::warning('Telegram: замовлення №' . $order->id . ' не надіслано: ' . json_encode($sender->getLastResponse()), __METHOD__);
-            }
-        } catch (\Throwable $e) {
-            Yii::error($e, __METHOD__);
-        }
     }
 }

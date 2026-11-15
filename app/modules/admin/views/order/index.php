@@ -16,11 +16,6 @@ use yii\helpers\Url;
 $this->title = 'Замовлення';
 $this->params['breadcrumbs'][] = $this->title;
 
-$statusBadge = [
-    Orders::STATUS_NEW => 'badge-warning',
-    Orders::STATUS_DONE => 'badge-success',
-    Orders::STATUS_CANCELED => 'badge-secondary',
-];
 $this->registerJs(<<<'JS'
 document.getElementById('order-city-filter').addEventListener('change', function () {
     const url = new URL(this.dataset.url, location.href);
@@ -104,7 +99,8 @@ JS);
                 'attribute' => 'status',
                 'format' => 'raw',
                 'value' => fn(Orders $m) => Html::tag('span', Html::encode($m->getStatusLabel()), [
-                    'class' => 'badge ' . ($statusBadge[$m->status] ?? 'badge-light'),
+                    'class' => 'badge badge-' . Orders::statusColor((int)$m->status),
+                    'title' => $m->accepted_by && (int)$m->status === Orders::STATUS_ACCEPTED ? 'Прийняв: ' . $m->accepted_by : null,
                 ]),
             ],
             [

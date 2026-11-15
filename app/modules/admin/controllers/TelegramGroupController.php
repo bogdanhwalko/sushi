@@ -2,10 +2,13 @@
 
 namespace app\modules\admin\controllers;
 
+use app\components\OrderTelegram;
 use app\modules\admin\models\TelegramGroup;
 use app\modules\admin\models\search\TelegramGroupSearch;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\Html;
+use yii\web\Response;
 
 /**
  * TelegramGroupController implements the CRUD actions for TelegramGroup model.
@@ -24,10 +27,29 @@ class TelegramGroupController extends AbstractController
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
+                        'webhook' => ['POST'],
                     ],
                 ],
             ]
         );
+    }
+
+    /**
+     * Підключає ботів до сайту, щоб у групах працювала кнопка «Прийняте» під новими замовленнями.
+     * Потрібен https: адреса сайту береться з поточного запиту.
+     */
+    public function actionWebhook(): Response
+    {
+        $results = OrderTelegram::setupWebhooks($this->request->hostInfo . $this->request->baseUrl);
+
+        $failed = array_filter($results, static fn ($r) => !$r['ok']);
+        $lines = array_map(static fn ($r) => ($r['ok'] ? '✓ ' : '✗ ') . Html::encode($r['bot'] . ': ' . $r['message']), $results);
+        $this->session->setFlash(
+            $failed ? 'error' : 'success',
+            ($failed ? 'Кнопки підключено не до всіх ботів:' : 'Кнопку «Прийняте» підключено.') . '<br>' . implode('<br>', $lines)
+        );
+
+        return $this->redirect(['index']);
     }
 
     /**

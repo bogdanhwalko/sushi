@@ -26,6 +26,7 @@ $config = [
             ],
         ],
         'db' => $db,
+        'ts' => require __DIR__ . '/telegram.php',
     ],
     'params' => $params,
     /*

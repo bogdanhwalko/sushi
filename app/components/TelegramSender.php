@@ -137,6 +137,23 @@ class TelegramSender extends BaseObject
     }
 
 
+    /**
+     * Будь-який метод Bot API (answerCallbackQuery, setWebhook, getWebhookInfo…).
+     * Не залежить від $sending: службові виклики, не повідомлення в чат.
+     * Відповідь — у getLastResponse().
+     */
+    public function call(string $method, array $params = []): bool
+    {
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $params[$key] = json_encode($value, JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        return $this->sendRequest($method, $params);
+    }
+
+
     public function setHook($url)
     {
         return $this->sendRequest('setWebhook', ['url' => $url]);

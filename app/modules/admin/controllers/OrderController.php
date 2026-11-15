@@ -2,6 +2,7 @@
 
 namespace app\modules\admin\controllers;
 
+use app\components\OrderTelegram;
 use app\models\Cities;
 use app\models\Orders;
 use Yii;
@@ -89,8 +90,20 @@ class OrderController extends AbstractController
         $status = (int)Yii::$app->request->post('status');
 
         if (isset(Orders::statusLabels()[$status])) {
-            $model->updateAttributes(['status' => $status]);
-            Yii::$app->session->setFlash('success', 'Статус замовлення оновлено.');
+            $changed = (int)$model->status !== $status;
+            $model->changeStatus($status, Yii::$app->user->identity->username . ' (адмінка)');
+
+            $message = 'Статус замовлення оновлено.';
+            if ($changed) {
+                // повідомлення в групі: новий статус; кнопка «Прийняте» — лише в нових
+                $synced = OrderTelegram::sync($model);
+                if ($synced === true) {
+                    $message .= ' Повідомлення в Telegram теж оновлено.';
+                } elseif ($synced === false) {
+                    Yii::$app->session->setFlash('warning', 'Не вдалося оновити повідомлення в Telegram-групі (деталі — у журналі сайту).');
+                }
+            }
+            Yii::$app->session->setFlash('success', $message);
         }
 
         return $this->redirect(['view', 'id' => $model->id]);
