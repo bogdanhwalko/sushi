@@ -42,7 +42,7 @@ $this->params['breadcrumbs'][] = '№' . $model->id;
                                         Html::encode($model->user->getFullName() ?: $model->user->username),
                                         $model->user->isAdmin() ? null : ['/admin-panel/customer/view', 'id' => $model->user_id]
                                     )
-                                    : 'Гість',
+                                    : Html::a('Гість (без реєстрації)', ['/admin-panel/customer/guest', 'phone' => $model->phone]),
                             ],
                             [
                                 'attribute' => 'telegram_sent',

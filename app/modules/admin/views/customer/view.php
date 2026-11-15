@@ -11,6 +11,7 @@ use yii\widgets\DetailView;
 /** @var yii\data\ActiveDataProvider $ordersProvider */
 /** @var array $stats */
 /** @var app\models\CartItems[] $cartItems */
+/** @var array{cnt: int, total: int}|null $guestStats замовлення з номера клієнта без входу в акаунт */
 
 $cartTotal = array_sum(array_map(fn($item) => $item->getTotal(), $cartItems));
 $cartUpdated = $cartItems ? max(array_map(fn($item) => strtotime($item->updated_at), $cartItems)) : null;
@@ -117,6 +118,16 @@ $isActive = (int)$model->status === Customer::STATUS_ACTIVE;
                     </div>
                 </div>
             </div>
+
+            <?php if ($guestStats): ?>
+                <div class="callout callout-info">
+                    <i class="fas fa-user-secret text-info mr-1"></i>
+                    З номера <?= Html::encode('+' . $model->phone) ?> ще
+                    <b><?= (int)$guestStats['cnt'] ?></b> замовл. на <b><?= (int)$guestStats['total'] ?> ₴</b>
+                    оформлено без входу в акаунт (у статистику вище не входять).
+                    <?= Html::a('Переглянути', ['guest', 'phone' => $model->phone], ['class' => 'ml-1']) ?>
+                </div>
+            <?php endif; ?>
 
             <div class="card card-lightblue" id="cart">
                 <div class="card-header">

@@ -86,7 +86,7 @@ JS);
                 'attribute' => 'user_id',
                 'format' => 'raw',
                 'value' => fn(Orders $m) => match (true) {
-                    $m->user === null => 'Гість',
+                    $m->user === null => Html::a('Гість', ['/admin-panel/customer/guest', 'phone' => $m->phone], ['title' => 'Усі замовлення з цього номера без реєстрації']),
                     $m->user->isAdmin() => Html::encode($m->user->username),
                     default => Html::a(Html::encode($m->user->username), ['/admin-panel/customer/view', 'id' => $m->user_id]),
                 },
