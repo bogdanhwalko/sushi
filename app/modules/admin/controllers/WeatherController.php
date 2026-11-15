@@ -7,7 +7,7 @@ use app\modules\admin\forms\WeatherForm;
 use Yii;
 
 /**
- * Погодні та святкові ефекти на сайті: сніг, сніжинки, дощ, листя, сакура, конфеті.
+ * Погодні та святкові ефекти на сайті: сніг, сніжинки, дощ, листя, сакура, конфеті, сердечка.
  */
 class WeatherController extends AbstractController
 {

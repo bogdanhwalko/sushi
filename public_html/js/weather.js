@@ -3,7 +3,7 @@
  *
  * Одне <canvas id="weatherLayer" data-mode data-intensity data-mobile data-color>,
  * яке виводить WeatherEffect::render(). Режими: snow (сніг-крапки), flakes (сніжинки),
- * rain (дощ), leaves (осіннє листя), sakura (пелюстки сакури), confetti (конфеті).
+ * rain (дощ), leaves (осіннє листя), sakura (пелюстки сакури), confetti (конфеті), hearts (сердечка).
  * data-color — колір для снігу, сніжинок і дощу (порожньо — стандартний); інші мають свою палітру.
  *
  * Не перехоплює кліки, стоїть на паузі у фоновій вкладці, не запускається,
@@ -24,10 +24,11 @@
         leaves: ['#d9622b', '#c2402a', '#e8a33a', '#b5652d', '#e07b2a', '#9c4a1f'],
         sakura: ['#f7b6c8', '#f9cfdc', '#f29bb5', '#fbe1ea', '#f5a3bd'],
         confetti: ['#dd4c2a', '#f2b632', '#3bb273', '#3a86ff', '#c86bfa', '#ff6fa8'],
+        hearts: ['#e63946', '#ff4d6d', '#ff758f', '#c9184a', '#ff8fab', '#d62839'],
     };
 
     /** скільки частинок при середній інтенсивності на екрані ~1440×900 */
-    const BASE_COUNT = { snow: 70, flakes: 38, rain: 120, leaves: 22, sakura: 34, confetti: 70 };
+    const BASE_COUNT = { snow: 70, flakes: 38, rain: 120, leaves: 22, sakura: 34, confetti: 70, hearts: 28 };
 
     const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
@@ -104,6 +105,10 @@
                 break;
             case 'confetti':
                 Object.assign(p, { r: rand(3, 6), vy: rand(60, 120), sway: rand(10, 30), vrot: rand(-4, 4), flip: rand(3, 7), color: pick(PALETTES.confetti) });
+                break;
+            case 'hearts':
+                // без обертання: лише легкий нахил, погойдування й повільний «поворот» (віддзеркалення)
+                Object.assign(p, { r: rand(7, 12), vy: rand(35, 70), sway: rand(20, 45), rot: rand(-0.35, 0.35), flip: rand(0.6, 1.4), color: pick(PALETTES.hearts) });
                 break;
         }
         return p;
@@ -199,14 +204,16 @@
     /**
      * Кожна частинка — у своїй системі координат: зсув, поворот, «перевертання» (стискання по осі).
      * minFlip — наскільки найтоншою стає частинка при перевертанні (листя й пелюстки не стають «ниткою»).
+     * sideways — повертати навколо вертикальної осі (сердечко не опиняється догори дриґом).
      */
-    const drawShapes = (t, shape, minFlip) => {
+    const drawShapes = (t, shape, minFlip, sideways = false) => {
         for (const p of items) {
             const f = Math.cos(t * p.flip + p.phase);
+            const s = (f < 0 ? -1 : 1) * Math.max(minFlip, Math.abs(f));
             ctx.save();
             ctx.translate(posX(p, t), p.y);
             ctx.rotate(p.rot);
-            ctx.scale(1, (f < 0 ? -1 : 1) * Math.max(minFlip, Math.abs(f)));
+            ctx.scale(sideways ? s : 1, sideways ? 1 : s);
             ctx.fillStyle = p.color;
             shape(p.r);
             ctx.restore();
@@ -247,6 +254,27 @@
         ctx.fillRect(-r / 2, -r, r, r * 2);
     };
 
+    const heart = (r) => {
+        ctx.beginPath();
+        ctx.moveTo(0, r);                                                   // нижній кінчик
+        ctx.bezierCurveTo(-r * 0.15, r * 0.75, -r * 1.1, r * 0.25, -r, -r * 0.3);
+        ctx.bezierCurveTo(-r * 0.9, -r * 0.95, -r * 0.15, -r * 0.95, 0, -r * 0.45);  // ямка зверху
+        ctx.bezierCurveTo(r * 0.15, -r * 0.95, r * 0.9, -r * 0.95, r, -r * 0.3);
+        ctx.bezierCurveTo(r * 1.1, r * 0.25, r * 0.15, r * 0.75, 0, r);
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(120, 10, 40, 0.35)';                        // щоб було видно й на білому
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+        // відблиск
+        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.ellipse(-r * 0.45, -r * 0.4, r * 0.22, r * 0.13, -0.6, 0, TAU);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    };
+
     const tick = (now) => {
         frame = window.requestAnimationFrame(tick);
         const dt = Math.min(0.05, lastTime ? (now - lastTime) / 1000 : 0);
@@ -262,6 +290,7 @@
             case 'leaves': drawShapes(t, leaf, 0.35); break;
             case 'sakura': drawShapes(t, petal, 0.3); break;
             case 'confetti': drawShapes(t, confettiPiece, 0.05); break;
+            case 'hearts': drawShapes(t, heart, 0.55, true); break;
         }
     };
 

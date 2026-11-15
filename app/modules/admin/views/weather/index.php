@@ -19,6 +19,7 @@ $icons = [
     'leaves' => 'fab fa-canadian-maple-leaf',
     'sakura' => 'fas fa-spa',
     'confetti' => 'fas fa-glass-cheers',
+    'hearts' => 'fas fa-heart',
 ];
 
 // швидкий вибір кольору: світлі добре видно на темній шапці, насичені — на білому фоні сторінки

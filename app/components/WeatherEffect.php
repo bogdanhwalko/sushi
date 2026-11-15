@@ -8,7 +8,7 @@ use yii\helpers\Html;
 use yii\web\View;
 
 /**
- * Погодні та святкові ефекти на сайті (сніг, сніжинки, дощ, листя, сакура, конфеті) —
+ * Погодні та святкові ефекти на сайті (сніг, сніжинки, дощ, листя, сакура, конфеті, сердечка) —
  * вмикаються в адмінці → «Сніг і дощ».
  *
  * Налаштування — один рядок config "weather" (JSON). Коли ефект вимкнено, на сторінку
@@ -26,11 +26,12 @@ final class WeatherEffect
         'leaves' => 'Осіннє листя',
         'sakura' => 'Сакура',
         'confetti' => 'Конфеті',
+        'hearts' => 'Сердечка',
     ];
 
     /**
      * Режими, для яких можна вибрати колір, і їхні стандартні кольори (як DEFAULT_COLORS у js/weather.js).
-     * Листя, сакура й конфеті мають власну палітру.
+     * Листя, сакура, конфеті й сердечка мають власну палітру.
      */
     public const DEFAULT_COLORS = [
         'snow' => '#ffffff',
@@ -52,7 +53,7 @@ final class WeatherEffect
     ];
 
     /** версія скрипта — змінювати разом із js/weather.js */
-    public const SCRIPT = 'js/weather.js?v=3';
+    public const SCRIPT = 'js/weather.js?v=4';
 
     private const CONFIG = 'weather';
 
